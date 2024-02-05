@@ -1,17 +1,17 @@
-CREATE TABLE Roles (
+CREATE OR REPLACE TABLE Roles (
     roleID INT AUTO_INCREMENT UNIQUE NOT NULL,
     roleName ENUM('TANK', 'DPS', 'SUPPORT') NOT NULL,
     PRIMARY KEY (roleID)
 );
 
-CREATE TABLE Ranks (
+CREATE OR REPLACE TABLE Ranks (
     rankID INT AUTO_INCREMENT UNIQUE NOT NULL,
     rankName ENUM('Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Masters', 'Grandmasters') NOT NULL,
     division INT NOT NULL CHECK (division BETWEEN 1 AND 5),
     PRIMARY KEY (rankID)
 );
 
-CREATE TABLE PlayerRoles (
+CREATE OR REPLACE TABLE PlayerRoles (
     playerID INT NOT NULL,
     roleID INT NOT NULL,
     rankID INT NOT NULL,
@@ -21,14 +21,14 @@ CREATE TABLE PlayerRoles (
     FOREIGN KEY (rankID) REFERENCES Ranks(rankID)
 );
 
-CREATE TABLE Teams (
+CREATE OR REPLACE TABLE Teams (
     teamID INT AUTO_INCREMENT UNIQUE NOT NULL,
     teamName VARCHAR(255) NOT NULL UNIQUE,
     formationDate DATETIME NOT NULL,
     PRIMARY KEY (teamID)
 );
 
-CREATE TABLE Tournaments (
+CREATE OR REPLACE TABLE Tournaments (
     tournamentID INT AUTO_INCREMENT UNIQUE NOT NULL,
     tournamentName VARCHAR(255) NOT NULL UNIQUE,
     startDate DATETIME NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE Tournaments (
     PRIMARY KEY (tournamentID)
 );
 
-CREATE TABLE TeamPlayers (
+CREATE OR REPLACE TABLE TeamPlayers (
     playerID INT NOT NULL,
     teamID INT NOT NULL,
     roleID INT NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE TeamPlayers (
     FOREIGN KEY (roleID) REFERENCES Roles(roleID)
 );
 
-CREATE TABLE TournamentTeams (
+CREATE OR REPLACE TABLE TournamentTeams (
     tournamentID INT NOT NULL,
     teamID INT NOT NULL,
     PRIMARY KEY (tournamentID, teamID),
