@@ -24,9 +24,9 @@ CREATE OR REPLACE TABLE PlayerRoles (
     roleID INT NOT NULL,
     rankID INT NOT NULL,
     PRIMARY KEY (playerID, roleID),
-    FOREIGN KEY (playerID) REFERENCES Players(playerID),
-    FOREIGN KEY (roleID) REFERENCES Roles(roleID),
-    FOREIGN KEY (rankID) REFERENCES Ranks(rankID)
+    FOREIGN KEY (playerID) REFERENCES Players(playerID) ON DELETE CASCADE,
+    FOREIGN KEY (roleID) REFERENCES Roles(roleID) ON DELETE CASCADE,
+    FOREIGN KEY (rankID) REFERENCES Ranks(rankID) ON DELETE CASCADE
 );
 
 CREATE OR REPLACE TABLE Teams (
@@ -49,17 +49,17 @@ CREATE OR REPLACE TABLE TeamPlayers (
     teamID INT NOT NULL,
     roleID INT NOT NULL,
     PRIMARY KEY (playerID, teamID, roleID),
-    FOREIGN KEY (playerID) REFERENCES Players(playerID),
-    FOREIGN KEY (teamID) REFERENCES Teams(teamID),
-    FOREIGN KEY (roleID) REFERENCES Roles(roleID)
+    FOREIGN KEY (playerID) REFERENCES Players(playerID) ON DELETE CASCADE,
+    FOREIGN KEY (teamID) REFERENCES Teams(teamID) ON DELETE CASCADE,
+    FOREIGN KEY (roleID) REFERENCES Roles(roleID)ON DELETE CASCADE
 );
 
 CREATE OR REPLACE TABLE TournamentTeams (
     tournamentID INT NOT NULL,
     teamID INT NOT NULL,
     PRIMARY KEY (tournamentID, teamID),
-    FOREIGN KEY (tournamentID) REFERENCES Tournaments(tournamentID),
-    FOREIGN KEY (teamID) REFERENCES Teams(teamID)
+    FOREIGN KEY (tournamentID) REFERENCES Tournaments(tournamentID) ON DELETE CASCADE,
+    FOREIGN KEY (teamID) REFERENCES Teams(teamID) ON DELETE CASCADE
 );
 
 
