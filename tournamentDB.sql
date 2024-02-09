@@ -1,3 +1,12 @@
+-- Project Title: Overwatch 2 Database Management System
+-- Team Members: John Klucinec, Troy Hoffman 
+-- Project Group: 56
+
+-- Disable commits and foreign keys
+SET FOREIGN_KEY_CHECKS=0;
+SET AUTOCOMMIT = 0;
+
+-- Entity that stores player information
 CREATE OR REPLACE TABLE Players (
     playerID INT AUTO_INCREMENT UNIQUE NOT NULL,
     username VARCHAR(255) NOT NULL UNIQUE,
@@ -6,12 +15,14 @@ CREATE OR REPLACE TABLE Players (
     PRIMARY KEY (playerID)
 );
 
+-- Entity that stores all the available roles for a player
 CREATE OR REPLACE TABLE Roles (
     roleID INT AUTO_INCREMENT UNIQUE NOT NULL,
     roleName ENUM('TANK', 'DPS', 'SUPPORT') NOT NULL,
     PRIMARY KEY (roleID)
 );
 
+-- Entity that stores all the available ranks for a player
 CREATE OR REPLACE TABLE Ranks (
     rankID INT AUTO_INCREMENT UNIQUE NOT NULL,
     rankName ENUM('Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'Grandmaster') NOT NULL,
@@ -19,6 +30,7 @@ CREATE OR REPLACE TABLE Ranks (
     PRIMARY KEY (rankID)
 );
 
+-- Intersection Table - this links Players with their Roles (M:N)
 CREATE OR REPLACE TABLE PlayerRoles (
     playerID INT NOT NULL,
     roleID INT NOT NULL,
@@ -29,6 +41,7 @@ CREATE OR REPLACE TABLE PlayerRoles (
     FOREIGN KEY (rankID) REFERENCES Ranks(rankID) ON DELETE CASCADE
 );
 
+-- Entity that stores the teams
 CREATE OR REPLACE TABLE Teams (
     teamID INT AUTO_INCREMENT UNIQUE NOT NULL,
     teamName VARCHAR(255) NOT NULL UNIQUE,
@@ -36,6 +49,7 @@ CREATE OR REPLACE TABLE Teams (
     PRIMARY KEY (teamID)
 );
 
+-- Entity that stores the tournaments
 CREATE OR REPLACE TABLE Tournaments (
     tournamentID INT AUTO_INCREMENT UNIQUE NOT NULL,
     tournamentName VARCHAR(255) NOT NULL UNIQUE,
@@ -44,6 +58,7 @@ CREATE OR REPLACE TABLE Tournaments (
     PRIMARY KEY (tournamentID)
 );
 
+-- Intersection Table - this links Teams and Players (M:N)
 CREATE OR REPLACE TABLE TeamPlayers (
     playerID INT NOT NULL,
     teamID INT NOT NULL,
@@ -54,6 +69,7 @@ CREATE OR REPLACE TABLE TeamPlayers (
     FOREIGN KEY (roleID) REFERENCES Roles(roleID)ON DELETE CASCADE
 );
 
+-- Intersection Table - this links Tournaments and Teams (M:N)
 CREATE OR REPLACE TABLE TournamentTeams (
     tournamentID INT NOT NULL,
     teamID INT NOT NULL,
@@ -115,6 +131,10 @@ INSERT INTO Roles (roleName) VALUES
 -- Create the Wildcats Team
 INSERT INTO Teams (teamName, formationDate)
 VALUES ('WildCats', CURRENT_DATE);
+
+-- Create the HellCats Team
+INSERT INTO Teams (teamName, formationDate)
+VALUES ('HellCats', CURRENT_DATE);
 
 -- Create the players and add their roles
 
@@ -209,10 +229,51 @@ INSERT INTO TeamPlayers (playerID, roleID, teamID)
 VALUES ((SELECT playerID FROM Players WHERE username = 'BigSimpConnor'),
         (SELECT roleID FROM Roles WHERE roleName = 'DPS'),
         (SELECT teamID FROM Teams WHERE teamName = 'WildCats'));
+
+-- Add Players to the HellCats Team. 
+
+-- Wintah (Does not play SUPPORT for Wildcats, so the ROLE is not added.
+INSERT INTO TeamPlayers (playerID, roleID, teamID)
+VALUES ((SELECT playerID FROM Players WHERE username = 'Wintah'),
+        (SELECT roleID FROM Roles WHERE roleName = 'DPS'),
+        (SELECT teamID FROM Teams WHERE teamName = 'HellCats'));
+
+
+-- Gliscor
+INSERT INTO TeamPlayers (playerID, roleID, teamID)
+VALUES ((SELECT playerID FROM Players WHERE username = 'Gliscor'),
+        (SELECT roleID FROM Roles WHERE roleName = 'TANK'),
+        (SELECT teamID FROM Teams WHERE teamName = 'HellCats'));
+        
+-- unicorn
+INSERT INTO TeamPlayers (playerID, roleID, teamID)
+VALUES ((SELECT playerID FROM Players WHERE username = 'unicorn'),
+        (SELECT roleID FROM Roles WHERE roleName = 'SUPPORT'),
+        (SELECT teamID FROM Teams WHERE teamName = 'HellCats'));
+        
+-- PhevieWonder
+INSERT INTO TeamPlayers (playerID, roleID, teamID)
+VALUES ((SELECT playerID FROM Players WHERE username = 'PhevieWonder'),
+        (SELECT roleID FROM Roles WHERE roleName = 'SUPPORT'),
+        (SELECT teamID FROM Teams WHERE teamName = 'HellCats'));
+        
+-- BigSimpConnor
+INSERT INTO TeamPlayers (playerID, roleID, teamID)
+VALUES ((SELECT playerID FROM Players WHERE username = 'BigSimpConnor'),
+        (SELECT roleID FROM Roles WHERE roleName = 'TANK'),
+        (SELECT teamID FROM Teams WHERE teamName = 'HellCats'));
+INSERT INTO TeamPlayers (playerID, roleID, teamID)
+VALUES ((SELECT playerID FROM Players WHERE username = 'BigSimpConnor'),
+        (SELECT roleID FROM Roles WHERE roleName = 'DPS'),
+        (SELECT teamID FROM Teams WHERE teamName = 'HellCats'));
         
 -- Create the DragonGuardians Team
 INSERT INTO Teams (teamName, formationDate)
 VALUES ('DragonGuardians', CURRENT_DATE);
+
+-- Create the WolfGuardians Team
+INSERT INTO Teams (teamName, formationDate)
+VALUES ('WolfGuardians', CURRENT_DATE);
 
 -- Create the players and add their roles
 
@@ -302,6 +363,38 @@ INSERT INTO TeamPlayers (playerID, roleID, teamID)
 VALUES ((SELECT playerID FROM Players WHERE username = 'Aegis'),
         (SELECT roleID FROM Roles WHERE roleName = 'TANK'),
         (SELECT teamID FROM Teams WHERE teamName = 'DragonGuardians'));
+
+-- Add Players to the WolfGuardians Team.
+
+-- Seraphina
+INSERT INTO TeamPlayers (playerID, roleID, teamID)
+VALUES ((SELECT playerID FROM Players WHERE username = 'Seraphina'),
+        (SELECT roleID FROM Roles WHERE roleName = 'DPS'),
+        (SELECT teamID FROM Teams WHERE teamName = 'WolfGuardians'));
+
+-- Ignis
+INSERT INTO TeamPlayers (playerID, roleID, teamID)
+VALUES ((SELECT playerID FROM Players WHERE username = 'Ignis'),
+        (SELECT roleID FROM Roles WHERE roleName = 'TANK'),
+        (SELECT teamID FROM Teams WHERE teamName = 'WolfGuardians'));
+
+-- Vesper
+INSERT INTO TeamPlayers (playerID, roleID, teamID)
+VALUES ((SELECT playerID FROM Players WHERE username = 'Vesper'),
+        (SELECT roleID FROM Roles WHERE roleName = 'SUPPORT'),
+        (SELECT teamID FROM Teams WHERE teamName = 'WolfGuardians'));
+
+-- Phoenix
+INSERT INTO TeamPlayers (playerID, roleID, teamID)
+VALUES ((SELECT playerID FROM Players WHERE username = 'Phoenix'),
+        (SELECT roleID FROM Roles WHERE roleName = 'SUPPORT'),
+        (SELECT teamID FROM Teams WHERE teamName = 'WolfGuardians'));
+
+-- Aegis
+INSERT INTO TeamPlayers (playerID, roleID, teamID)
+VALUES ((SELECT playerID FROM Players WHERE username = 'Aegis'),
+        (SELECT roleID FROM Roles WHERE roleName = 'TANK'),
+        (SELECT teamID FROM Teams WHERE teamName = 'WolfGuardians'));
         
 
 -- Insert the Pachimari Tournament into the Tournaments table
@@ -319,11 +412,32 @@ VALUES (@tournamentId, (SELECT teamID FROM Teams WHERE teamName = 'WildCats'));
 INSERT INTO TournamentTeams (tournamentID, teamID)
 VALUES (@tournamentId, (SELECT teamID FROM Teams WHERE teamName = 'DragonGuardians'));
 
+-- Add the HellCats team to the Pachimari Tournament
+INSERT INTO TournamentTeams (tournamentID, teamID)
+VALUES (@tournamentId, (SELECT teamID FROM Teams WHERE teamName = 'HellCats'));
+
+-- Add the WolfGuardians team to the Pachimari Tournament
+INSERT INTO TournamentTeams (tournamentID, teamID)
+VALUES (@tournamentId, (SELECT teamID FROM Teams WHERE teamName = 'WolfGuardians'));
+
+-- Insert the Pachimummy Tournament into the Tournaments table
+INSERT INTO Tournaments (tournamentName, startDate, endDate)
+VALUES ('Pachimummy Tournament', '2024-03-01', '2024-03-15');
+
+-- Insert the Catchamari Tournament into the Tournaments table
+INSERT INTO Tournaments (tournamentName, startDate, endDate)
+VALUES ('Catchamari  Tournament', '2024-03-01', '2024-03-15');
+
+-- Insert the Ultimari Tournament into the Tournaments table
+INSERT INTO Tournaments (tournamentName, startDate, endDate)
+VALUES ('Ultimari Tournament', '2024-03-01', '2024-03-15');
+
+SET FOREIGN_KEY_CHECKS=1;
+COMMIT;
    
 -- SAMPLE QUERYS --
 -- SAMPLE QUERYS --
 -- SAMPLE QUERYS --
-
 
 -- Presents Each Player on the Team, along with thier Highest Ranked Role and Role SR
 SELECT  
