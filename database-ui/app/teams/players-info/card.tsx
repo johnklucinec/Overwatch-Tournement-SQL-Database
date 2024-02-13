@@ -12,7 +12,7 @@ interface CardWithForm {
   name?: string; // This makes the name prop optional
 }
 
-export default function ImportSheet({ name }: CardWithForm) {
+export default function CardWithForm({ name }: CardWithForm) {
   // State to handle the visibility of the card
   const [showCard, setShowCard] = useState(false);
 

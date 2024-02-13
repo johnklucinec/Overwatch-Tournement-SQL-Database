@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import CardWithForm from "@/app/teams/players-info/card";
+import CardWithFormEditTeam from "@/app/teams/card";
 import DataTablePlayers from "@/components/players-table";
 
 export default function Page() {
@@ -49,6 +50,9 @@ export default function Page() {
 
             <div className="flex flex-1 items-center space-x-2">
             {/* Add Information Button */}
+            <CardWithFormEditTeam name={name} />
+
+            {/* Edit Information Button */}
             <CardWithForm name={name} />
             </div>
 

@@ -8,7 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 
-export default function CardWithForm() {
+
+interface CardWithForm {
+  name?: string; // This makes the name prop optional
+}
+
+export default function CardWithForm({ name }: CardWithForm) {
+
   // State to handle the visibility of the card
   const [showCard, setShowCard] = useState(false);
   // State to handle the animation
@@ -30,7 +36,7 @@ export default function CardWithForm() {
   return (
     <div>
       {/* Button to trigger the card visibility */}
-      <Button className="inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground rounded-md px-3 text-xs h-8 border-dashed " onClick={toggleCardVisibility}>Add Team</Button>
+      <Button className="inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground rounded-md px-3 text-xs h-8 border-dashed " onClick={toggleCardVisibility}>{name ? 'Edit' : 'Add'} Team</Button>
 
       {/* Overlay container for the card */}
       {showCard && (
@@ -47,7 +53,7 @@ export default function CardWithForm() {
                   <div className="grid w-full items-center gap-4">
                     <div className="flex flex-col space-y-1.5">
                       <Label htmlFor="name">Name</Label>
-                      <Input id="name" placeholder="Name of your team" />
+                      <Input id="name" placeholder={name ? name : 'Name of your team'} />
                     </div>
                     <div className="flex flex-col space-y-1.5">
                     </div>
