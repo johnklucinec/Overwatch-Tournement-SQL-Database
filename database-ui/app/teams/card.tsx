@@ -11,10 +11,20 @@ import { useState } from "react";
 export default function CardWithForm() {
   // State to handle the visibility of the card
   const [showCard, setShowCard] = useState(false);
+  // State to handle the animation
+  const [animation, setAnimation] = useState(false);
 
-  // Function to toggle the card's visibility
   const toggleCardVisibility = () => {
-    setShowCard(!showCard);
+    // Check if there's an animation state
+    if (animation) {
+      setAnimation(!animation);
+      setTimeout(() => {
+        setShowCard(!showCard);
+      },  200); // Delay for  200ms
+    } else {
+      setAnimation(!animation);
+      setShowCard(!showCard);
+    }
   };
 
   return (
@@ -24,10 +34,10 @@ export default function CardWithForm() {
 
       {/* Overlay container for the card */}
       {showCard && (
-        <div className="fixed items-center justify-center left-[50%] top-[40%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg">
+        <div data-state={animation ? 'open' : 'closed'} className="fixed items-center justify-center left-[50%] top-[40%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-top-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg">
           {/* Actual card */}
 
-        <Card className="w-[350px]">
+        <Card className="w-[450px]">
               <CardHeader>
                 <CardTitle>Create Team</CardTitle>
                 <CardDescription>Add your team to the database</CardDescription>

@@ -1,6 +1,8 @@
 "use client"
 
 import * as React from "react"
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -50,7 +52,7 @@ const data: Tournament[] = [
     id: "2",
     teams: 14,
     status: "enrollment open",
-    name: "Pachimari Tournament",
+    name: "Pachimummy Tournament",
     startDate: "2024-03-01",
     endDate: "2024-03-31", 
   },
@@ -84,6 +86,7 @@ export type Tournament = {
 
 {/* Fill the table with data */}
 export const columns: ColumnDef<Tournament>[] = [
+
   {
     id: "select",
     header: ({ table }) => (
@@ -174,10 +177,12 @@ export const columns: ColumnDef<Tournament>[] = [
   },
 
   { /* All the Actions */
+
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
       const tournament = row.original
+      const router = useRouter()
 
       return (
         <DropdownMenu>
@@ -195,7 +200,13 @@ export const columns: ColumnDef<Tournament>[] = [
               Copy Tournament Name
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View tournament details</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                router.push(`/tournaments/tournament-info?id=${tournament.id}&name=${encodeURIComponent(tournament.name)}`);
+              }}
+            >
+              View tournament details
+            </DropdownMenuItem>
             <DropdownMenuItem>Edit tournament</DropdownMenuItem>
             <DropdownMenuItem>Delete tournament</DropdownMenuItem>
           </DropdownMenuContent>

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from 'next/navigation';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -169,6 +170,7 @@ export const columns: ColumnDef<Team>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const team = row.original
+      const router = useRouter()
 
       return (
         <DropdownMenu>
@@ -186,7 +188,13 @@ export const columns: ColumnDef<Team>[] = [
               Copy Team Name
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View team details</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                router.push(`/teams/players-info?id=${team.id}&name=${encodeURIComponent(team.name)}`);
+              }}
+            >
+              View team details
+            </DropdownMenuItem>
             <DropdownMenuItem>Edit team</DropdownMenuItem>
             <DropdownMenuItem>Delete team</DropdownMenuItem>
           </DropdownMenuContent>

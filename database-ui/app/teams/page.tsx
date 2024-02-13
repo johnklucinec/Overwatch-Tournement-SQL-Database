@@ -1,6 +1,6 @@
 import Nav from "@/components/header-bar"
 
-import DataTableTeams from "@/app/teams/table"
+import DataTableTeams from "@/components/teams-table"
 import CardWithForm from "@/app/teams/card"
 
 export default function Page() {
