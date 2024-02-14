@@ -25,8 +25,9 @@ CREATE OR REPLACE TABLE Roles (
 -- Entity that stores all the available ranks for a player
 CREATE OR REPLACE TABLE Ranks (
     rankID INT AUTO_INCREMENT UNIQUE NOT NULL,
-    rankName ENUM('Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'Grandmaster') NOT NULL,
+    rankName ENUM('Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'Grandmaster', 'Champion') NOT NULL,
     division INT NOT NULL CHECK (division BETWEEN 1 AND 5),
+    mmr INT NOT NULL,
     PRIMARY KEY (rankID)
 );
 
@@ -55,6 +56,7 @@ CREATE OR REPLACE TABLE Tournaments (
     tournamentName VARCHAR(255) NOT NULL UNIQUE,
     startDate DATETIME NOT NULL,
     endDate DATETIME NOT NULL,
+    tournamentStatus ENUM('Enrollment Open', 'Registration Closed') NOT NULL,
     PRIMARY KEY (tournamentID)
 );
 
@@ -80,42 +82,47 @@ CREATE OR REPLACE TABLE TournamentTeams (
 
 
 -- Give each rank variation a unique ID
-INSERT INTO Ranks (rankName, division) VALUES
-('Bronze',  1),
-('Bronze',  2),
-('Bronze',  3),
-('Bronze',  4),
-('Bronze',  5),
-('Silver',  1),
-('Silver',  2),
-('Silver',  3),
-('Silver',  4),
-('Silver',  5),
-('Gold',  1),
-('Gold',  2),
-('Gold',  3),
-('Gold',  4),
-('Gold',  5),
-('Platinum',  1),
-('Platinum',  2),
-('Platinum',  3),
-('Platinum',  4),
-('Platinum',  5),
-('Diamond',  1),
-('Diamond',  2),
-('Diamond',  3),
-('Diamond',  4),
-('Diamond',  5),
-('Master',  1),
-('Master',  2),
-('Master',  3),
-('Master',  4),
-('Master',  5),
-('Grandmaster',  1),
-('Grandmaster',  2),
-('Grandmaster',  3),
-('Grandmaster',  4),
-('Grandmaster',  5);
+INSERT INTO Ranks (rankName, division, mmr) VALUES
+('Bronze', 5, 1000),
+('Bronze', 4, 1100),
+('Bronze', 3, 1200),
+('Bronze', 2, 1300),
+('Bronze', 1, 1400),
+('Silver', 5, 1500),
+('Silver', 4, 1600),
+('Silver', 3, 1700),
+('Silver', 2, 1800),
+('Silver', 1, 1900),
+('Gold', 5, 2000),
+('Gold', 4, 2100),
+('Gold', 3, 2200),
+('Gold', 2, 2300),
+('Gold', 1, 2400),
+('Platinum', 5, 2500),
+('Platinum', 4, 2600),
+('Platinum', 3, 2700),
+('Platinum', 2, 2800),
+('Platinum', 1, 2900),
+('Diamond', 5, 3000),
+('Diamond', 4, 3100),
+('Diamond', 3, 3200),
+('Diamond', 2, 3300),
+('Diamond', 1, 3400),
+('Master', 5, 3500),
+('Master', 4, 3600),
+('Master', 3, 3700),
+('Master', 2, 3800),
+('Master', 1, 3900),
+('Grandmaster', 5, 4000),
+('Grandmaster', 4, 4100),
+('Grandmaster', 3, 4200),
+('Grandmaster', 2, 4300),
+('Grandmaster', 1, 4400),
+('Champion', 5, 4500),
+('Champion', 4, 4600),
+('Champion', 3, 4700),
+('Champion', 2, 4800),
+('Champion', 1, 4900);
 
 -- Give each role a unique id
 INSERT INTO Roles (roleName) VALUES
@@ -398,8 +405,8 @@ VALUES ((SELECT playerID FROM Players WHERE username = 'Aegis'),
         
 
 -- Insert the Pachimari Tournament into the Tournaments table
-INSERT INTO Tournaments (tournamentName, startDate, endDate)
-VALUES ('Pachimari Tournament', '2024-03-01', '2024-03-15');
+INSERT INTO Tournaments (tournamentName, startDate, endDate, tournamentStatus)
+VALUES ('Pachimari Tournament', '2024-03-01', '2024-03-15', 'Enrollment Open');
 
 -- Retrieve the tournamentID for the tournament
 SET @tournamentId = LAST_INSERT_ID();
@@ -421,128 +428,19 @@ INSERT INTO TournamentTeams (tournamentID, teamID)
 VALUES (@tournamentId, (SELECT teamID FROM Teams WHERE teamName = 'WolfGuardians'));
 
 -- Insert the Pachimummy Tournament into the Tournaments table
-INSERT INTO Tournaments (tournamentName, startDate, endDate)
-VALUES ('Pachimummy Tournament', '2024-03-01', '2024-03-15');
+INSERT INTO Tournaments (tournamentName, startDate, endDate, tournamentStatus)
+VALUES ('Pachimummy Tournament', '2024-03-01', '2024-03-15', 'Enrollment Open');
 
 -- Insert the Catchamari Tournament into the Tournaments table
-INSERT INTO Tournaments (tournamentName, startDate, endDate)
-VALUES ('Catchamari  Tournament', '2024-03-01', '2024-03-15');
+INSERT INTO Tournaments (tournamentName, startDate, endDate, tournamentStatus)
+VALUES ('Catchamari  Tournament', '2024-03-01', '2024-03-15', 'Registration Closed');
 
 -- Insert the Ultimari Tournament into the Tournaments table
-INSERT INTO Tournaments (tournamentName, startDate, endDate)
-VALUES ('Ultimari Tournament', '2024-03-01', '2024-03-15');
+INSERT INTO Tournaments (tournamentName, startDate, endDate, tournamentStatus)
+VALUES ('Ultimari Tournament', '2024-03-01', '2024-03-15', 'Enrollment Open');
 
 SET FOREIGN_KEY_CHECKS=1;
 COMMIT;
    
--- SAMPLE QUERYS --
--- SAMPLE QUERYS --
--- SAMPLE QUERYS --
 
--- Presents Each Player on the Team, along with thier Highest Ranked Role and Role SR
-SELECT  
-    tp.playerID,
-    rk.rankName AS HighestRankName,
-    rk.division AS HighestRankDivision,
-    CASE
-        WHEN rk.rankName = 'Grandmaster' THEN  4000
-        WHEN rk.rankName = 'Master' THEN  3500
-        WHEN rk.rankName = 'Diamond' THEN  3000
-        WHEN rk.rankName = 'Platinum' THEN  2500
-        WHEN rk.rankName = 'Gold' THEN  2000
-        WHEN rk.rankName = 'Silver' THEN  1500
-        WHEN rk.rankName = 'Bronze' THEN  1000
-        ELSE  0 -- Default case if none of the above ranks match
-    END + (CASE
-        WHEN rk.division =  1 THEN  400
-        WHEN rk.division =  2 THEN  300
-        WHEN rk.division =  3 THEN  200
-        WHEN rk.division =  4 THEN  100
-        WHEN rk.division =  5 THEN  0
-        ELSE  0 -- Default case if division is not between  1 and  5
-    END) AS SkillRating
-FROM  
-    TeamPlayers tp
-JOIN  
-    PlayerRoles pr ON tp.playerID = pr.playerID AND tp.roleID = pr.roleID
-JOIN  
-    Ranks rk ON pr.rankID = rk.rankID
-JOIN  
-    Teams t ON tp.teamID = t.teamID
-WHERE  
-    t.teamName = 'WildCats'
-GROUP BY  
-    tp.playerID
-ORDER BY  
-    FIELD(rk.rankName, 'Grandmaster', 'Master', 'Diamond', 'Platinum', 'Gold', 'Silver', 'Bronze') DESC,
-    rk.division ASC;
-    
--- Calculates the Average Team SR and Convert it back to how it should be displayed
-SELECT 
-    AverageSkillRating,
-    CASE
-        WHEN AverageSkillRating >= 4000 THEN 'Grandmaster'
-        WHEN AverageSkillRating >= 3500 THEN 'Master'
-        WHEN AverageSkillRating >= 3000 THEN 'Diamond'
-        WHEN AverageSkillRating >= 2500 THEN 'Platinum'
-        WHEN AverageSkillRating >= 2000 THEN 'Gold'
-        WHEN AverageSkillRating >= 1500 THEN 'Silver'
-        WHEN AverageSkillRating >= 1000 THEN 'Bronze'
-        ELSE 'Unranked'
-    END AS RankName,
-    CASE
-        WHEN AverageSkillRating % 500 < 100 THEN 5
-        WHEN AverageSkillRating % 500 < 200 THEN 4
-        WHEN AverageSkillRating % 500 < 300 THEN 3
-        WHEN AverageSkillRating % 500 < 400 THEN 2
-        WHEN AverageSkillRating % 500 < 500 THEN 1
-    END AS RankDivision
-FROM (
-    SELECT 
-        (SELECT SUM(SkillRating) 
-         FROM (
-             SELECT
-                 tp.playerID,
-                 CASE
-                     WHEN rk.rankName = 'Grandmaster' THEN  4000
-                     WHEN rk.rankName = 'Master' THEN  3500
-                     WHEN rk.rankName = 'Diamond' THEN  3000
-                     WHEN rk.rankName = 'Platinum' THEN  2500
-                     WHEN rk.rankName = 'Gold' THEN  2000
-                     WHEN rk.rankName = 'Silver' THEN  1500
-                     WHEN rk.rankName = 'Bronze' THEN  1000
-                     ELSE  0 -- Default case if none of the above ranks match
-                 END + (CASE
-                     WHEN rk.division =  1 THEN  400
-                     WHEN rk.division =  2 THEN  300
-                     WHEN rk.division =  3 THEN  200
-                     WHEN rk.division =  4 THEN  100
-                     WHEN rk.division =  5 THEN  0
-                     ELSE  0 -- Default case if division is not between  1 and  5
-                 END) AS SkillRating
-             FROM
-                 TeamPlayers tp
-             JOIN
-                 PlayerRoles pr ON tp.playerID = pr.playerID AND tp.roleID = pr.roleID
-             JOIN
-                 Ranks rk ON pr.rankID = rk.rankID
-             JOIN
-                 Teams t ON tp.teamID = t.teamID
-             WHERE
-                 t.teamName = 'WildCats'
-             GROUP BY
-                 tp.playerID
-         ) AS SubQuery) / 
-        (SELECT COUNT(DISTINCT playerID) 
-         FROM TeamPlayers tp 
-         JOIN Teams t ON tp.teamID = t.teamID 
-         WHERE t.teamName = 'WildCats') AS AverageSkillRating
-) AS AverageSR;
-
--- Display all teams participating in the Pachimari Tournament
-SELECT Teams.teamName, Tournaments.tournamentName
-FROM Teams
-JOIN TournamentTeams ON Teams.teamID = TournamentTeams.teamID
-JOIN Tournaments ON TournamentTeams.tournamentID = Tournaments.tournamentID
-WHERE Tournaments.tournamentName = 'Pachimari Tournament';
 

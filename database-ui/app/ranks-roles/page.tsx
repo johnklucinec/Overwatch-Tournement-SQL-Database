@@ -13,7 +13,8 @@ export default function Page() {
 
         <div className="flex flex-col items-left justify-beginning space-y-2">
           <h2 className="text-2xl font-bold tracking-tight">Ranks and Roles</h2>
-          <p className="text-muted-foreground">Here you can view and edit all the teams</p>
+          <p className="text-muted-foreground">Here you can view all the ranks and the roles</p>
+          <p className="text-muted-foreground">These do not change so you can not edit them. </p>
         </div>
 
         {/* Top Banner */}
@@ -46,10 +47,10 @@ export default function Page() {
           </div>
 
           <div className="rounded-xl border bg-card text-card-foreground shadow col-span-3">
-            <div className="flex flex-col space-y-1.5 pl-6 pr-6">
+            <div className="flex flex-col pt-6 pl-6">
               <h2>Roles</h2>
             </div>
-            <div className="p-6 pt-0">
+            <div className="flex flex-col pl-6 pr-6">
               {/* Add Data Table*/}
               <DataTableRoles />
             </div>
