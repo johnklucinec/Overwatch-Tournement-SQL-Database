@@ -34,6 +34,61 @@ GROUP BY
 ORDER BY 
     p.username;
 
+
+-- Query to get a spesific players roles
+-- Replace :playerID with the playersID
+
+SELECT 
+    ro.roleName AS Role,
+    CONCAT(r.rankName, ' ', 
+        CASE
+            WHEN r.mmr % 500 < 100 THEN '5'
+            WHEN r.mmr % 500 < 200 THEN '4'
+            WHEN r.mmr % 500 < 300 THEN '3'
+            WHEN r.mmr % 500 < 400 THEN '2'
+            WHEN r.mmr % 500 < 500 THEN '1'
+        END
+    ) AS RankWithDivision
+FROM 
+    PlayerRoles pr
+JOIN 
+    Roles ro ON pr.roleID = ro.roleID
+JOIN 
+    Ranks r ON pr.rankID = r.rankID
+WHERE 
+    pr.playerID = :playerID
+ORDER BY 
+    r.mmr DESC;
+
+--Query to get spesific infomation about a spesific player including Playername, HighestRank, DateAdded, and Email
+-- Replace :playerID with the players real id
+
+SELECT 
+    p.username AS Name,
+    CONCAT(
+        r.rankName, ' ',
+        CASE
+            WHEN r.mmr % 500 < 100 THEN '5'
+            WHEN r.mmr % 500 < 200 THEN '4'
+            WHEN r.mmr % 500 < 300 THEN '3'
+            WHEN r.mmr % 500 < 400 THEN '2'
+            WHEN r.mmr % 500 < 500 THEN '1'
+        END
+    ) AS HighestRank,
+    DATE_FORMAT(p.createdAt, '%Y-%m-%d') AS DateAdded,
+    p.email AS Email
+FROM 
+    Players p
+JOIN 
+    PlayerRoles pr ON p.playerID = pr.playerID
+JOIN 
+    Ranks r ON pr.rankID = r.rankID
+WHERE 
+    p.playerID = :playerID
+ORDER BY 
+    r.mmr DESC
+LIMIT 1;
+
 -- Query to retrieve a spesific team's information along with playerID, userName, highestRank, MMR, email, created at, and roles
 -- :teamID is the variable to use when searching for the team. 
 -- Only the ranks the player players for the team are taken into consideration
