@@ -38,59 +38,34 @@ import {
 } from "@/components/ui/table"
 
 {/* Add the sample data */}
-const data: Player[] = [
+const data: Role[] = [
   {
     id: "1",
-    roles: "DPS, SUPPORT",
-    highestRank: "Grandmaster 4",
-    mmr: 4100,
-    name: "Wintah",
-    email: "Wintah@player.com",
-    createdAt: "2024-03-01",
+    rank: "Master 4",
+    role: "TANK",
   },
   {
     id: "2",
-    roles: "TANK",
-    highestRank: "Grandmaster 5",
-    mmr: 4000,
-    name: "Gliscor",
-    email: "Gliscor@player.com",
-    createdAt: "2024-03-01",
+    rank: "Grandmaster 4",
+    role: "DPS",
   },
   {
     id: "3",
-    roles: "DPS",
-    highestRank: "Grandmaster 1",
-    mmr: 4400,
-    name: "PapaJuan",
-    email: "PapaJuan@player.com",
-    createdAt: "2024-03-01",
-  },
-  {
-    id: "4",
-    roles: "TANK",
-    highestRank: "Masters 3",
-    mmr: 3600,
-    name: "HankHarm",
-    email: "HankHarm@player.com",
-    createdAt: "2024-03-01",
+    rank: "Master 2",
+    role: "SUPPORT",
   },
 ]
 
-export type Player = {
+export type Role = {
   id: string;
-  roles: string;
-  highestRank: string;
-  mmr: number;
-  email: string;
-  createdAt: string;
-  name: string;
+  rank: string;
+  role: string;
 };
 
 {/* We need to sort the data with the mmr */}
 
 {/* Fill the table with data */}
-export const columns: ColumnDef<Player>[] = [
+export const columns: ColumnDef<Role>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -115,82 +90,42 @@ export const columns: ColumnDef<Player>[] = [
   },
 
   {
-    accessorKey: "name",
+    accessorKey: "role",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Name
+          Role
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
-    cell: ({ row }) => <div>{row.getValue("name")}</div>,
+    cell: ({ row }) => <div>{row.getValue("role")}</div>,
   },
 
   {
-    accessorKey: "highestRank",
+    accessorKey: "rank",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Highest Rank
+          Rank
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
-    cell: ({ row }) => <div>{row.getValue("highestRank")}</div>,
-  },
-
-  {
-    accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("email")}</div>,
-  },
-
-  { 
-    accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Created At
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("createdAt")}</div>,
-  },
-  
-  {
-    accessorKey: "roles",
-    header: () => <div className="text-right">Roles</div>,
-    cell: ({ row }) => (
-      <div className="text-right font-medium">{row.getValue("roles")}</div>
-    ),
+    cell: ({ row }) => <div>{row.getValue("rank")}</div>,
   },
 
   { /* All the Actions */
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const player = row.original
+      const role = row.original
       const router = useRouter()
 
       return (
@@ -204,20 +139,13 @@ export const columns: ColumnDef<Player>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(player.name)}
+              onClick={() => navigator.clipboard.writeText(`${role.role} ${role.rank}`)}
             >
-              Copy Player Name
+              Copy Rank and Role
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                router.push(`/players/player-info?id=${player.id}&name=${encodeURIComponent(player.name)}`);
-              }}
-            >
-              View team details
-            </DropdownMenuItem>
-            <DropdownMenuItem>Edit player</DropdownMenuItem>
-            <DropdownMenuItem>Delete player</DropdownMenuItem>
+            <DropdownMenuItem>Edit role</DropdownMenuItem>
+            <DropdownMenuItem>Delete role</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
@@ -226,7 +154,7 @@ export const columns: ColumnDef<Player>[] = [
 ]
 
 {/* Generate the table */}
-export default function DataTablePlayers() {
+export default function DataTableRoles() {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -258,7 +186,7 @@ export default function DataTablePlayers() {
     <div className="w-full p-5">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter players..."
+          placeholder="Filter roles..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)

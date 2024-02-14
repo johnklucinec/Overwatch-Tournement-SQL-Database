@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { useRouter } from 'next/navigation';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -11,20 +10,17 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+import { ChevronDown, MoreHorizontal } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
@@ -38,160 +34,52 @@ import {
 } from "@/components/ui/table"
 
 {/* Add the sample data */}
-const data: Player[] = [
+const data: Role[] = [
   {
     id: "1",
-    roles: "DPS, SUPPORT",
-    highestRank: "Grandmaster 4",
-    mmr: 4100,
-    name: "Wintah",
-    email: "Wintah@player.com",
-    createdAt: "2024-03-01",
+    roleName: "TANK",
   },
   {
     id: "2",
-    roles: "TANK",
-    highestRank: "Grandmaster 5",
-    mmr: 4000,
-    name: "Gliscor",
-    email: "Gliscor@player.com",
-    createdAt: "2024-03-01",
+    roleName: "DPS",
   },
   {
     id: "3",
-    roles: "DPS",
-    highestRank: "Grandmaster 1",
-    mmr: 4400,
-    name: "PapaJuan",
-    email: "PapaJuan@player.com",
-    createdAt: "2024-03-01",
-  },
-  {
-    id: "4",
-    roles: "TANK",
-    highestRank: "Masters 3",
-    mmr: 3600,
-    name: "HankHarm",
-    email: "HankHarm@player.com",
-    createdAt: "2024-03-01",
+    roleName: "SUPPORT",
   },
 ]
 
-export type Player = {
+export type Role = {
   id: string;
-  roles: string;
-  highestRank: string;
-  mmr: number;
-  email: string;
-  createdAt: string;
-  name: string;
+  roleName: string;
 };
 
 {/* We need to sort the data with the mmr */}
 
 {/* Fill the table with data */}
-export const columns: ColumnDef<Player>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+export const columns: ColumnDef<Role>[] = [
+
 
   {
-    accessorKey: "name",
+    accessorKey: "roleName",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          Role Name
         </Button>
       )
     },
-    cell: ({ row }) => <div>{row.getValue("name")}</div>,
-  },
-
-  {
-    accessorKey: "highestRank",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Highest Rank
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("highestRank")}</div>,
-  },
-
-  {
-    accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("email")}</div>,
-  },
-
-  { 
-    accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Created At
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("createdAt")}</div>,
-  },
-  
-  {
-    accessorKey: "roles",
-    header: () => <div className="text-right">Roles</div>,
-    cell: ({ row }) => (
-      <div className="text-right font-medium">{row.getValue("roles")}</div>
-    ),
+    cell: ({ row }) => <div>{row.getValue("roleName")}</div>,
   },
 
   { /* All the Actions */
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const player = row.original
-      const router = useRouter()
+      const role = row.original
 
       return (
         <DropdownMenu>
@@ -204,20 +92,10 @@ export const columns: ColumnDef<Player>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(player.name)}
+              onClick={() => navigator.clipboard.writeText(`${role.roleName}`)}
             >
-              Copy Player Name
+              Copy Role Name
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                router.push(`/players/player-info?id=${player.id}&name=${encodeURIComponent(player.name)}`);
-              }}
-            >
-              View team details
-            </DropdownMenuItem>
-            <DropdownMenuItem>Edit player</DropdownMenuItem>
-            <DropdownMenuItem>Delete player</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
@@ -226,7 +104,7 @@ export const columns: ColumnDef<Player>[] = [
 ]
 
 {/* Generate the table */}
-export default function DataTablePlayers() {
+export default function DataTableRoles() {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -242,7 +120,6 @@ export default function DataTablePlayers() {
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
@@ -258,10 +135,10 @@ export default function DataTablePlayers() {
     <div className="w-full p-5">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter players..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter roles..."
+          value={(table.getColumn("roleName")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn("roleName")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />

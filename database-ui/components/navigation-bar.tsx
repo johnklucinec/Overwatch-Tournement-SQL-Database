@@ -20,6 +20,7 @@ const NavBar = () => {
   const isTournamentPage = pathname.startsWith("/tournaments"); // Adjust patterns as needed
   const isTeamsPage = pathname.startsWith("/teams");
   const isPlayersPage = pathname.startsWith("/players");
+  const isRanksRolesPage = pathname.startsWith("/ranks-roles");
 
   return (
     <NavigationMenu>
@@ -65,6 +66,17 @@ const NavBar = () => {
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <Link href="/ranks-roles" legacyBehavior passHref>
+            <NavigationMenuLink
+                className={`${navigationMenuTriggerStyle()} transition-colors hover:text-foreground/80 ${isRanksRolesPage ? "text-foreground" : "text-foreground/40"}`}
+              >
+              Ranks and Roles
+            </NavigationMenuLink>
+          </Link>
+        </NavigationMenuItem>
+
       </NavigationMenuList>
     </NavigationMenu>
   );

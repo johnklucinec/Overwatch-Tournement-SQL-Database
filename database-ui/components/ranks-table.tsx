@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { useRouter } from 'next/navigation';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -11,20 +10,17 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+import { ChevronDown, MoreHorizontal } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
@@ -38,160 +34,297 @@ import {
 } from "@/components/ui/table"
 
 {/* Add the sample data */}
-const data: Player[] = [
+const data: Rank[] = [
   {
     id: "1",
-    roles: "DPS, SUPPORT",
-    highestRank: "Grandmaster 4",
-    mmr: 4100,
-    name: "Wintah",
-    email: "Wintah@player.com",
-    createdAt: "2024-03-01",
+    rankName: "Bronze",
+    division: 5,
+    mmr: 1000,
   },
   {
     id: "2",
-    roles: "TANK",
-    highestRank: "Grandmaster 5",
-    mmr: 4000,
-    name: "Gliscor",
-    email: "Gliscor@player.com",
-    createdAt: "2024-03-01",
+    rankName: "Bronze",
+    division: 4,
+    mmr: 1100,
   },
   {
     id: "3",
-    roles: "DPS",
-    highestRank: "Grandmaster 1",
-    mmr: 4400,
-    name: "PapaJuan",
-    email: "PapaJuan@player.com",
-    createdAt: "2024-03-01",
+    rankName: "Bronze",
+    division: 3,
+    mmr: 1200,
   },
   {
     id: "4",
-    roles: "TANK",
-    highestRank: "Masters 3",
-    mmr: 3600,
-    name: "HankHarm",
-    email: "HankHarm@player.com",
-    createdAt: "2024-03-01",
+    rankName: "Bronze",
+    division: 2,
+    mmr: 1300,
+  },
+  {
+    id: "5",
+    rankName: "Bronze",
+    division: 1,
+    mmr: 1400,
+  },
+  {
+    id: "6",
+    rankName: "Silver",
+    division: 5,
+    mmr: 1500,
+  },
+  {
+    id: "7",
+    rankName: "Silver",
+    division: 4,
+    mmr: 1600,
+  },
+  {
+    id: "8",
+    rankName: "Silver",
+    division: 3,
+    mmr: 1700,
+  },
+  {
+    id: "9",
+    rankName: "Silver",
+    division: 2,
+    mmr: 1800,
+  },
+  {
+    id: "10",
+    rankName: "Silver",
+    division: 1,
+    mmr: 1900,
+  },
+  {
+    id: "11",
+    rankName: "Gold",
+    division: 5,
+    mmr: 2000,
+  },
+  {
+    id: "12",
+    rankName: "Gold",
+    division: 4,
+    mmr: 2100,
+  },
+  {
+    id: "13",
+    rankName: "Gold",
+    division: 3,
+    mmr: 2200,
+  },
+  {
+    id: "14",
+    rankName: "Gold",
+    division: 2,
+    mmr: 2300,
+  },
+  {
+    id: "15",
+    rankName: "Gold",
+    division: 1,
+    mmr: 2400,
+  },
+  {
+    id: "16",
+    rankName: "Platnium",
+    division: 5,
+    mmr: 2500,
+  },
+  {
+    id: "17",
+    rankName: "Platnium",
+    division: 4,
+    mmr: 2600,
+  },
+  {
+    id: "18",
+    rankName: "Platnium",
+    division: 3,
+    mmr: 2700,
+  },
+  {
+    id: "19",
+    rankName: "Platnium",
+    division: 2,
+    mmr: 2800,
+  },
+  {
+    id: "20",
+    rankName: "Platnium",
+    division: 1,
+    mmr: 2900,
+  },
+  {
+    id: "21",
+    rankName: "Diamond",
+    division:  5,
+    mmr:  3000,
+  },
+  {
+    id: "22",
+    rankName: "Diamond",
+    division:  4,
+    mmr:  3100,
+  },
+  {
+    id: "23",
+    rankName: "Diamond",
+    division:  3,
+    mmr:  3200,
+  },
+  {
+    id: "24",
+    rankName: "Diamond",
+    division:  2,
+    mmr:  3300,
+  },
+  {
+    id: "25",
+    rankName: "Diamond",
+    division:  1,
+    mmr:  3400,
+  },
+  {
+    id: "26",
+    rankName: "Master",
+    division:  5,
+    mmr:  3500,
+  },
+  {
+    id: "27",
+    rankName: "Master",
+    division:  4,
+    mmr:  3600,
+  },
+  {
+    id: "28",
+    rankName: "Master",
+    division:  3,
+    mmr:  3700,
+  },
+  {
+    id: "29",
+    rankName: "Master",
+    division:  2,
+    mmr:  3800,
+  },
+  {
+    id: "30",
+    rankName: "Master",
+    division:  1,
+    mmr:  3900,
+  },
+  {
+    id: "31",
+    rankName: "Grandmaster",
+    division:  5,
+    mmr:  4000,
+  },
+  {
+    id: "32",
+    rankName: "Grandmaster",
+    division:  4,
+    mmr:  4100,
+  },
+  {
+    id: "33",
+    rankName: "Grandmaster",
+    division:  3,
+    mmr:  4200,
+  },
+  {
+    id: "34",
+    rankName: "Grandmaster",
+    division:  2,
+    mmr:  4300,
+  },
+  {
+    id: "35",
+    rankName: "Grandmaster",
+    division:  1,
+    mmr:  4400,
+  },
+  {
+    id: "36",
+    rankName: "Champion",
+    division:  5,
+    mmr:  4500,
+  },
+  {
+    id: "37",
+    rankName: "Champion",
+    division:  4,
+    mmr:  4600,
+  },
+  {
+    id: "38",
+    rankName: "Champion",
+    division:  3,
+    mmr:  4700,
+  },
+  {
+    id: "39",
+    rankName: "Champion",
+    division:  2,
+    mmr:  4800,
+  },
+  {
+    id: "40",
+    rankName: "Champion",
+    division:  1,
+    mmr:  4900,
   },
 ]
 
-export type Player = {
+export type Rank = {
   id: string;
-  roles: string;
-  highestRank: string;
+  rankName: string;
+  division: number;
   mmr: number;
-  email: string;
-  createdAt: string;
-  name: string;
 };
 
 {/* We need to sort the data with the mmr */}
 
 {/* Fill the table with data */}
-export const columns: ColumnDef<Player>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+export const columns: ColumnDef<Rank>[] = [
+
 
   {
-    accessorKey: "name",
+    accessorKey: "rankName",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          Rank Name
         </Button>
       )
     },
-    cell: ({ row }) => <div>{row.getValue("name")}</div>,
+    cell: ({ row }) => <div>{row.getValue("rankName")}</div>,
   },
 
   {
-    accessorKey: "highestRank",
+    accessorKey: "division",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Highest Rank
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          Division
         </Button>
       )
     },
-    cell: ({ row }) => <div>{row.getValue("highestRank")}</div>,
-  },
-
-  {
-    accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("email")}</div>,
-  },
-
-  { 
-    accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Created At
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("createdAt")}</div>,
-  },
-  
-  {
-    accessorKey: "roles",
-    header: () => <div className="text-right">Roles</div>,
-    cell: ({ row }) => (
-      <div className="text-right font-medium">{row.getValue("roles")}</div>
-    ),
+    cell: ({ row }) => <div>{row.getValue("division")}</div>,
   },
 
   { /* All the Actions */
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const player = row.original
-      const router = useRouter()
+      const rank = row.original
 
       return (
         <DropdownMenu>
@@ -204,20 +337,10 @@ export const columns: ColumnDef<Player>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(player.name)}
+              onClick={() => navigator.clipboard.writeText(`${rank.rankName} ${rank.division}`)}
             >
-              Copy Player Name
+              Copy Rank Name and Division
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                router.push(`/players/player-info?id=${player.id}&name=${encodeURIComponent(player.name)}`);
-              }}
-            >
-              View team details
-            </DropdownMenuItem>
-            <DropdownMenuItem>Edit player</DropdownMenuItem>
-            <DropdownMenuItem>Delete player</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
@@ -226,7 +349,7 @@ export const columns: ColumnDef<Player>[] = [
 ]
 
 {/* Generate the table */}
-export default function DataTablePlayers() {
+export default function DataTableRanks() {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -242,7 +365,6 @@ export default function DataTablePlayers() {
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
@@ -258,10 +380,10 @@ export default function DataTablePlayers() {
     <div className="w-full p-5">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter players..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter ranks..."
+          value={(table.getColumn("rankName")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn("rankName")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
