@@ -2,6 +2,7 @@ import Nav from "@/components/header-bar"
 
 import DataTableRanks from "@/components/ranks-table"
 import DataTableRoles from "@/components/roles-table"
+import React from 'react';
 
 export default function Page() {
   return (

@@ -1,5 +1,5 @@
+import React from 'react';
 import Nav from "@/components/header-bar"
-import { Button } from "@/components/ui/button"
 
 
 export default function Home() {

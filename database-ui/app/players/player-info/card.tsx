@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, no-redeclare */
 'use client'
 
 import * as React from "react";
@@ -15,6 +16,7 @@ interface CardWithForm {
 export default function CardWithForm({ name }: CardWithForm) {
   // State to handle the visibility of the card
   const [showCard, setShowCard] = useState(false);
+
 
   // Function to toggle the card's visibility
   const toggleCardVisibility = () => {

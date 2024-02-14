@@ -1,25 +1,35 @@
+/* eslint-disable no-unused-vars, no-redeclare */
 "use client"
-import { useRouter, useSearchParams } from 'next/navigation';
-import Head from 'next/head';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+
 import Nav from "@/components/header-bar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React from 'react';
 
 import CardWithForm from "@/app/teams/players-info/card";
 import CardWithFormEditTeam from "@/app/teams/card";
 import DataTablePlayers from "@/components/players-table";
 
-export default function Page() {
 
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PageContent />
+    </Suspense>
+  );
+}
+
+function PageContent() {
   const searchParams = useSearchParams();
   let name = searchParams.get('name') ?? 'Team Name';
   let id = searchParams.get('id') ?? '1';
 
-  // Get this data form the database
-  const averageRank = "Grandmaster 4"
-  const formationDate = "2024-06-31"
-  const players = "5"
-  name = name ?? 'Team Name' // Update this with tournament name if name is changed
+  // Get this data from the database
+  const averageRank = "Grandmaster  4";
+  const formationDate = "2024-06-31";
+  const players = "5";
+  name = name ?? 'Team Name'; // Update this with tournament name if name is changed
+  id = id ?? '1'; 
 
   return (
     <main className="p-24">

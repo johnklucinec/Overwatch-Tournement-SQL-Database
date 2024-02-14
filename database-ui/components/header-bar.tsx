@@ -2,6 +2,7 @@
 
 import { ModeToggle } from "./ui/toggle-mode"
 import NavBar from "@/components/navigation-bar"
+import React from 'react';
 
 export default function Nav() {
   return (

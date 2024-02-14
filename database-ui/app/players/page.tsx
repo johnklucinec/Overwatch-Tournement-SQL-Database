@@ -1,4 +1,5 @@
 import Nav from "@/components/header-bar"
+import React from 'react';
 
 import DataTableTeams from "@/components/players-table"
 import CardWithForm from "@/app/players/card"

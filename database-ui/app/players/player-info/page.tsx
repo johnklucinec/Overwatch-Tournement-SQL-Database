@@ -1,24 +1,31 @@
+/* eslint-disable no-unused-vars, no-redeclare */
 "use client"
-import { useRouter, useSearchParams } from 'next/navigation';
-import Head from 'next/head';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import Nav from "@/components/header-bar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React from 'react';
 
 import CardWithForm from "@/app/players/player-info/card";
 import DataTablePlayers from "@/components/player-roles-table";
 
 export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Content />
+    </Suspense>
+  );
+}
 
+function Content() {
   const searchParams = useSearchParams();
   let name = searchParams.get('name') ?? 'Player Name';
   let id = searchParams.get('id') ?? '1';
 
   // Get this data form the database
-  const highestRank = "Grandmaster 4"
-  const createdDate = "2002-07-18"
-  const email = "playername@tournament.com"
-  name = name ?? 'Player Name' // Update this with tournament name if name is changed
+  const highestRank = "Grandmaster  4";
+  const createdDate = "2002-07-18";
+  const email = "playername@tournament.com";
+  name = name ?? 'Player Name'; // Update this with tournament name if name is changed
 
   return (
     <main className="p-24">

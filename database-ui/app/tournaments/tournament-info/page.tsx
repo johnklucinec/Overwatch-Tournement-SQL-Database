@@ -1,23 +1,32 @@
 "use client"
-import { useRouter, useSearchParams } from 'next/navigation';
-import Head from 'next/head';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import Nav from "@/components/header-bar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React from 'react';
 
 import ImportSheet from "@/app/tournaments/tournament-info/sheet";
 import DataTableTeams from "@/components/teams-table";
 
 export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Content />
+    </Suspense>
+  );
+}
 
+function Content() {
   const searchParams = useSearchParams();
   let name = searchParams.get('name') ?? 'Pachimari Tournament';
 
-  // Get this data form the database
-  const startDate = "2024-03-02"
-  const endDate = "2024-06-31"
-  const status = "Enrollment Open"
-  name = name ?? 'Tournament' // Update this with tournament name if name is changed
+  // Get this data from the database
+  const startDate = "2024-03-02";
+  const endDate = "2024-06-31";
+  const status = "Enrollment Open";
+
+  // Update this with tournament name if name is changed
+  name = name ?? 'Tournament';
+
 
   return (
     <main className="p-24">

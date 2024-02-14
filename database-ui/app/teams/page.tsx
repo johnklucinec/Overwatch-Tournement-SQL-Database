@@ -2,6 +2,7 @@ import Nav from "@/components/header-bar"
 
 import DataTableTeams from "@/components/teams-table"
 import CardWithForm from "@/app/teams/card"
+import React from 'react';
 
 export default function Page() {
   return (
