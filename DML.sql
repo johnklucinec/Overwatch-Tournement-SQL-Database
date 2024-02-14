@@ -1,9 +1,49 @@
 -- SELECT Queries:
 
 
--- Query to retrieve player information along with their roles and ranks
+-- Query to retrieve player information along with their Name, HighestRank, Email, CreatedAt, and Roles.
+SELECT 
+    p.username AS Name,
+    CONCAT(
+        r.rankName, ' ',
+        CASE
+            WHEN max_mmr.mmr % 500 < 100 THEN '5'
+            WHEN max_mmr.mmr % 500 < 200 THEN '4'
+            WHEN max_mmr.mmr % 500 < 300 THEN '3'
+            WHEN max_mmr.mmr % 500 < 400 THEN '2'
+            WHEN max_mmr.mmr % 500 < 500 THEN '1'
+        END
+    ) AS HighestRank,
+    p.email AS Email,
+    DATE_FORMAT(p.createdAt, '%Y-%m-%d') AS CreatedAt,
+    GROUP_CONCAT(DISTINCT ro.roleName ORDER BY ro.roleName SEPARATOR ', ') AS Roles
+FROM 
+    Players p
+JOIN 
+    (
+        SELECT 
+            pr.playerID,
+            MAX(rk.mmr) AS mmr
+        FROM 
+            PlayerRoles pr
+        JOIN 
+            Ranks rk ON pr.rankID = rk.rankID
+        GROUP BY 
+            pr.playerID
+    ) AS max_mmr ON p.playerID = max_mmr.playerID
+JOIN 
+    Ranks r ON max_mmr.mmr = r.mmr
+JOIN 
+    PlayerRoles pr ON p.playerID = pr.playerID
+JOIN 
+    Roles ro ON pr.roleID = ro.roleID
+GROUP BY 
+    p.playerID
+ORDER BY 
+    p.username;
 
 -- Query to retrieve team information along with players, their roles, and ranks
+
 
 -- Query to retrieve all the teams information, including Name, AverageRank, MMR, FormationDate, and Players(amount)
 SELECT 
