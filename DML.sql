@@ -94,28 +94,86 @@ GROUP BY
 
 -- Query to retrieve tournament information along with participating teams
 
+SELECT Tournaments.tournamentID, Tournaments.tournamentName, Tournaments.startDate, Tournaments.endDate, Tournaments.tournamentStatus,
+       TournamentTeams.teamID, Teams.teamName
+FROM Tournaments
+JOIN TournamentTeams ON Tournaments.tournamentID = TournamentTeams.tournamentID
+JOIN Teams ON TournamentTeams.teamID = Teams.teamID;
+
+
 
 Bababoey
 
 -- INSERT Queries: 
+    --  denote the variables that will have data from the backend programming language using :variable
+
 
 -- Query to add a new player
+
+INSERT INTO Players (username, email, createdAt)
+VALUES (:usernameInput, :emailInput, NOW());
+
+
 -- Query to add a new team
+
+INSERT INTO Teams (teamName, formationDate)
+VALUES (:teamNameInput, NOW());
+
 -- Query to add a new tournament
+
+INSERT INTO Tournaments (tournamentName, startDate, endDate, tournamentStatus)
+VALUES (:tournamentNameInput, :startDateInput, :endDateInput, :tournamentStatusInput);
+
 -- Query to add a new player's role
+INSERT INTO PlayerRoles (playerID, roleID, rankID)
+VALUES (:playerIDInput, :roleIDInput, :rankIDInput);
+
 -- Query to add a player to a team
+INSERT INTO TeamPlayers (playerID, teamID, roleID)
+VALUES (:playerIDInput, :teamIDInput, :roleIDInput);
+
 -- Query to add a team to a tournament
+
+INSERT INTO TournamentTeams (tournamentID, teamID)
+VALUES (:tournamentIDInput, :teamIDInput);
 
 -- UPDATE Queries:
 
 -- Query to update player email
+UPDATE Players
+SET email = :newEmailInput
+WHERE playerID = :playerIDToUpdate;
+
 -- Query to update team formation date
+UPDATE Teams
+SET formationDate = :newFormationDateInput
+WHERE teamID = :teamIDToUpdate;
+
 -- Query to update tournament end date
+UPDATE Tournaments
+SET endDate = :newEndDateInput
+WHERE tournamentID = :tournamentIDToUpdate;
+
 -- Query to update player's role and rank
+UPDATE PlayerRoles
+SET roleID = :newRoleIDInput,
+    rankID = :newRankIDInput
+WHERE playerID = :playerIDToUpdate;
 
 
 
--- DELETE Queries
+-- DELETE Queries:
 -- Query to remove a player from a team
+DELETE FROM TeamPlayers
+WHERE playerID = :playerIDToRemove
+  AND teamID = :teamIDToRemove;
+
 -- Query to remove a team from a tournament
+DELETE FROM TournamentTeams
+WHERE teamID = :teamIDToRemove
+  AND tournamentID = :tournamentIDToRemove;
+
 -- Query to remove a player's role
+DELETE FROM PlayerRoles
+WHERE playerID = :playerIDToRemove
+  AND roleID = :roleIDToRemove;
