@@ -1,6 +1,5 @@
 -- SELECT Queries:
 
-
 -- Query to retrieve player information along with their Name, HighestRank, MMR, Email, CreatedAt, and Roles.
 SELECT 
     p.username AS Name,
@@ -116,7 +115,6 @@ GROUP BY
 ORDER BY 
     r.mmr DESC, p.playerID;
 
-
 -- Query to retrieve all the teams information, including Name, AverageRank, MMR, FormationDate, and Players(amount)
 -- Average rank is only calculated based on the highest role that each player has on the team.
 -- It does not take into consideration all the players roles. 
@@ -169,7 +167,22 @@ GROUP BY
 ORDER BY 
     MMR DESC, Name;
 
--- Query to retrieve tournament information along as Status, Name, StartDate, EndDate, and Teams
+-- Query to retrieve tournament information along as TournamentID, Status, Name, StartDate, EndDate, and Teams
+SELECT 
+    t.tournamentID AS TournamentID,
+    t.tournamentStatus AS Status,
+    t.tournamentName AS Name,
+    DATE_FORMAT(t.startDate, '%Y-%m-%d') AS StartDate,
+    DATE_FORMAT(t.endDate, '%Y-%m-%d') AS EndDate,
+    COUNT(tt.teamID) AS Teams
+FROM 
+    Tournaments t
+LEFT JOIN 
+    TournamentTeams tt ON t.tournamentID = tt.tournamentID
+GROUP BY 
+    t.tournamentID
+ORDER BY 
+    t.startDate DESC;
 
 -- Query to retrieve all the teams information for a spesific tournament, including TeamID, Name, AverageRank, MMR, FormationDate, and Players(amount)
 -- Average rank is only calculated based on the highest role that each player has on the team.
@@ -245,7 +258,22 @@ GROUP BY
 ORDER BY 
     MMR DESC, Name;
 
+-- Query to get all the available ranks
+SELECT 
+    rankName AS RankName,
+    division AS Division,
+    mmr AS MMR
+FROM 
+    Ranks
+ORDER BY 
+    mmr DESC;
 
+-- Query to get all the available roles
+
+SELECT 
+    roleName AS Role
+FROM 
+    Roles;
 
 -- INSERT Queries: 
     --  denote the variables that will have data from the backend programming language using :variable
