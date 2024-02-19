@@ -15,18 +15,13 @@ import React from 'react';
 
 import DatePickerWithRange from "@/components/date-picker"
 
-interface ImportSheetProps {
-  name?: string; // This makes the name prop optional
-}
 
-export default function ImportSheet({ name }: ImportSheetProps) {
+export default function EditSheet() {
   
 
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button className="inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-primary-background bg-background shadow-sm hover:bg-accent hover:text-accent-foreground rounded-md px-3 text-xs h-8 border-solid text-primary-background">Edit Tournament</Button>
-      </SheetTrigger>
+      <SheetTrigger asChild></SheetTrigger>
       <SheetContent side={"left"}>
 
       <div className="grid gap-4 py-4">
@@ -43,7 +38,7 @@ export default function ImportSheet({ name }: ImportSheetProps) {
             <Label htmlFor="name" className="text-left">
               Name
             </Label>
-            <Input id="tournament-name" placeholder={name} className="grid-cols-2" />
+            <Input id="tournament-name" className="grid-cols-2" />
           </div>
 
           <div className="grid grid-cols-1 items-left gap-4">

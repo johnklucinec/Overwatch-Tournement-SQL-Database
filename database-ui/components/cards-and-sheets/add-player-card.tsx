@@ -60,9 +60,9 @@ export default function CardWithForm() {
 
           <Card className="w-[350px]">
             <CardHeader>
-              <CardTitle>Create Team</CardTitle>
+              <CardTitle>Create Player</CardTitle>
               <CardDescription>
-                Deploy your new project in one-click.
+                Create a New Player
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -84,6 +84,7 @@ export default function CardWithForm() {
                         <SelectItem value="astro">SUPPORT</SelectItem>
                       </SelectContent>
                     </Select>
+
                   </div>
                 </div>
               </form>

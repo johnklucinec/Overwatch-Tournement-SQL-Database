@@ -1,5 +1,3 @@
-/* eslint-disable no-redeclare */
-/* eslint-disable no-unused-vars */
 "use client";
 
 import * as React from "react";
@@ -12,26 +10,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useState } from "react";
 
-interface CardWithForm {
-  name?: string; // This makes the name prop optional
-}
+import PlayersComboBox from '@/components/players-combobox';
+import { Checkbox } from "@/components/ui/checkbox";
 
-export default function CardWithForm({ name }: CardWithForm) {
+export default function CardWithForm() {
   // State to handle the visibility of the card
   const [showCard, setShowCard] = useState(false);
   // State to handle the animation
   const [animation, setAnimation] = useState(false);
+  // State to hold the selected player's id
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
   const toggleCardVisibility = () => {
     // Check if there's an animation state
@@ -45,6 +36,12 @@ export default function CardWithForm({ name }: CardWithForm) {
       setShowCard(!showCard);
     }
   };
+
+  // Callback function to handle player selection
+  const handlePlayerSelect = (playerId: string) => {
+    setSelectedPlayerId(playerId);
+  };
+  
 
   return (
     <div>
@@ -66,30 +63,32 @@ export default function CardWithForm({ name }: CardWithForm) {
 
           <Card className="w-[350px]">
             <CardHeader>
-              <CardTitle>Create Team</CardTitle>
+              <CardTitle>Add Player</CardTitle>
               <CardDescription>
-                Deploy your new project in one-click.
+                Add a player to the team
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form>
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
-                    <Label htmlFor="name">Name</Label>
-                    <Input id="name" placeholder="Player's Name" />
+                    <Label htmlFor="player">Player</Label>
+                    <PlayersComboBox onPlayerSelect={handlePlayerSelect} />
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="role">Role</Label>
-                    <Select>
-                      <SelectTrigger id="role">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent position="popper">
-                        <SelectItem value="next">TANK</SelectItem>
-                        <SelectItem value="sveltekit">DPS</SelectItem>
-                        <SelectItem value="astro">SUPPORT</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div>
+                      <Checkbox id="tank">TANK</Checkbox>
+                      <span className="ml-4 text-sm">TANK</span>
+                    </div>
+                    <div>
+                      <Checkbox id="dps">DPS</Checkbox>
+                      <span className="ml-4 text-sm">DPS</span>
+                    </div>
+                    <div>
+                      <Checkbox id="support">SUPPORT</Checkbox>
+                      <span className="ml-4 text-sm">SUPPORT</span>
+                    </div>
                   </div>
                 </div>
               </form>

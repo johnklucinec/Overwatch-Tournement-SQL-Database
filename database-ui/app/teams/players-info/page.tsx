@@ -7,7 +7,7 @@ import Nav from "@/components/header-bar";
 import React from 'react';
 
 import CardWithForm from "@/components/cards-and-sheets/add-teamplayer-card";
-import CardWithFormEditTeam from "@/components/cards-and-sheets/add-team-card";
+import CardWithFormEditTeam from "@/components/cards-and-sheets/edit-team-card";
 import DataTablePlayers from "@/components/tables/players-table";
 
 
@@ -63,7 +63,7 @@ function PageContent() {
             <CardWithFormEditTeam name={name} />
 
             {/* Edit Information Button */}
-            <CardWithForm name={name} />
+            <CardWithForm />
             </div>
 
           </div>

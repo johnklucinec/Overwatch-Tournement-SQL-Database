@@ -2,7 +2,7 @@ import Nav from "@/components/header-bar"
 import React from 'react';
 
 import ImportSheet from "@/components/cards-and-sheets/add-tournament-sheet"
-import DataTableTournament from "@/components/tournaments-table"
+import DataTableTournament from "@/components/tables/tournaments-table"
 
 export default function Page() {
   return (
