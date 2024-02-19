@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useRouter } from 'next/navigation';
+import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,11 +13,11 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+} from "@tanstack/react-table";
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -26,8 +26,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -35,9 +35,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 
-{/* Add the sample data */}
+{
+  /* Add the sample data */
+}
 const data: Team[] = [
   {
     id: "1",
@@ -71,7 +73,7 @@ const data: Team[] = [
     name: "WolfGuardians",
     formationDate: "2024-03-01",
   },
-]
+];
 
 export type Team = {
   id: string;
@@ -79,12 +81,16 @@ export type Team = {
   averageRank: string;
   mmr: number;
   name: string;
-  formationDate: string,
+  formationDate: string;
 };
 
-{/* We need to sort the data with the mmr */}
+{
+  /* We need to sort the data with the mmr */
+}
 
-{/* Fill the table with data */}
+{
+  /* Fill the table with data */
+}
 export const columns: ColumnDef<Team>[] = [
   {
     id: "select",
@@ -120,7 +126,7 @@ export const columns: ColumnDef<Team>[] = [
           Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
@@ -136,12 +142,12 @@ export const columns: ColumnDef<Team>[] = [
           Average Rank
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => <div>{row.getValue("averageRank")}</div>,
   },
 
-  { 
+  {
     accessorKey: "formationDate",
     header: ({ column }) => {
       return (
@@ -152,11 +158,11 @@ export const columns: ColumnDef<Team>[] = [
           Formation Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => <div>{row.getValue("formationDate")}</div>,
   },
-  
+
   {
     accessorKey: "players",
     header: () => <div className="text-right">Players</div>,
@@ -165,12 +171,12 @@ export const columns: ColumnDef<Team>[] = [
     ),
   },
 
-  { /* All the Actions */
-    id: "actions",
+  {
+    /* All the Actions */ id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const team = row.original
-      const router = useRouter()
+      const team = row.original;
+      const router = useRouter();
 
       return (
         <DropdownMenu>
@@ -190,7 +196,11 @@ export const columns: ColumnDef<Team>[] = [
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                router.push(`/teams/players-info?id=${team.id}&name=${encodeURIComponent(team.name)}`);
+                router.push(
+                  `/teams/players-info?id=${team.id}&name=${encodeURIComponent(
+                    team.name
+                  )}`
+                );
               }}
             >
               View team details
@@ -199,20 +209,30 @@ export const columns: ColumnDef<Team>[] = [
             <DropdownMenuItem>Delete team</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];
 
-{/* Generate the table */}
+{
+  /* Generate the table */
+}
 export default function DataTableTeams() {
-  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
-  )
+  );
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+    React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
+
+  const handleDelete = () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    selectedRows.forEach((row) => {
+      // Perform deletion operation here
+      console.log(`Deleting row with id: ${row.id}`);
+    });
+  };
 
   const table = useReactTable({
     data,
@@ -231,7 +251,7 @@ export default function DataTableTeams() {
       columnVisibility,
       rowSelection,
     },
-  })
+  });
 
   return (
     <div className="w-full p-5">
@@ -266,7 +286,7 @@ export default function DataTableTeams() {
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
-                )
+                );
               })}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -286,7 +306,7 @@ export default function DataTableTeams() {
                             header.getContext()
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -343,8 +363,16 @@ export default function DataTableTeams() {
           >
             Next
           </Button>
+
+          <Button
+            size="sm"
+            onClick={handleDelete}
+            disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+          >
+            Delete
+          </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

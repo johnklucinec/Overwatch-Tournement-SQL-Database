@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -10,20 +10,23 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import { ChevronDown, MoreHorizontal } from "lucide-react"
+} from "@tanstack/react-table";
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -31,55 +34,103 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 
-{/* Add the sample data */}
+{
+  /* Add the sample data */
+}
 const data: Role[] = [
   {
     id: "1",
-    roleName: "TANK",
+    rank: "Master 4",
+    role: "TANK",
   },
   {
     id: "2",
-    roleName: "DPS",
+    rank: "Grandmaster 4",
+    role: "DPS",
   },
   {
     id: "3",
-    roleName: "SUPPORT",
+    rank: "Master 2",
+    role: "SUPPORT",
   },
-]
+];
 
 export type Role = {
   id: string;
-  roleName: string;
+  rank: string;
+  role: string;
 };
 
-{/* We need to sort the data with the mmr */}
+{
+  /* We need to sort the data with the mmr */
+}
 
-{/* Fill the table with data */}
+{
+  /* Fill the table with data */
+}
 export const columns: ColumnDef<Role>[] = [
-
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
 
   {
-    accessorKey: "roleName",
+    accessorKey: "role",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Role Name
+          Role
+          <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
-    cell: ({ row }) => <div>{row.getValue("roleName")}</div>,
+    cell: ({ row }) => <div>{row.getValue("role")}</div>,
   },
 
-  { /* All the Actions */
-    id: "actions",
+  {
+    accessorKey: "rank",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Rank
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div>{row.getValue("rank")}</div>,
+  },
+
+  {
+    /* All the Actions */ id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const role = row.original
+      const role = row.original;
 
       return (
         <DropdownMenu>
@@ -92,26 +143,41 @@ export const columns: ColumnDef<Role>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(`${role.roleName}`)}
+              onClick={() =>
+                navigator.clipboard.writeText(`${role.role} ${role.rank}`)
+              }
             >
-              Copy Role Name
+              Copy Rank and Role
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Edit role</DropdownMenuItem>
+            <DropdownMenuItem>Delete role</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];
 
-{/* Generate the table */}
+{
+  /* Generate the table */
+}
 export default function DataTableRoles() {
-  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
-  )
+  );
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+    React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
+
+  const handleDelete = () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    selectedRows.forEach(row => {
+      // Perform deletion operation here
+      console.log(`Deleting row with id: ${row.id}`);
+    });
+  };
 
   const table = useReactTable({
     data,
@@ -120,6 +186,7 @@ export default function DataTableRoles() {
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
@@ -129,16 +196,16 @@ export default function DataTableRoles() {
       columnVisibility,
       rowSelection,
     },
-  })
+  });
 
   return (
     <div className="w-full p-5">
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter roles..."
-          value={(table.getColumn("roleName")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("roleName")?.setFilterValue(event.target.value)
+            table.getColumn("name")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -164,7 +231,7 @@ export default function DataTableRoles() {
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
-                )
+                );
               })}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -184,7 +251,7 @@ export default function DataTableRoles() {
                             header.getContext()
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -220,6 +287,10 @@ export default function DataTableRoles() {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div>
         <div className="space-x-2">
           <Button
             variant="outline"
@@ -237,8 +308,15 @@ export default function DataTableRoles() {
           >
             Next
           </Button>
+          <Button
+            size="sm"
+            onClick={handleDelete}
+            disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+          >
+            Delete
+          </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

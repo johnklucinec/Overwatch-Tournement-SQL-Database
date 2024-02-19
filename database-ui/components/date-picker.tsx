@@ -1,19 +1,19 @@
 /* eslint-disable react/prop-types */
-"use client"
+"use client";
 
-import * as React from "react"
-import { addDays, format } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
-import { DateRange } from "react-day-picker"
+import * as React from "react";
+import { addDays, format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { DateRange } from "react-day-picker";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 
 export default function DatePickerWithRange({
   className,
@@ -21,13 +21,12 @@ export default function DatePickerWithRange({
   const [date, setDate] = React.useState<DateRange | undefined>({
     from: new Date(2022, 0, 20),
     to: addDays(new Date(2022, 0, 20), 20),
-  })
+  });
 
   return (
     <div className={cn("grid gap-2", className)}>
       <Popover modal>
         <PopoverTrigger asChild>
-
           <Button
             id="date"
             variant={"outline"}
@@ -50,7 +49,6 @@ export default function DatePickerWithRange({
               <span>Pick a date</span>
             )}
           </Button>
-
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
@@ -64,5 +62,5 @@ export default function DatePickerWithRange({
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

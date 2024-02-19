@@ -1,8 +1,8 @@
 import Nav from "@/components/header-bar"
 import React from 'react';
 
-import ImportSheet from "@/app/tournaments/sheet"
-import DataTableTournament from "@/app/tournaments/table"
+import ImportSheet from "@/components/cards-and-sheets/add-tournament-sheet"
+import DataTableTournament from "@/components/tournaments-table"
 
 export default function Page() {
   return (

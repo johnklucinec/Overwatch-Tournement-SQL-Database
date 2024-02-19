@@ -6,9 +6,9 @@ import { Suspense } from 'react';
 import Nav from "@/components/header-bar";
 import React from 'react';
 
-import CardWithForm from "@/app/teams/players-info/card";
-import CardWithFormEditTeam from "@/app/teams/card";
-import DataTablePlayers from "@/components/players-table";
+import CardWithForm from "@/components/cards-and-sheets/add-teamplayer-card";
+import CardWithFormEditTeam from "@/components/cards-and-sheets/add-team-card";
+import DataTablePlayers from "@/components/tables/players-table";
 
 
 export default function Page() {

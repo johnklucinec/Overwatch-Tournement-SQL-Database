@@ -38,59 +38,54 @@ import {
 } from "@/components/ui/table"
 
 {/* Add the sample data */}
-const data: Player[] = [
+const data: Tournament[] = [
   {
     id: "1",
-    roles: "DPS, SUPPORT",
-    highestRank: "Grandmaster 4",
-    mmr: 4100,
-    name: "Wintah",
-    email: "Wintah@player.com",
-    createdAt: "2024-03-01",
+    teams: 16,
+    status: "enrollment open",
+    name: "Pachimari Tournament",
+    startDate: "2024-03-02",
+    endDate: "2024-06-31", 
   },
   {
     id: "2",
-    roles: "TANK",
-    highestRank: "Grandmaster 5",
-    mmr: 4000,
-    name: "Gliscor",
-    email: "Gliscor@player.com",
-    createdAt: "2024-03-01",
+    teams: 14,
+    status: "enrollment open",
+    name: "Pachimummy Tournament",
+    startDate: "2024-03-01",
+    endDate: "2024-03-31", 
   },
   {
     id: "3",
-    roles: "DPS",
-    highestRank: "Grandmaster 1",
-    mmr: 4400,
-    name: "PapaJuan",
-    email: "PapaJuan@player.com",
-    createdAt: "2024-03-01",
+    teams: 0,
+    status: "registration closed",
+    name: "Catchamari  Tournament",
+    startDate: "2024-03-01",
+    endDate: "2024-03-31", 
   },
   {
     id: "4",
-    roles: "TANK",
-    highestRank: "Masters 3",
-    mmr: 3600,
-    name: "HankHarm",
-    email: "HankHarm@player.com",
-    createdAt: "2024-03-01",
+    teams: 64,
+    status: "enrollment open",
+    name: "Ultimari Tournament",
+    startDate: "2024-03-01",
+    endDate: "2024-03-31", 
   },
 ]
 
-export type Player = {
+export type Tournament = {
   id: string;
-  roles: string;
-  highestRank: string;
-  mmr: number;
-  email: string;
-  createdAt: string;
+  teams: number;
+  status: "enrollment open" | "registration closed";
   name: string;
+  startDate: string; // Start date of the tournament
+  endDate: string;   // End date of the tournament
 };
 
-{/* We need to sort the data with the mmr */}
 
 {/* Fill the table with data */}
-export const columns: ColumnDef<Player>[] = [
+export const columns: ColumnDef<Tournament>[] = [
+
   {
     id: "select",
     header: ({ table }) => (
@@ -115,6 +110,14 @@ export const columns: ColumnDef<Player>[] = [
   },
 
   {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("status")}</div>
+    ),
+  },
+
+  {
     accessorKey: "name",
     header: ({ column }) => {
       return (
@@ -131,66 +134,53 @@ export const columns: ColumnDef<Player>[] = [
   },
 
   {
-    accessorKey: "highestRank",
+    accessorKey: "startDate",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Highest Rank
+          Start Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
-    cell: ({ row }) => <div>{row.getValue("highestRank")}</div>,
-  },
-
-  {
-    accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("email")}</div>,
+    cell: ({ row }) => <div>{row.getValue("startDate")}</div>,
   },
 
   { 
-    accessorKey: "createdAt",
+    accessorKey: "endDate",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Created At
+          End Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
-    cell: ({ row }) => <div>{row.getValue("createdAt")}</div>,
+    cell: ({ row }) => <div>{row.getValue("endDate")}</div>,
   },
-  
+
   {
-    accessorKey: "roles",
-    header: () => <div className="text-right">Roles</div>,
-    cell: ({ row }) => (
-      <div className="text-right font-medium">{row.getValue("roles")}</div>
-    ),
+    accessorKey: "teams",
+    header: () => <div className="text-right">Teams</div>,
+    cell: ({ row }) => {
+      const teams = parseFloat(row.getValue("teams"))
+
+      return <div className="text-right font-medium">{teams}</div>
+    },
   },
 
   { /* All the Actions */
+
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const player = row.original
+      const tournament = row.original
       const router = useRouter()
 
       return (
@@ -204,20 +194,20 @@ export const columns: ColumnDef<Player>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(player.name)}
+              onClick={() => navigator.clipboard.writeText(tournament.name)}
             >
-              Copy Player Name
+              Copy Tournament Name
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                router.push(`/players/player-info?id=${player.id}&name=${encodeURIComponent(player.name)}`);
+                router.push(`/tournaments/tournament-info?id=${tournament.id}&name=${encodeURIComponent(tournament.name)}`);
               }}
             >
-              View team details
+              View tournament details
             </DropdownMenuItem>
-            <DropdownMenuItem>Edit player</DropdownMenuItem>
-            <DropdownMenuItem>Delete player</DropdownMenuItem>
+            <DropdownMenuItem>Edit tournament</DropdownMenuItem>
+            <DropdownMenuItem>Delete tournament</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
@@ -226,7 +216,7 @@ export const columns: ColumnDef<Player>[] = [
 ]
 
 {/* Generate the table */}
-export default function DataTablePlayers() {
+export default function DataTableTournament() {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -234,6 +224,14 @@ export default function DataTablePlayers() {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+
+  const handleDelete = () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    selectedRows.forEach(row => {
+      // Perform deletion operation here
+      console.log(`Deleting row with id: ${row.id}`);
+    });
+  };
 
   const table = useReactTable({
     data,
@@ -258,7 +256,7 @@ export default function DataTablePlayers() {
     <div className="w-full p-5">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter players..."
+          placeholder="Filter tournaments..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -363,6 +361,14 @@ export default function DataTablePlayers() {
             disabled={!table.getCanNextPage()}
           >
             Next
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={handleDelete}
+            disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+          >
+            Delete
           </Button>
         </div>
       </div>

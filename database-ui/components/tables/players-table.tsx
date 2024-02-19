@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useRouter } from 'next/navigation';
+import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,11 +13,11 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+} from "@tanstack/react-table";
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -26,8 +26,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -35,57 +35,68 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 
-{/* Add the sample data */}
-const data: Tournament[] = [
+{
+  /* Add the sample data */
+}
+const data: Player[] = [
   {
     id: "1",
-    teams: 16,
-    status: "enrollment open",
-    name: "Pachimari Tournament",
-    startDate: "2024-03-02",
-    endDate: "2024-06-31", 
+    roles: "DPS, SUPPORT",
+    highestRank: "Grandmaster 4",
+    mmr: 4100,
+    name: "Wintah",
+    email: "Wintah@player.com",
+    createdAt: "2024-03-01",
   },
   {
     id: "2",
-    teams: 14,
-    status: "enrollment open",
-    name: "Pachimummy Tournament",
-    startDate: "2024-03-01",
-    endDate: "2024-03-31", 
+    roles: "TANK",
+    highestRank: "Grandmaster 5",
+    mmr: 4000,
+    name: "Gliscor",
+    email: "Gliscor@player.com",
+    createdAt: "2024-03-01",
   },
   {
     id: "3",
-    teams: 0,
-    status: "registration closed",
-    name: "Catchamari  Tournament",
-    startDate: "2024-03-01",
-    endDate: "2024-03-31", 
+    roles: "DPS",
+    highestRank: "Grandmaster 1",
+    mmr: 4400,
+    name: "PapaJuan",
+    email: "PapaJuan@player.com",
+    createdAt: "2024-03-01",
   },
   {
     id: "4",
-    teams: 64,
-    status: "enrollment open",
-    name: "Ultimari Tournament",
-    startDate: "2024-03-01",
-    endDate: "2024-03-31", 
+    roles: "TANK",
+    highestRank: "Masters 3",
+    mmr: 3600,
+    name: "HankHarm",
+    email: "HankHarm@player.com",
+    createdAt: "2024-03-01",
   },
-]
+];
 
-export type Tournament = {
+export type Player = {
   id: string;
-  teams: number;
-  status: "enrollment open" | "registration closed";
+  roles: string;
+  highestRank: string;
+  mmr: number;
+  email: string;
+  createdAt: string;
   name: string;
-  startDate: string; // Start date of the tournament
-  endDate: string;   // End date of the tournament
 };
 
+{
+  /* We need to sort the data with the mmr */
+}
 
-{/* Fill the table with data */}
-export const columns: ColumnDef<Tournament>[] = [
-
+{
+  /* Fill the table with data */
+}
+export const columns: ColumnDef<Player>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -110,14 +121,6 @@ export const columns: ColumnDef<Tournament>[] = [
   },
 
   {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
-    ),
-  },
-
-  {
     accessorKey: "name",
     header: ({ column }) => {
       return (
@@ -128,60 +131,73 @@ export const columns: ColumnDef<Tournament>[] = [
           Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
 
   {
-    accessorKey: "startDate",
+    accessorKey: "highestRank",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Start Date
+          Highest Rank
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
-    cell: ({ row }) => <div>{row.getValue("startDate")}</div>,
-  },
-
-  { 
-    accessorKey: "endDate",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          End Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("endDate")}</div>,
+    cell: ({ row }) => <div>{row.getValue("highestRank")}</div>,
   },
 
   {
-    accessorKey: "teams",
-    header: () => <div className="text-right">Teams</div>,
-    cell: ({ row }) => {
-      const teams = parseFloat(row.getValue("teams"))
-
-      return <div className="text-right font-medium">{teams}</div>
+    accessorKey: "email",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Email
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
     },
+    cell: ({ row }) => <div>{row.getValue("email")}</div>,
   },
 
-  { /* All the Actions */
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Created At
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div>{row.getValue("createdAt")}</div>,
+  },
 
-    id: "actions",
+  {
+    accessorKey: "roles",
+    header: () => <div className="text-right">Roles</div>,
+    cell: ({ row }) => (
+      <div className="text-right font-medium">{row.getValue("roles")}</div>
+    ),
+  },
+
+  {
+    /* All the Actions */ id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const tournament = row.original
-      const router = useRouter()
+      const player = row.original;
+      const router = useRouter();
 
       return (
         <DropdownMenu>
@@ -194,36 +210,50 @@ export const columns: ColumnDef<Tournament>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(tournament.name)}
+              onClick={() => navigator.clipboard.writeText(player.name)}
             >
-              Copy Tournament Name
+              Copy Player Name
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                router.push(`/tournaments/tournament-info?id=${tournament.id}&name=${encodeURIComponent(tournament.name)}`);
+                router.push(
+                  `/players/player-info?id=${
+                    player.id
+                  }&name=${encodeURIComponent(player.name)}`
+                );
               }}
             >
-              View tournament details
+              View player details
             </DropdownMenuItem>
-            <DropdownMenuItem>Edit tournament</DropdownMenuItem>
-            <DropdownMenuItem>Delete tournament</DropdownMenuItem>
+            <DropdownMenuItem>Edit player</DropdownMenuItem>
+            <DropdownMenuItem>Delete player</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];
 
-{/* Generate the table */}
-export default function DataTableTournament() {
-  const [sorting, setSorting] = React.useState<SortingState>([])
+{
+  /* Generate the table */
+}
+export default function DataTablePlayers() {
+  const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
-  )
+  );
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+    React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
+
+  const handleDelete = () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    selectedRows.forEach(row => {
+      // Perform deletion operation here
+      console.log(`Deleting row with id: ${row.id}`);
+    });
+  };
 
   const table = useReactTable({
     data,
@@ -242,13 +272,13 @@ export default function DataTableTournament() {
       columnVisibility,
       rowSelection,
     },
-  })
+  });
 
   return (
     <div className="w-full p-5">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter tournaments..."
+          placeholder="Filter players..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -277,7 +307,7 @@ export default function DataTableTournament() {
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
-                )
+                );
               })}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -297,7 +327,7 @@ export default function DataTableTournament() {
                             header.getContext()
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -354,8 +384,16 @@ export default function DataTableTournament() {
           >
             Next
           </Button>
+
+          <Button
+            size="sm"
+            onClick={handleDelete}
+            disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+          >
+            Delete
+          </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

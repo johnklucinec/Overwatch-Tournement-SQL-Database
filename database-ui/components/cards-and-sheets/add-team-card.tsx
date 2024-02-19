@@ -36,7 +36,8 @@ export default function CardWithForm({ name }: CardWithForm) {
   return (
     <div>
       {/* Button to trigger the card visibility */}
-      <Button className="inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground rounded-md px-3 text-xs h-8 border-dashed " onClick={toggleCardVisibility}>{name ? 'Edit' : 'Add'} Team</Button>
+      <Button className="inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-primary-background bg-background shadow-sm hover:bg-accent hover:text-accent-foreground rounded-md px-3 text-xs h-8 border-solid text-primary-background"
+       onClick={toggleCardVisibility}>{name ? 'Edit' : 'Add'} Team</Button>
 
       {/* Overlay container for the card */}
       {showCard && (

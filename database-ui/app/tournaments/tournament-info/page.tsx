@@ -4,8 +4,8 @@ import { Suspense } from 'react';
 import Nav from "@/components/header-bar";
 import React from 'react';
 
-import ImportSheet from "@/app/tournaments/tournament-info/sheet";
-import DataTableTeams from "@/components/teams-table";
+import ImportSheet from "@/components/cards-and-sheets/edit-tournament-sheet";
+import DataTableTeams from "@/components/tables/teams-table";
 
 export default function Page() {
   return (

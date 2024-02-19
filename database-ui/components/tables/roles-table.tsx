@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -11,10 +11,10 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import { ChevronDown, MoreHorizontal } from "lucide-react"
+} from "@tanstack/react-table";
+import { ChevronDown, MoreHorizontal } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -22,8 +22,8 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -31,300 +31,59 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 
-{/* Add the sample data */}
-const data: Rank[] = [
+{
+  /* Add the sample data */
+}
+const data: Role[] = [
   {
     id: "1",
-    rankName: "Bronze",
-    division: 5,
-    mmr: 1000,
+    roleName: "TANK",
   },
   {
     id: "2",
-    rankName: "Bronze",
-    division: 4,
-    mmr: 1100,
+    roleName: "DPS",
   },
   {
     id: "3",
-    rankName: "Bronze",
-    division: 3,
-    mmr: 1200,
+    roleName: "SUPPORT",
   },
-  {
-    id: "4",
-    rankName: "Bronze",
-    division: 2,
-    mmr: 1300,
-  },
-  {
-    id: "5",
-    rankName: "Bronze",
-    division: 1,
-    mmr: 1400,
-  },
-  {
-    id: "6",
-    rankName: "Silver",
-    division: 5,
-    mmr: 1500,
-  },
-  {
-    id: "7",
-    rankName: "Silver",
-    division: 4,
-    mmr: 1600,
-  },
-  {
-    id: "8",
-    rankName: "Silver",
-    division: 3,
-    mmr: 1700,
-  },
-  {
-    id: "9",
-    rankName: "Silver",
-    division: 2,
-    mmr: 1800,
-  },
-  {
-    id: "10",
-    rankName: "Silver",
-    division: 1,
-    mmr: 1900,
-  },
-  {
-    id: "11",
-    rankName: "Gold",
-    division: 5,
-    mmr: 2000,
-  },
-  {
-    id: "12",
-    rankName: "Gold",
-    division: 4,
-    mmr: 2100,
-  },
-  {
-    id: "13",
-    rankName: "Gold",
-    division: 3,
-    mmr: 2200,
-  },
-  {
-    id: "14",
-    rankName: "Gold",
-    division: 2,
-    mmr: 2300,
-  },
-  {
-    id: "15",
-    rankName: "Gold",
-    division: 1,
-    mmr: 2400,
-  },
-  {
-    id: "16",
-    rankName: "Platnium",
-    division: 5,
-    mmr: 2500,
-  },
-  {
-    id: "17",
-    rankName: "Platnium",
-    division: 4,
-    mmr: 2600,
-  },
-  {
-    id: "18",
-    rankName: "Platnium",
-    division: 3,
-    mmr: 2700,
-  },
-  {
-    id: "19",
-    rankName: "Platnium",
-    division: 2,
-    mmr: 2800,
-  },
-  {
-    id: "20",
-    rankName: "Platnium",
-    division: 1,
-    mmr: 2900,
-  },
-  {
-    id: "21",
-    rankName: "Diamond",
-    division:  5,
-    mmr:  3000,
-  },
-  {
-    id: "22",
-    rankName: "Diamond",
-    division:  4,
-    mmr:  3100,
-  },
-  {
-    id: "23",
-    rankName: "Diamond",
-    division:  3,
-    mmr:  3200,
-  },
-  {
-    id: "24",
-    rankName: "Diamond",
-    division:  2,
-    mmr:  3300,
-  },
-  {
-    id: "25",
-    rankName: "Diamond",
-    division:  1,
-    mmr:  3400,
-  },
-  {
-    id: "26",
-    rankName: "Master",
-    division:  5,
-    mmr:  3500,
-  },
-  {
-    id: "27",
-    rankName: "Master",
-    division:  4,
-    mmr:  3600,
-  },
-  {
-    id: "28",
-    rankName: "Master",
-    division:  3,
-    mmr:  3700,
-  },
-  {
-    id: "29",
-    rankName: "Master",
-    division:  2,
-    mmr:  3800,
-  },
-  {
-    id: "30",
-    rankName: "Master",
-    division:  1,
-    mmr:  3900,
-  },
-  {
-    id: "31",
-    rankName: "Grandmaster",
-    division:  5,
-    mmr:  4000,
-  },
-  {
-    id: "32",
-    rankName: "Grandmaster",
-    division:  4,
-    mmr:  4100,
-  },
-  {
-    id: "33",
-    rankName: "Grandmaster",
-    division:  3,
-    mmr:  4200,
-  },
-  {
-    id: "34",
-    rankName: "Grandmaster",
-    division:  2,
-    mmr:  4300,
-  },
-  {
-    id: "35",
-    rankName: "Grandmaster",
-    division:  1,
-    mmr:  4400,
-  },
-  {
-    id: "36",
-    rankName: "Champion",
-    division:  5,
-    mmr:  4500,
-  },
-  {
-    id: "37",
-    rankName: "Champion",
-    division:  4,
-    mmr:  4600,
-  },
-  {
-    id: "38",
-    rankName: "Champion",
-    division:  3,
-    mmr:  4700,
-  },
-  {
-    id: "39",
-    rankName: "Champion",
-    division:  2,
-    mmr:  4800,
-  },
-  {
-    id: "40",
-    rankName: "Champion",
-    division:  1,
-    mmr:  4900,
-  },
-]
+];
 
-export type Rank = {
+export type Role = {
   id: string;
-  rankName: string;
-  division: number;
-  mmr: number;
+  roleName: string;
 };
 
-{/* We need to sort the data with the mmr */}
+{
+  /* We need to sort the data with the mmr */
+}
 
-{/* Fill the table with data */}
-export const columns: ColumnDef<Rank>[] = [
-
-
+{
+  /* Fill the table with data */
+}
+export const columns: ColumnDef<Role>[] = [
   {
-    accessorKey: "rankName",
+    accessorKey: "roleName",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Rank Name
+          Role Name
         </Button>
-      )
+      );
     },
-    cell: ({ row }) => <div>{row.getValue("rankName")}</div>,
+    cell: ({ row }) => <div>{row.getValue("roleName")}</div>,
   },
 
   {
-    accessorKey: "division",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Division
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("division")}</div>,
-  },
-
-  { /* All the Actions */
-    id: "actions",
+    /* All the Actions */ id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const rank = row.original
+      const role = row.original;
 
       return (
         <DropdownMenu>
@@ -337,26 +96,37 @@ export const columns: ColumnDef<Rank>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(`${rank.rankName} ${rank.division}`)}
+              onClick={() => navigator.clipboard.writeText(`${role.roleName}`)}
             >
-              Copy Rank Name and Division
+              Copy Role Name
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];
 
-{/* Generate the table */}
-export default function DataTableRanks() {
-  const [sorting, setSorting] = React.useState<SortingState>([])
+{
+  /* Generate the table */
+}
+export default function DataTableRoles() {
+  const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
-  )
+  );
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+    React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
+
+  {/*  const handleDelete = () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    selectedRows.forEach((row) => {
+      // Perform deletion operation here
+      console.log(`Deleting row with id: ${row.id}`);
+    });
+  };*/}
+
 
   const table = useReactTable({
     data,
@@ -374,16 +144,18 @@ export default function DataTableRanks() {
       columnVisibility,
       rowSelection,
     },
-  })
+  });
 
   return (
     <div className="w-full p-5">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter ranks..."
-          value={(table.getColumn("rankName")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter roles..."
+          value={
+            (table.getColumn("roleName")?.getFilterValue() as string) ?? ""
+          }
           onChange={(event) =>
-            table.getColumn("rankName")?.setFilterValue(event.target.value)
+            table.getColumn("roleName")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -409,7 +181,7 @@ export default function DataTableRanks() {
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
-                )
+                );
               })}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -429,7 +201,7 @@ export default function DataTableRanks() {
                             header.getContext()
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -482,8 +254,17 @@ export default function DataTableRanks() {
           >
             Next
           </Button>
+          {/*
+          <Button
+            size="sm"
+            onClick={handleDelete}
+            disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+          >
+            Delete
+          </Button>
+            */}
         </div>
       </div>
     </div>
-  )
+  );
 }
