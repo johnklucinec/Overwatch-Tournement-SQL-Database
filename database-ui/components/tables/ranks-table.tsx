@@ -294,6 +294,21 @@ export type Rank = {
   /* Fill the table with data */
 }
 export const columns: ColumnDef<Rank>[] = [
+  // Add the ID number to the table.
+  {
+    accessorKey: "id",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          ID
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="ml-4">{row.getValue("id")}</div>,
+  },
   {
     accessorKey: "rankName",
     header: ({ column }) => {

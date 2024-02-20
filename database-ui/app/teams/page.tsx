@@ -17,6 +17,7 @@ export default function Page() {
           <p className="text-muted-foreground pl-1">Teams Table</p>
           <div className="rounded-md border"></div>
           <p className="text-muted-foreground">Here you can view and edit all the teams</p>
+          <p className="text-muted-foreground">For detailed information about a specific team's players (TeamPlayers), click on the action menu (the ...) of the desired team and select "View Team Details".</p>
         </div>
 
         {/* Top Banner */}

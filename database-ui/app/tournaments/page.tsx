@@ -17,6 +17,7 @@ export default function Page() {
           <p className="text-muted-foreground pl-1">Tournaments Table</p>
           <div className="rounded-md border"></div>
           <p className="text-muted-foreground">Here you can view and edit all the tournaments</p>
+          <p className="text-muted-foreground">For detailed information about a specific tournament's teams (TournamentTeams), click on the action menu (the ...) of the desired tournament and select "View Team Details".</p>
         </div>
 
         {/* Top Banner */}

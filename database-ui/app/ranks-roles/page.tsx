@@ -20,40 +20,25 @@ export default function Page() {
           <p className="text-muted-foreground">These do not change so you can not edit them. </p>
         </div>
 
-        {/* Top Banner */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-
-            <div className="flex flex-1 items-center space-x-2"></div>
-
-          </div>
-
-          {/* Table Section */}
-            <div className="relative w-full overflow-auto">
-
-
-
-            </div>
-          </div>
-
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          {/* Table Section */}
 
+          {/* Ranks Section */}
           <div className="rounded-xl border bg-card text-card-foreground shadow col-span-4">
             <div className="flex flex-col pt-6 pl-6">
               <h2>Ranks</h2>
             </div>
             <div className="flex flex-col pl-6 pr-6">
-              {/* Add Data Table*/}
               <DataTableRanks />
             </div>
           </div>
 
+          {/* Roles Section */}
           <div className="rounded-xl border bg-card text-card-foreground shadow col-span-3">
             <div className="flex flex-col pt-6 pl-6">
               <h2>Roles</h2>
             </div>
             <div className="flex flex-col pl-6 pr-6">
-              {/* Add Data Table*/}
               <DataTableRoles />
             </div>
           </div>

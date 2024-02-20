@@ -16,6 +16,8 @@ import {
 } from "@tanstack/react-table"
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
 
+import DeleteAlert from '@/components/delete-alert';
+
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -110,6 +112,22 @@ export const columns: ColumnDef<Tournament>[] = [
   },
 
   {
+    accessorKey: "id",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          ID
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+    cell: ({ row }) => <div className="ml-4">{row.getValue("id")}</div>,
+  },
+
+  {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
@@ -183,6 +201,14 @@ export const columns: ColumnDef<Tournament>[] = [
       const tournament = row.original
       const router = useRouter()
 
+      function yourCancelHandler(): void {
+        throw new Error("Function not implemented.");
+      }
+
+      function yourContinueHandler(): void {
+        throw new Error("Function not implemented.");
+      }
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -207,10 +233,12 @@ export const columns: ColumnDef<Tournament>[] = [
               View tournament details
             </DropdownMenuItem>
             <DropdownMenuItem>Edit tournament</DropdownMenuItem>
-            <DropdownMenuItem>Delete tournament</DropdownMenuItem>
+            <DeleteAlert onCancel={yourCancelHandler} onContinue={yourContinueHandler}>
+              <DropdownMenuItem>Delete tournament</DropdownMenuItem>
+            </DeleteAlert>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
 ]

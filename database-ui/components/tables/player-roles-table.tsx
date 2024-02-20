@@ -94,6 +94,23 @@ export const columns: ColumnDef<Role>[] = [
     enableHiding: false,
   },
 
+  // Add the ID number to the table. Sortable.
+  {
+    accessorKey: "id",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          ID
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="ml-4">{row.getValue("id")}</div>,
+  },
+
   {
     accessorKey: "role",
     header: ({ column }) => {
@@ -173,7 +190,7 @@ export default function DataTableRoles() {
 
   const handleDelete = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
-    selectedRows.forEach(row => {
+    selectedRows.forEach((row) => {
       // Perform deletion operation here
       console.log(`Deleting row with id: ${row.id}`);
     });
