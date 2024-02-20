@@ -14,6 +14,8 @@ export default function Page() {
 
         <div className="flex flex-col items-left justify-beginning space-y-2">
           <h2 className="text-2xl font-bold tracking-tight">Ranks and Roles</h2>
+          <p className="text-muted-foreground pl-1">Ranks Table | Roles Table</p>
+          <div className="rounded-md border"></div>
           <p className="text-muted-foreground">Here you can view all the ranks and the roles</p>
           <p className="text-muted-foreground">These do not change so you can not edit them. </p>
         </div>
@@ -27,7 +29,6 @@ export default function Page() {
           </div>
 
           {/* Table Section */}
-          <div className="rounded-md border">
             <div className="relative w-full overflow-auto">
 
 
@@ -55,8 +56,6 @@ export default function Page() {
               {/* Add Data Table*/}
               <DataTableRoles />
             </div>
-          </div>
-
           </div>
 
           <div className="flex items-center justify-between px-2">

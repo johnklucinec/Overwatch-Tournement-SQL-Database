@@ -14,14 +14,16 @@ export default function Page() {
 
         <div className="flex flex-col items-left justify-beginning space-y-2">
           <h2 className="text-2xl font-bold tracking-tight">Players</h2>
+          <p className="text-muted-foreground pl-1">Player Table</p>
+          <div className="rounded-md border"></div>
           <p className="text-muted-foreground">Here you can view and edit all the Players</p>
         </div>
 
         {/* Top Banner */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
 
-            <div className="flex flex-1 items-center space-x-2">
+            <div className="flex flex-4 items-center space-x-2">
             {/* Add Information Button */}
             <CardWithForm />
             </div>
@@ -30,7 +32,7 @@ export default function Page() {
 
           {/* Table Section */}
           <div className="rounded-md border">
-            <div className="relative w-full overflow-auto">
+            <div className="relative w-full overflow-hidden">
             {/* Add Data Table*/}
             <DataTableTeams />
             </div>

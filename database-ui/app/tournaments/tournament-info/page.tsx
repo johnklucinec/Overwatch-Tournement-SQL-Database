@@ -37,9 +37,9 @@ function Content() {
 
         <div className="flex flex-col items-left justify-beginning space-y-2">
           <h2 className="text-2xl font-bold tracking-tight">{name}</h2>
-          <p className="text-muted-foreground">Here you can view and edit all the details about the {name}</p>
-
+          <p className="text-muted-foreground pl-1">TournamentTeams Table</p>
           <div className="rounded-md border"></div>
+          <p className="text-muted-foreground">Here you can view and edit all the details about the {name}</p>
           <p className="text-muted-foreground">
             <strong>Status:</strong> {status}
           </p>

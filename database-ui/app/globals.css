@@ -87,3 +87,9 @@
 .animate-out {
   animation: animate-out 0.5s ease-in-out forwards;
 }
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(155, 155, 155, 0.7) transparent;
+}
+

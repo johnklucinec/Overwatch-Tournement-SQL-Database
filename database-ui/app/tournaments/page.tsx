@@ -14,6 +14,8 @@ export default function Page() {
 
         <div className="flex flex-col items-left justify-beginning space-y-2">
           <h2 className="text-2xl font-bold tracking-tight">Tournaments</h2>
+          <p className="text-muted-foreground pl-1">Tournaments Table</p>
+          <div className="rounded-md border"></div>
           <p className="text-muted-foreground">Here you can view and edit all the tournaments</p>
         </div>
 
