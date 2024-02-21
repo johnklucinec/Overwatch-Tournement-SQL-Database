@@ -92,7 +92,7 @@ export const columns: ColumnDef<Role>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("roleName")}</div>,
+    cell: ({ row }) => <div className="ml-4">{row.getValue("roleName")}</div>,
   },
 
   {

@@ -148,7 +148,7 @@ export const columns: ColumnDef<Tournament>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => <div>{row.getValue("name")}</div>,
+    cell: ({ row }) => <div className="ml-4">{row.getValue("name")}</div>,
   },
 
   {
@@ -164,7 +164,7 @@ export const columns: ColumnDef<Tournament>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => <div>{row.getValue("startDate")}</div>,
+    cell: ({ row }) => <div className="ml-4">{row.getValue("startDate")}</div>,
   },
 
   { 
@@ -180,7 +180,7 @@ export const columns: ColumnDef<Tournament>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => <div>{row.getValue("endDate")}</div>,
+    cell: ({ row }) => <div className="ml-4">{row.getValue("endDate")}</div>,
   },
 
   {

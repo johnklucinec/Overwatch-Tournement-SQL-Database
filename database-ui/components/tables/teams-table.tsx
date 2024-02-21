@@ -145,7 +145,7 @@ export const columns: ColumnDef<Team>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("name")}</div>,
+    cell: ({ row }) => <div className="ml-4">{row.getValue("name")}</div>,
   },
 
   {
@@ -161,7 +161,7 @@ export const columns: ColumnDef<Team>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("averageRank")}</div>,
+    cell: ({ row }) => <div className="ml-4">{row.getValue("averageRank")}</div>,
   },
 
   {
@@ -177,7 +177,7 @@ export const columns: ColumnDef<Team>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("formationDate")}</div>,
+    cell: ({ row }) => <div className="ml-4">{row.getValue("formationDate")}</div>,
   },
 
   {

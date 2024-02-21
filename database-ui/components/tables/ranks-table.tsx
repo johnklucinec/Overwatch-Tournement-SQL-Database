@@ -321,7 +321,7 @@ export const columns: ColumnDef<Rank>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("rankName")}</div>,
+    cell: ({ row }) => <div className="ml-4">{row.getValue("rankName")}</div>,
   },
 
   {
@@ -336,7 +336,22 @@ export const columns: ColumnDef<Rank>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("division")}</div>,
+    cell: ({ row }) => <div className="ml-4">{row.getValue("division")}</div>,
+  },
+
+  {
+    accessorKey: "mmr",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          MMR
+        </Button>
+      );
+    },
+    cell: ({ row }) => <div className="ml-4">{row.getValue("mmr")}</div>,
   },
 
   {
