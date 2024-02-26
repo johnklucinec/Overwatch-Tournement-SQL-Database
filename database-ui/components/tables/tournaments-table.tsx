@@ -38,6 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+//import { useEffect, useState } from "react";
 
 {/* Add the sample data */}
 const data: Tournament[] = [
@@ -242,6 +243,7 @@ export const columns: ColumnDef<Tournament>[] = [
     },
   },
 ]
+
 
 {/* Generate the table */}
 export default function DataTableTournament() {
