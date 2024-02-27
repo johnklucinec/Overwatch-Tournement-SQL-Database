@@ -35,36 +35,37 @@ async function deletePlayer(playerID) {
 }
 
 const getPlayersAndMMR = `
-SELECT  
+SELECT 
+    p.playerID AS PlayerID,
     p.username AS Name,
     CONCAT(hr.rankName, ' ', hr.division) AS HighestRank,
     hr.max_mmr AS MMR,
     p.email AS Email,
     DATE_FORMAT(p.createdAt, '%Y-%m-%d') AS CreatedAt,
     GROUP_CONCAT(DISTINCT ro.roleName ORDER BY ro.roleName SEPARATOR ', ') AS Roles
-FROM  
+FROM 
     Players p
-JOIN  
+JOIN 
     (
-        SELECT  
+        SELECT 
             pr.playerID,
             MAX(r.mmr) AS max_mmr,
             r.rankName,
             r.division
-        FROM  
+        FROM 
             PlayerRoles pr
-        JOIN  
+        JOIN 
             Ranks r ON pr.rankID = r.rankID
-        GROUP BY  
+        GROUP BY 
             pr.playerID
     ) hr ON p.playerID = hr.playerID
-JOIN  
+JOIN 
     PlayerRoles pr ON p.playerID = pr.playerID
-JOIN  
+JOIN 
     Roles ro ON pr.roleID = ro.roleID
-GROUP BY  
+GROUP BY 
     p.playerID
-ORDER BY  
+ORDER BY 
     p.username;
 `;
 

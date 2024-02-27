@@ -2,6 +2,7 @@
 
 -- Query to retrieve player information along with their Name, HighestRank, MMR, Email, CreatedAt, and Roles.
 SELECT 
+    p.playerID AS PlayerID,
     p.username AS Name,
     CONCAT(hr.rankName, ' ', hr.division) AS HighestRank,
     hr.max_mmr AS MMR,
