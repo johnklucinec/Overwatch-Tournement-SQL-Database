@@ -6,26 +6,25 @@ Source URL: https://youtu.be/_LF-IvJsr5Y
 */
 
 import { extractbody } from "@/utils/extractBody";
-import { NextRequest, NextFetchEvent } from "next/server";
+import { NextRequest } from "next/server";
 import zod from "zod";
 import sqlstring from "sqlstring";
 import { Pool } from "@neondatabase/serverless";
 
 export const runtime = "edge";
 
-const schema = zod.object({
+const createPlayerschema = zod.object({
   username: zod.string().max(255).min(1),
   email: zod.string().email(),
-  id: zod.string().max(64).min(1),
 });
 
 /**
  * Usage Example: Send a POST request to 'http://localhost:3000/api/players/' with a body containing 'username', and 'email' to create a new player.
  */
-async function createPlayerHandler(req: NextRequest, event: NextFetchEvent) {
+async function createPlayerHandler(req: NextRequest) {
   const body = await extractbody(req);
 
-  const { username, email } = schema.parse(body);
+  const { username, email } = createPlayerschema.parse(body);
 
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -51,14 +50,14 @@ async function createPlayerHandler(req: NextRequest, event: NextFetchEvent) {
       status: 404,
     });
   } finally {
-    event.waitUntil(pool.end());
+    await pool.end();
   }
 }
 
 /** Usage Example: Send a GET request to 'http://localhost:3000/api/players/?id=1' to retrieve the player role with ID 1.
  * Usage Example: Send a GET request to 'http://localhost:3000/api/players/' to retrieve all the players.
  */
-async function readPlayersHandler(req: NextRequest, event: NextFetchEvent) {
+async function readPlayersHandler(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
   const id = searchParams.get("id");
@@ -67,8 +66,9 @@ async function readPlayersHandler(req: NextRequest, event: NextFetchEvent) {
     connectionString: process.env.DATABASE_URL,
   });
 
-  const getPlayerQuery = id ? sqlstring.format(
-    `
+  const getPlayerQuery = id
+    ? sqlstring.format(
+        `
     SELECT
     p.username AS "Player Name",
     r.rankname AS "Highest Rank",
@@ -86,12 +86,14 @@ async function readPlayersHandler(req: NextRequest, event: NextFetchEvent) {
         r.mmr DESC
     LIMIT 1;
     `,
-    [id]
-  ) : null;
+        [id]
+      )
+    : null;
 
   const getPlayersQuery = sqlstring.format(
     `
     SELECT
+    p.playerid AS id,
     p.username AS Name,
     r.rankname || ' ' || CAST(r.division AS VARCHAR) AS HighestRank,
     r.mmr AS MMR,
@@ -117,7 +119,7 @@ async function readPlayersHandler(req: NextRequest, event: NextFetchEvent) {
     JOIN
         roles ro ON pr.roleid = ro.roleid
     GROUP BY
-        p.username, r.rankname, r.division, r.mmr, p.email, p.createdat
+        p.playerid, p.username, r.rankname, r.division, r.mmr, p.email, p.createdat
     ORDER BY
         MMR DESC;
     `
@@ -125,36 +127,25 @@ async function readPlayersHandler(req: NextRequest, event: NextFetchEvent) {
 
   try {
     const query = id ? getPlayerQuery : getPlayersQuery;
-    const { rows: playersRows } = await pool.query(query || '');
+    const { rows: playersRows } = await pool.query(query || "");
 
     return new Response(JSON.stringify({ playersRows }), {
       status: 200,
     });
   } catch (e) {
     console.error(e);
-    return (
-      new Response("Page not found"),
-      {
-        status: 404,
-      }
-    );
+    return new Response("Page not found", {
+      status: 404,
+    });
   } finally {
-    event.waitUntil(pool.end());
+    await pool.end();
   }
 }
 
-async function handler(req: NextRequest, event: NextFetchEvent) {
-  if (req.method === "POST") {
-    return createPlayerHandler(req, event);
-  }
-
-  if (req.method === "GET") {
-    return readPlayersHandler(req, event);
-  }
-
-  return new Response("Invalid Method", {
-    status: 405,
-  });
+export async function POST(req: NextRequest) {
+  return createPlayerHandler(req);
 }
 
-export default handler;
+export async function GET(req: NextRequest) {
+  return readPlayersHandler(req);
+}

@@ -6,7 +6,7 @@ Source URL: https://youtu.be/_LF-IvJsr5Y
 */
 
 import { extractbody } from "@/utils/extractBody";
-import { NextRequest, NextFetchEvent } from "next/server";
+import { NextRequest } from "next/server";
 import zod from "zod";
 import sqlstring from "sqlstring";
 import { Pool } from "@neondatabase/serverless";
@@ -23,10 +23,7 @@ const createPlayerRolesSchema = zod.object({
 /**
  * Usage Example: Send a POST request to 'http://localhost:3000/api/playerroles/' with a body containing 'id', 'role', 'rankName', and 'rankDivision' to create a new player role.
  */
-async function createPlayerRolesHandler(
-  req: NextRequest,
-  event: NextFetchEvent
-) {
+async function createPlayerRolesHandler(req: NextRequest) {
   const body = await extractbody(req);
 
   const { id, role, rankName, rankDivision } =
@@ -55,23 +52,17 @@ async function createPlayerRolesHandler(
     });
   } catch (e) {
     console.error(e);
-    return (
-      new Response("Page not found"),
-      {
-        status: 404,
-      }
-    );
+    return new Response("Page not found", {
+      status: 404,
+    });
   } finally {
-    event.waitUntil(pool.end());
+    await pool.end();
   }
 }
 
 /** Usage Example: Send a GET request to 'http://localhost:3000/api/playerroles/?id=1' to retrieve the player role with ID 1.
  */
-async function readPlayerRolessHandler(
-  req: NextRequest,
-  event: NextFetchEvent
-) {
+async function readPlayerRolessHandler(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
   const id = searchParams.get("id");
@@ -107,29 +98,18 @@ async function readPlayerRolessHandler(
     });
   } catch (e) {
     console.error(e);
-    return (
-      new Response("Page not found"),
-      {
-        status: 404,
-      }
-    );
+    return new Response("Page not found", {
+      status: 404,
+    });
   } finally {
-    event.waitUntil(pool.end());
+    await pool.end();
   }
 }
 
-async function handler(req: NextRequest, event: NextFetchEvent) {
-  if (req.method === "POST") {
-    return createPlayerRolesHandler(req, event);
-  }
-
-  if (req.method === "GET") {
-    return readPlayerRolessHandler(req, event);
-  }
-
-  return new Response("Invalid Method", {
-    status: 405,
-  });
+export async function POST(req: NextRequest) {
+  return createPlayerRolesHandler(req);
 }
 
-export default handler;
+export async function GET(req: NextRequest) {
+  return readPlayerRolessHandler(req);
+}

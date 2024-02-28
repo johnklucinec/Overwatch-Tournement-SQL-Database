@@ -36,56 +36,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useEffect, useState } from "react";
 
 {
   /* Add the sample data */
 }
-const data: Player[] = [
-  {
-    id: "1",
-    roles: "DPS, SUPPORT",
-    highestRank: "Grandmaster 4",
-    mmr: 4100,
-    name: "Wintah",
-    email: "Wintah@player.com",
-    createdAt: "2024-03-01",
-  },
-  {
-    id: "2",
-    roles: "TANK",
-    highestRank: "Grandmaster 5",
-    mmr: 4000,
-    name: "Gliscor",
-    email: "Gliscor@player.com",
-    createdAt: "2024-03-01",
-  },
-  {
-    id: "3",
-    roles: "DPS",
-    highestRank: "Grandmaster 1",
-    mmr: 4400,
-    name: "PapaJuan",
-    email: "PapaJuan@player.com",
-    createdAt: "2024-03-01",
-  },
-  {
-    id: "4",
-    roles: "TANK",
-    highestRank: "Masters 3",
-    mmr: 3600,
-    name: "HankHarm",
-    email: "HankHarm@player.com",
-    createdAt: "2024-03-01",
-  },
-];
 
 export type Player = {
   id: string;
   roles: string;
-  highestRank: string;
+  highestrank: string;
   mmr: number;
   email: string;
-  createdAt: string;
+  createdat: string;
   name: string;
 };
 
@@ -154,7 +117,7 @@ export const columns: ColumnDef<Player>[] = [
   },
 
   {
-    accessorKey: "highestRank",
+    accessorKey: "highestrank",
     header: ({ column }) => {
       return (
         <Button
@@ -166,7 +129,9 @@ export const columns: ColumnDef<Player>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="ml-4">{row.getValue("highestRank")}</div>,
+    cell: ({ row }) => (
+      <div className="ml-4">{row.getValue("highestrank")}</div>
+    ),
   },
 
   {
@@ -186,7 +151,7 @@ export const columns: ColumnDef<Player>[] = [
   },
 
   {
-    accessorKey: "createdAt",
+    accessorKey: "createdat",
     header: ({ column }) => {
       return (
         <Button
@@ -198,7 +163,7 @@ export const columns: ColumnDef<Player>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="ml-4">{row.getValue("createdAt")}</div>,
+    cell: ({ row }) => <div className="ml-4">{row.getValue("createdat")}</div>,
   },
 
   {
@@ -256,13 +221,27 @@ export const columns: ColumnDef<Player>[] = [
   /* Generate the table */
 }
 export default function DataTablePlayers() {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState({});
+  const [data, setData] = useState<Player[]>([]); // Add this line
+
+  useEffect(() => {
+    const fetchPlayers = async () => {
+      const response = await fetch('http://localhost:3000/api/players/');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      setData(result.playersRows); // Set the fetched data
+    };
+
+    fetchPlayers().catch(e => {
+      console.error('An error occurred while fetching the players data.', e);
+    });
+  }, []);
+
 
   const handleDelete = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
