@@ -2,7 +2,7 @@ import Nav from "@/components/header-bar";
 import React from "react";
 
 import DataTableTeams from "@/components/tables/players-table";
-import CardWithForm from "@/components/cards-and-sheets/add-player-card";
+import DialogWithForm from "@/components/cards-and-sheets/add-player-dialog";
 
 export default function Page() {
   return (
@@ -30,7 +30,7 @@ export default function Page() {
             <div className="flex items-center">
               <div className="flex flex-4 items-center space-x-2">
                 {/* Add Information Button */}
-                <CardWithForm />
+                <DialogWithForm />
               </div>
             </div>
 

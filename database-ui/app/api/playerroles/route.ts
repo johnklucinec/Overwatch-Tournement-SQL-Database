@@ -14,10 +14,13 @@ import { Pool } from "@neondatabase/serverless";
 export const runtime = "edge";
 
 const createPlayerRolesSchema = zod.object({
-  id: zod.string().max(64).min(1),
+  id: zod.string().max(64).min(1).optional(),
+  username: zod.string().max(255).min(1).optional(),
   role: zod.string().max(255).min(1),
   rankName: zod.string().max(255),
   rankDivision: zod.string().max(64).min(1),
+}).refine(data => data.id || data.username, {
+  message: "Either 'id' or 'username' must be provided",
 });
 
 /**
@@ -26,18 +29,18 @@ const createPlayerRolesSchema = zod.object({
 async function createPlayerRolesHandler(req: NextRequest) {
   const body = await extractbody(req);
 
-  const { id, role, rankName, rankDivision } =
+  const { id, username, role, rankName, rankDivision } =
     createPlayerRolesSchema.parse(body);
 
   const createPlayerRolesQuery = sqlstring.format(
     `INSERT INTO playerroles (playerid, roleid, rankid) 
     SELECT p.playerid, r.roleid, rk.rankid 
     FROM players p, roles r, ranks rk 
-    WHERE p.playerid = ? 
+    WHERE (p.playerid = ? OR p.username = ?)
       AND r.rolename = ? 
       AND rk.rankname = ? 
       AND rk.division = ?;`,
-    [id, role, rankName, rankDivision]
+    [id, username, role, rankName, rankDivision]
   );
 
   const pool = new Pool({

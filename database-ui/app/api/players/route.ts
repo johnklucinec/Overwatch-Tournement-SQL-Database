@@ -39,15 +39,21 @@ async function createPlayerHandler(req: NextRequest) {
   );
 
   try {
-    const { rows: userRows } = await pool.query(createPlayerQuery);
+    const result = await pool.query(createPlayerQuery);
 
-    return new Response(JSON.stringify({ userRows }), {
+    if (result.rowCount === 0) {
+      return new Response("Failed to create player", {
+        status: 400,
+      });
+    }
+
+    return new Response(JSON.stringify({ userRows: result.rows }), {
       status: 200,
     });
   } catch (e) {
     console.error(e);
-    return new Response("Page not found", {
-      status: 404,
+    return new Response("Internal server error", {
+      status: 500,
     });
   } finally {
     await pool.end();
@@ -127,19 +133,135 @@ async function readPlayersHandler(req: NextRequest) {
 
   try {
     const query = id ? getPlayerQuery : getPlayersQuery;
-    const { rows: playersRows } = await pool.query(query || "");
-
-    return new Response(JSON.stringify({ playersRows }), {
+    const result = await pool.query(query || "");
+  
+    if (result.rowCount === 0) {
+      return new Response("No player found with this id", {
+        status: 404,
+      });
+    }
+  
+    return new Response(JSON.stringify({ playersRows: result.rows }), {
       status: 200,
     });
   } catch (e) {
     console.error(e);
-    return new Response("Page not found", {
-      status: 404,
+    return new Response("Internal server error", {
+      status: 500,
     });
   } finally {
     await pool.end();
   }
+}
+
+/**
+ * Usage Example: Send a DELETE request to 'http://localhost:3000/api/players/?id=1' to delete the player with ID 1.
+ */
+async function deletePlayerHandler(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+
+  const id = searchParams.get("id");
+
+  if (!id) {
+    return new Response("Missing player id", {
+      status: 400,
+    });
+  }
+
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+  });
+
+  const deletePlayerQuery = sqlstring.format(
+    `
+    DELETE FROM players
+    WHERE playerid = ?;
+    `,
+    [id]
+  );
+
+  try {
+    const result = await pool.query(deletePlayerQuery);
+
+    if (result.rowCount === 0) {
+      return new Response("No player found with this id", {
+        status: 400,
+      });
+    }
+
+    return new Response(
+      JSON.stringify({ message: "Player deleted successfully" }),
+      {
+        status: 200,
+      }
+    );
+  } catch (e) {
+    console.error(e);
+    return new Response("Internal server error", {
+      status: 500,
+    });
+  } finally {
+    await pool.end();
+  }
+}
+
+const updatePlayerSchema = zod.object({
+  id: zod.string().max(255).min(1),
+  username: zod.string().max(255).min(1).optional(),
+  email: zod.string().email().optional(),
+});
+
+/**
+ * Usage Example: Send a PATCH request to 'http://localhost:3000/api/players/' to update the player with a body containing 'id', 'username', and 'email'
+ */
+async function updatePlayerHandler(req: NextRequest) {
+  const body = await extractbody(req);
+
+  const { id, username, email } = updatePlayerSchema.parse(body);
+
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+  });
+
+  const updatePlayerQuery = sqlstring.format(
+    `
+    UPDATE public.players
+    SET
+      username = COALESCE(NULLIF(?, ''), username),
+      email = COALESCE(NULLIF(?, ''), email)
+    WHERE playerid = ?;
+    `,
+    [username, email, id]
+  );
+
+  try {
+    const result = await pool.query(updatePlayerQuery);
+
+    if (result.rowCount === 0) {
+      return new Response("Failed to update player", {
+        status: 400,
+      });
+    }
+
+    return new Response(JSON.stringify({ message: "Player updated successfully" }), {
+      status: 200,
+    });
+  } catch (e) {
+    console.error(e);
+    return new Response("Internal server error", {
+      status: 500,
+    });
+  } finally {
+    await pool.end();
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  return updatePlayerHandler(req);
+}
+
+export async function DELETE(req: NextRequest) {
+  return deletePlayerHandler(req);
 }
 
 export async function POST(req: NextRequest) {

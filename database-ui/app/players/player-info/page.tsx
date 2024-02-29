@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import Nav from "@/components/header-bar";
 import React from "react";
 
-import CardWithForm from "@/components/cards-and-sheets/edit-player-card";
+import CardWithForm from "@/components/cards-and-sheets/edit-player-dialog";
 import DataTablePlayers from "@/components/tables/player-roles-table";
 
 export default function Page() {

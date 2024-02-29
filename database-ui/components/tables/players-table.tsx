@@ -16,6 +16,11 @@ import {
 } from "@tanstack/react-table";
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 
+import dynamic from "next/dynamic";
+const DeleteAlertNoSSR = dynamic(() => import("@/components/delete-alert"), {
+  ssr: false,
+});
+
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -208,8 +213,6 @@ export const columns: ColumnDef<Player>[] = [
             >
               View player details
             </DropdownMenuItem>
-            <DropdownMenuItem>Edit player</DropdownMenuItem>
-            <DropdownMenuItem>Delete player</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -225,30 +228,47 @@ export default function DataTablePlayers() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  const [data, setData] = useState<Player[]>([]); // Add this line
+  const [data, setData] = useState<Player[]>([]);
+
+  const fetchPlayers = async () => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/players/`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const result = await response.json();
+    setData(result.playersRows);
+  };
 
   useEffect(() => {
-    const fetchPlayers = async () => {
-      const response = await fetch('http://localhost:3000/api/players/');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const result = await response.json();
-      setData(result.playersRows); // Set the fetched data
-    };
-
-    fetchPlayers().catch(e => {
-      console.error('An error occurred while fetching the players data.', e);
+    fetchPlayers().catch((e) => {
+      console.error("An error occurred while fetching the players data.", e);
     });
   }, []);
 
-
-  const handleDelete = () => {
+  const handleContinue = async () => {
+    console.log("Continued");
     const selectedRows = table.getFilteredSelectedRowModel().rows;
-    selectedRows.forEach((row) => {
-      // Perform deletion operation here
-      console.log(`Deleting row with id: ${row.id}`);
+    for (const row of selectedRows) {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/players/?id=${row.original.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        console.error(`Failed to delete player with id: ${row.original.id}`);
+        continue;
+      }
+
+      console.log(`Deleted player with id: ${row.original.id}`);
+    }
+
+    // Refresh the table
+    fetchPlayers().catch((e) => {
+      console.error("An error occurred while refreshing the players data.", e);
     });
+  };
+
+  const handleCancel = () => {
+    console.log("Cancelled");
   };
 
   const table = useReactTable({
@@ -381,13 +401,17 @@ export default function DataTablePlayers() {
             Next
           </Button>
 
-          <Button
-            size="sm"
-            onClick={handleDelete}
-            disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+          <DeleteAlertNoSSR
+            onCancel={handleCancel}
+            onContinue={handleContinue}
           >
-            Delete
-          </Button>
+            <Button
+              size="sm"
+              disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+            >
+              Delete
+            </Button>
+          </DeleteAlertNoSSR>
         </div>
       </div>
     </div>
