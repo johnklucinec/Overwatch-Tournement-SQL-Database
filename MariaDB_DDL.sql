@@ -77,8 +77,8 @@ CREATE OR REPLACE TABLE TeamPlayers (
 
 -- Intersection Table - this links Tournaments and Teams (M:N)
 CREATE OR REPLACE TABLE TournamentTeams (
-    tournamentID INT NOT NULL,
-    teamID INT NOT NULL,
+    tournamentID INT,
+    teamID INT,
     PRIMARY KEY (tournamentID, teamID),
     FOREIGN KEY (tournamentID) REFERENCES Tournaments(tournamentID) ON DELETE CASCADE,
     FOREIGN KEY (teamID) REFERENCES Teams(teamID) ON DELETE CASCADE
