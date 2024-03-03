@@ -13,6 +13,19 @@ import { Pool } from "@neondatabase/serverless";
 
 export const runtime = "edge";
 
+/**
+ * Creates custom response messages
+ */
+function createResponse(message: string, status: number): Response {
+  return new Response(JSON.stringify({ message }), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+/**
+ * Schema to check for valid entries into the database
+ */
 const createPlayerschema = zod.object({
   username: zod.string().max(255).min(1),
   email: zod.string().email(),
@@ -23,7 +36,6 @@ const createPlayerschema = zod.object({
  */
 async function createPlayerHandler(req: NextRequest) {
   const body = await extractbody(req);
-
   const { username, email } = createPlayerschema.parse(body);
 
   const pool = new Pool({
@@ -42,19 +54,15 @@ async function createPlayerHandler(req: NextRequest) {
     const result = await pool.query(createPlayerQuery);
 
     if (result.rowCount === 0) {
-      return new Response("Failed to create player", {
-        status: 400,
-      });
+      return createResponse("Failed to create player", 400);
     }
 
-    return new Response(JSON.stringify({ userRows: result.rows }), {
-      status: 200,
-    });
+    return createResponse("Player added successfully", 200);
+
   } catch (e) {
-    console.error(e);
-    return new Response("Internal server error", {
-      status: 500,
-    });
+    console.error((e as Error).message);
+    return createResponse((e as Error).message, 500);
+
   } finally {
     await pool.end();
   }
@@ -65,7 +73,6 @@ async function createPlayerHandler(req: NextRequest) {
  */
 async function readPlayersHandler(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-
   const id = searchParams.get("id");
 
   const pool = new Pool({
@@ -134,21 +141,19 @@ async function readPlayersHandler(req: NextRequest) {
   try {
     const query = id ? getPlayerQuery : getPlayersQuery;
     const result = await pool.query(query || "");
-  
+
     if (result.rowCount === 0) {
-      return new Response("No player found with this id", {
-        status: 404,
-      });
+      return createResponse("No Player found with this ID", 400);
     }
-  
+
     return new Response(JSON.stringify({ playersRows: result.rows }), {
       status: 200,
     });
+
   } catch (e) {
-    console.error(e);
-    return new Response("Internal server error", {
-      status: 500,
-    });
+    console.error((e as Error).message);
+    return createResponse((e as Error).message, 500);
+
   } finally {
     await pool.end();
   }
@@ -159,13 +164,10 @@ async function readPlayersHandler(req: NextRequest) {
  */
 async function deletePlayerHandler(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-
   const id = searchParams.get("id");
 
   if (!id) {
-    return new Response("Missing player id", {
-      status: 400,
-    });
+    return createResponse("Missing Player ID", 400);
   }
 
   const pool = new Pool({
@@ -184,27 +186,24 @@ async function deletePlayerHandler(req: NextRequest) {
     const result = await pool.query(deletePlayerQuery);
 
     if (result.rowCount === 0) {
-      return new Response("No player found with this id", {
-        status: 400,
-      });
+      return createResponse("No Player found with that ID", 400);
     }
 
-    return new Response(
-      JSON.stringify({ message: "Player deleted successfully" }),
-      {
-        status: 200,
-      }
-    );
+    return createResponse("Player deleted successfully", 200);
+
   } catch (e) {
-    console.error(e);
-    return new Response("Internal server error", {
-      status: 500,
-    });
+    console.error((e as Error).message);
+    return createResponse((e as Error).message, 500);
+
   } finally {
     await pool.end();
   }
 }
 
+/**
+ * Schema to check for valid entries into the database
+ * Needs optional()
+ */
 const updatePlayerSchema = zod.object({
   id: zod.string().max(255).min(1),
   username: zod.string().max(255).min(1).optional(),
@@ -216,13 +215,13 @@ const updatePlayerSchema = zod.object({
  */
 async function updatePlayerHandler(req: NextRequest) {
   const body = await extractbody(req);
-
   const { id, username, email } = updatePlayerSchema.parse(body);
 
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
   });
 
+  // username or email can be optional if left blank
   const updatePlayerQuery = sqlstring.format(
     `
     UPDATE public.players
@@ -238,19 +237,15 @@ async function updatePlayerHandler(req: NextRequest) {
     const result = await pool.query(updatePlayerQuery);
 
     if (result.rowCount === 0) {
-      return new Response("Failed to update player", {
-        status: 400,
-      });
+      return createResponse("Failed to update player", 400);
     }
 
-    return new Response(JSON.stringify({ message: "Player updated successfully" }), {
-      status: 200,
-    });
+    return createResponse("Player updated successfully", 200);
+
   } catch (e) {
-    console.error(e);
-    return new Response("Internal server error", {
-      status: 500,
-    });
+    console.error((e as Error).message);
+    return createResponse((e as Error).message, 500);
+    
   } finally {
     await pool.end();
   }
