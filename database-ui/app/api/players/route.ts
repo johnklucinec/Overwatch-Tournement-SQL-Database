@@ -82,22 +82,22 @@ async function readPlayersHandler(req: NextRequest) {
   const getPlayerQuery = id
     ? sqlstring.format(
         `
-    SELECT
-    p.username AS "Player Name",
-    r.rankname AS "Highest Rank",
-    to_char(p.createdat, 'YYYY-MM-DD') AS "Date Added",
-    p.email AS "Email"
-    FROM
-        players p
-    JOIN
-        playerroles pr ON p.playerid = pr.playerid
-    JOIN
-        ranks r ON pr.rankid = r.rankid
-    WHERE
-        p.playerid = ?
-    ORDER BY
-        r.mmr DESC
-    LIMIT 1;
+        SELECT
+        p.username AS "name",
+        r.rankname || ' ' || r.division AS "highestRank",
+        to_char(p.createdat, 'YYYY-MM-DD') AS "createdAt",
+        p.email AS "email"
+        FROM
+            players p
+        JOIN
+            playerroles pr ON p.playerid = pr.playerid
+        JOIN
+            ranks r ON pr.rankid = r.rankid
+        WHERE
+            p.playerid = ?
+        ORDER BY
+            r.mmr DESC
+        LIMIT 1;
     `,
         [id]
       )

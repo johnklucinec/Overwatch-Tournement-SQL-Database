@@ -19,6 +19,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 
+/* API Route to populate the Players table */
+const PLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/players/`;
+
 /**
  * Schema to check for user error
  */
@@ -26,6 +29,22 @@ const FormSchema = z.object({
   id: z.string(),
   username: z.string().max(20).optional(),
   email: z.string().optional(),
+})
+.refine(data => data.username || data.email, {
+  message: "Either username or email must be entered",
+  path: ['username'] // specify the field to attach the error to
+})
+.refine(data => data.username || data.email, {
+  message: "Either username or email must be entered",
+  path: ['email'] // specify the field to attach the error to
+}).refine(data => {
+  if ((data.email ?? "") !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email ?? "")) {
+    return false; // return false if email is not valid
+  }
+  return true; // return true otherwise
+}, {
+  message: "Invalid email format",
+  path: ['email']
 });
 
 /**
@@ -85,12 +104,24 @@ async function processResponse(
    return;
   }
   
+  // Display the data the user submitted in a toast popup.
+  /*
+   * @param data - The data submitted by the user.
+   * @param message - Error message from fetch APIs or above
+   * @param status - Contains status code from fetch APIs
+   */
   showSubmissionToast(data, { message, status: response.status });
+
   return result;
   
 }
 
-export default function EditPlayerInputForm() {
+interface EditPlayerInputFormProps {
+  id: string;
+}
+
+export default function EditPlayerInputForm({id}: EditPlayerInputFormProps) {
+ 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -101,12 +132,10 @@ export default function EditPlayerInputForm() {
   });
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get("id");
     if (id) {
       form.setValue("id", id);
     }
-  }, [form]);
+  }, [form, id]);
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     if (!data.username && !data.email) {
@@ -125,7 +154,7 @@ export default function EditPlayerInputForm() {
     };
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/players/`,
+      PLAYERS_API_URL,
       {
         method: "PATCH",
         headers: {
@@ -135,12 +164,25 @@ export default function EditPlayerInputForm() {
       }
     );
 
+    // Reset le form
+    form.reset({
+        id: id,
+        username: "",
+        email: "",
+    });
+        
     return processResponse(response, data);
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          form.handleSubmit((formData) => onSubmit(formData))();
+        }}
+        className="space-y-2"
+      >
         <FormField
           control={form.control}
           name="username"

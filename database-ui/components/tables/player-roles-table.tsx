@@ -1,6 +1,26 @@
 "use client";
 
-import * as React from "react";
+import React, { useCallback, useEffect, useState } from "react";
+
+import dynamic from "next/dynamic";
+
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+const DeleteAlertNoSSR = dynamic(() => import("@/components/delete-alert"), {
+  ssr: false,
+});
+
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,20 +33,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -36,41 +43,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-{
-  /* Add the sample data */
-}
-const data: Role[] = [
-  {
-    id: "1",
-    rank: "Master 4",
-    role: "TANK",
-  },
-  {
-    id: "2",
-    rank: "Grandmaster 4",
-    role: "DPS",
-  },
-  {
-    id: "3",
-    rank: "Master 2",
-    role: "SUPPORT",
-  },
-];
+import DialogWithForm from "@/components/cards-and-sheets/edit-player-dialog";
 
-export type Role = {
+import EditRoleDialog from "@/components/cards-and-sheets/edit-playerroles-dialog";
+
+const PLAYERROLES_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/playerroles/`
+
+export type PlayerRole = {
   id: string;
   rank: string;
   role: string;
 };
 
 {
-  /* We need to sort the data with the mmr */
-}
-
-{
   /* Fill the table with data */
 }
-export const columns: ColumnDef<Role>[] = [
+export const columns: ColumnDef<PlayerRole>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -111,6 +99,7 @@ export const columns: ColumnDef<Role>[] = [
     cell: ({ row }) => <div className="ml-4">{row.getValue("id")}</div>,
   },
 
+    // Add the player role to the table. Sortable.
   {
     accessorKey: "role",
     header: ({ column }) => {
@@ -127,6 +116,7 @@ export const columns: ColumnDef<Role>[] = [
     cell: ({ row }) => <div className="ml-4">{row.getValue("role")}</div>,
   },
 
+  // Add the player rank to the table. Sortable.
   {
     accessorKey: "rank",
     header: ({ column }) => {
@@ -143,8 +133,9 @@ export const columns: ColumnDef<Role>[] = [
     cell: ({ row }) => <div className="ml-4">{row.getValue("rank")}</div>,
   },
 
+  /* Create the action menu (...) */
   {
-    /* All the Actions */ id: "actions",
+    id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
       const role = row.original;
@@ -166,9 +157,6 @@ export const columns: ColumnDef<Role>[] = [
             >
               Copy Rank and Role
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Edit role</DropdownMenuItem>
-            <DropdownMenuItem>Delete role</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -179,22 +167,66 @@ export const columns: ColumnDef<Role>[] = [
 {
   /* Generate the table */
 }
-export default function DataTableRoles() {
+interface DataTablePlayersProps {
+  id: string;
+  fetchPlayerInfo: () => Promise<void>;
+}
+
+export default function DataTablePlayers({id, fetchPlayerInfo}: DataTablePlayersProps) {
+  // function body
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [data, setData] = useState<PlayerRole[]>([]);
 
-  const handleDelete = () => {
+  /* Load and Update the table information */
+  const fetchPlayers = useCallback(async () => {
+    const response = await fetch(`${PLAYERROLES_API_URL}?id=${id}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const result = await response.json();
+    setData(result.playerRolesRows);
+  },[id]);
+
+  useEffect(() => {
+    fetchPlayers().catch((e) => {
+      console.error("An error occurred while fetching the players data.", e);
+    });
+  }, [fetchPlayers]);
+
+  /* Process Player Deletion */
+
+  /* NEED TO MAKE SURE AT LEAST ONE ROLE IS LEFT */
+  const handleContinue = async () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
-    selectedRows.forEach((row) => {
-      // Perform deletion operation here
-      console.log(`Deleting row with id: ${row.id}`);
+    const getDeletePlayerUrl = (id: string) => `${PLAYERROLES_API_URL}?id=${id}`;
+
+    for (const row of selectedRows) {
+      const response = await fetch(getDeletePlayerUrl(row.original.id), {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        console.error(`Failed to delete player with id: ${row.original.id}`);
+        continue;
+      }
+
+      console.log(`Deleted player with id: ${row.original.id}`);
+    }
+
+    // Refresh the table
+    fetchPlayers().catch((e) => {
+      console.error("An error occurred while refreshing the players data.", e);
     });
   };
+
+  /* Do nothing */
+  const handleCancel = () => {};
 
   const table = useReactTable({
     data,
@@ -217,12 +249,22 @@ export default function DataTableRoles() {
 
   return (
     <div className="w-full p-5">
+      <div className="flex flex-4 items-center space-x-2">
+        {/* Pass fetchPlayers so Edit Player Dialog can update table */}
+        <DialogWithForm onClose={fetchPlayerInfo} id={id}/>
+
+        {/* Pass fetchPlayers so Edit Role Dialog can update table */}
+        <EditRoleDialog onClose={() => [fetchPlayers(), fetchPlayerInfo()]} 
+        id={id}
+        data={data} />
+      </div>
+
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter roles..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn("role")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn("role")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -325,13 +367,17 @@ export default function DataTableRoles() {
           >
             Next
           </Button>
-          <Button
-            size="sm"
-            onClick={handleDelete}
-            disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+          <DeleteAlertNoSSR
+            onCancel={handleCancel}
+            onContinue={handleContinue}
           >
-            Delete
-          </Button>
+            <Button
+              size="sm"
+              disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+            >
+              Delete
+            </Button>
+          </DeleteAlertNoSSR>
         </div>
       </div>
     </div>

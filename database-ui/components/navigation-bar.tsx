@@ -16,7 +16,7 @@ const NavBar = () => {
   const pathname = usePathname();
 
   const isHomePage = pathname === "/";
-  const isTournamentPage = pathname.startsWith("/tournaments"); // Adjust patterns as needed
+  const isTournamentPage = pathname.startsWith("/tournaments");
   const isTeamsPage = pathname.startsWith("/teams");
   const isPlayersPage = pathname.startsWith("/players");
   const isRanksRolesPage = pathname.startsWith("/ranks-roles");
