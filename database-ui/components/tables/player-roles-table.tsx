@@ -8,6 +8,7 @@ import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
 const DeleteAlertNoSSR = dynamic(() => import("@/components/delete-alert"), {
   ssr: false,
 });
@@ -24,6 +25,7 @@ import {
 import {
   ColumnDef,
   ColumnFiltersState,
+  Row,
   SortingState,
   VisibilityState,
   flexRender,
@@ -53,6 +55,7 @@ export type PlayerRole = {
   id: string;
   rank: string;
   role: string;
+  mmr: number;
 };
 
 {
@@ -102,17 +105,15 @@ export const columns: ColumnDef<PlayerRole>[] = [
     // Add the player role to the table. Sortable.
   {
     accessorKey: "role",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Role
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Role
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => <div className="ml-4">{row.getValue("role")}</div>,
   },
 
@@ -131,6 +132,11 @@ export const columns: ColumnDef<PlayerRole>[] = [
       );
     },
     cell: ({ row }) => <div className="ml-4">{row.getValue("rank")}</div>,
+    sortingFn: (rowA: Row<PlayerRole>, rowB: Row<PlayerRole>) => {
+      const a = rowA.original;
+      const b = rowB.original;
+      return a.mmr - b.mmr;
+    },
   },
 
   /* Create the action menu (...) */
@@ -199,34 +205,57 @@ export default function DataTablePlayers({id, fetchPlayerInfo}: DataTablePlayers
     });
   }, [fetchPlayers]);
 
-  /* Process Player Deletion */
+  /* Process Player Role Deletion */
 
   /* NEED TO MAKE SURE AT LEAST ONE ROLE IS LEFT */
   const handleContinue = async () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
-    const getDeletePlayerUrl = (id: string) => `${PLAYERROLES_API_URL}?id=${id}`;
+    const totalRows = table.getRowModel().rows; 
+  
+    if (selectedRows.length >= totalRows.length) {
+      
+      toast({
+        title: "Error",
+        description: "You cannot delete all roles. At least one role must be left.",
+      });
+      return;
+    }
+  
+    let deletedRoles = [];
 
     for (const row of selectedRows) {
-      const response = await fetch(getDeletePlayerUrl(row.original.id), {
+
+      const response = await fetch(PLAYERROLES_API_URL, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id, role: row.original.role.toUpperCase() }),
       });
 
       if (!response.ok) {
-        console.error(`Failed to delete player with id: ${row.original.id}`);
-        continue;
+        toast({
+          title: "Error",
+          description: "There was a problem deleting the roles.",
+        });
+        return
       }
-
-      console.log(`Deleted player with id: ${row.original.id}`);
+      deletedRoles.push("{ " + row.original.role.toUpperCase() + " } ")
     }
 
+    toast({
+      title: "Roles Deleted: ",
+      description: deletedRoles,
+    });
+  
     // Refresh the table
     fetchPlayers().catch((e) => {
       console.error("An error occurred while refreshing the players data.", e);
     });
   };
 
-  /* Do nothing */
-  const handleCancel = () => {};
+      /* Do nothing */
+      const handleCancel = () => {}; // Wintah if he was a function
 
   const table = useReactTable({
     data,

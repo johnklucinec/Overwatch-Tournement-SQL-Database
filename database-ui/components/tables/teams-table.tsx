@@ -1,23 +1,19 @@
 "use client";
 
-import * as React from "react";
-import { useRouter } from "next/navigation";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
+import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
+const DeleteAlertNoSSR = dynamic(() => import("@/components/delete-alert"), {
+  ssr: false,
+});
+
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -27,7 +23,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  Row,
+  SortingState,
+  VisibilityState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+
 import {
   Table,
   TableBody,
@@ -37,43 +47,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-{
-  /* Add the sample data */
-}
-const data: Team[] = [
-  {
-    id: "1",
-    players: 5,
-    averageRank: "Grandmaster 4",
-    mmr: 4100,
-    name: "WildCats",
-    formationDate: "2024-03-01",
-  },
-  {
-    id: "2",
-    players: 5,
-    averageRank: "Grandmaster 4",
-    mmr: 4100,
-    name: "HellCats",
-    formationDate: "2024-03-01",
-  },
-  {
-    id: "3",
-    players: 5,
-    averageRank: "Grandmaster 5",
-    mmr: 4000,
-    name: "DragonGuardians",
-    formationDate: "2024-03-01",
-  },
-  {
-    id: "4",
-    players: 5,
-    averageRank: "Grandmaster 5",
-    mmr: 4000,
-    name: "WolfGuardians",
-    formationDate: "2024-03-01",
-  },
-];
+/* Dialog with Button to add a new player */
+import DialogWithForm from "@/components/cards-and-sheets/add-team-dialog";
+
+/* API Route to populate the players table */
+const TEAMS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teams/`;
 
 export type Team = {
   id: string;
@@ -132,6 +110,7 @@ export const columns: ColumnDef<Team>[] = [
     cell: ({ row }) => <div className="ml-4">{row.getValue("id")}</div>,
   },
 
+  // Add the team names to the table. Sortable.
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -148,6 +127,8 @@ export const columns: ColumnDef<Team>[] = [
     cell: ({ row }) => <div className="ml-4">{row.getValue("name")}</div>,
   },
 
+  // Add the teams average rank to the table. Sortable.
+  // Sorts behind the scenes with the players MMR
   {
     accessorKey: "averageRank",
     header: ({ column }) => {
@@ -162,8 +143,14 @@ export const columns: ColumnDef<Team>[] = [
       );
     },
     cell: ({ row }) => <div className="ml-4">{row.getValue("averageRank")}</div>,
+    sortingFn: (rowA: Row<Team>, rowB: Row<Team>) => {
+      const a = rowA.original;
+      const b = rowB.original;
+      return a.mmr - b.mmr;
+    },
   },
 
+  // Add the teams formation date to the table. Sortable.
   {
     accessorKey: "formationDate",
     header: ({ column }) => {
@@ -180,16 +167,29 @@ export const columns: ColumnDef<Team>[] = [
     cell: ({ row }) => <div className="ml-4">{row.getValue("formationDate")}</div>,
   },
 
+  // Add the players created at date to the table. Sortable.
   {
     accessorKey: "players",
-    header: () => <div className="text-right">Players</div>,
-    cell: ({ row }) => (
-      <div className="text-right font-medium">{row.getValue("players")}</div>
-    ),
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Players
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const { players } = row.original;
+      return <div className="ml-4">{players}</div>;
+    },
   },
 
+  /* All the Actions */ 
   {
-    /* All the Actions */ id: "actions",
+    id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
       const team = row.original;
@@ -222,8 +222,6 @@ export const columns: ColumnDef<Team>[] = [
             >
               View team details
             </DropdownMenuItem>
-            <DropdownMenuItem>Edit team</DropdownMenuItem>
-            <DropdownMenuItem>Delete team</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -235,21 +233,80 @@ export const columns: ColumnDef<Team>[] = [
   /* Generate the table */
 }
 export default function DataTableTeams() {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    {}
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [rowSelection, setRowSelection] = useState({});
+  const [data, setData] = useState<Team[]>([]);
 
-  const handleDelete = () => {
-    const selectedRows = table.getFilteredSelectedRowModel().rows;
-    selectedRows.forEach((row) => {
-      // Perform deletion operation here
-      console.log(`Deleting row with id: ${row.id}`);
-    });
+  /* Load and Update the table information */
+  const fetchTeams = async () => {
+
+    const response = await fetch(TEAMS_API_URL);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const result = await response.json();
+    setData(result.playersRows);
+    // WHY IS THIS PLAYER ROWS??
   };
+
+  useEffect(() => {
+    fetchTeams().catch((e) => {
+      console.error("An error occurred while fetching the teams data.", e);
+    });
+  }, []);
+
+  /* Process Team Deletion */
+  const handleContinue = async () => {
+
+
+    toast({
+      title: "Error",
+      description: "This Function is not ready yet",
+    });
+
+    return;
+    /*
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    //const getDeletePlayerUrl = (id: string) => `${TEAMS_API_URL}?id=${id}`;
+    let deletedTeams = [];
+
+    for (const row of selectedRows) {
+      const response = await fetch(TEAMS_API_URL, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id, role: row.original.role.toUpperCase() }),
+      });
+
+      if (!response.ok) {
+        toast({
+          title: "Error",
+          description: "There was a problem deleting the teams.",
+        });
+        return
+      }
+      deletedTeams.push("{ " + row.original.name + " } ")
+    }
+
+    toast({
+      title: "Teams Deleted: ",
+      description: deletedRoles,
+    });
+
+    // Refresh the table
+    fetchPlayers().catch((e) => {
+      console.error("An error occurred while refreshing the players data.", e);
+    });
+    */
+  };
+
+  /* Do nothing */
+  const handleCancel = () => {};
 
   const table = useReactTable({
     data,
@@ -272,6 +329,11 @@ export default function DataTableTeams() {
 
   return (
     <div className="w-full p-5">
+      <div className="flex flex-4 items-center space-x-2">
+        {/* Pass fetchTeams so Dialog can update table */}
+        <DialogWithForm onClose={fetchTeams}/>
+      </div>
+
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter teams..."
@@ -381,13 +443,17 @@ export default function DataTableTeams() {
             Next
           </Button>
 
-          <Button
-            size="sm"
-            onClick={handleDelete}
-            disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+          <DeleteAlertNoSSR
+            onCancel={handleCancel}
+            onContinue={handleContinue}
           >
-            Delete
-          </Button>
+            <Button
+              size="sm"
+              disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+            >
+              Delete
+            </Button>
+          </DeleteAlertNoSSR>
         </div>
       </div>
     </div>

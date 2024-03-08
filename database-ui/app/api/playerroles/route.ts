@@ -95,12 +95,14 @@ async function readPlayerRolesHandler(req: NextRequest) {
   const getPlayerRolesQuery = sqlstring.format(
     `
     SELECT pr.roleid AS "id",
-           r.rolename AS "role",
-           rk.rankname || ' ' || rk.division AS "rank"
+      r.rolename AS "role",
+      rk.rankname || ' ' || rk.division AS "rank",
+      rk.mmr AS "mmr"
     FROM playerroles pr
     JOIN roles r ON pr.roleid = r.roleid
     JOIN ranks rk ON pr.rankid = rk.rankid
-    WHERE pr.playerid = ?;
+    WHERE pr.playerid = ?
+    ORDER BY pr.roleid ASC;
   `,
     [id]
   );

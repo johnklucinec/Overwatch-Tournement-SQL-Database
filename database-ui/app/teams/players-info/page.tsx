@@ -1,15 +1,14 @@
 /* eslint-disable no-unused-vars, no-redeclare */
 "use client";
+
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
-
+import React, { useState, Suspense, useEffect, useCallback } from "react";
 import Nav from "@/components/header-bar";
-import React from "react";
 
-import CardWithForm from "@/components/cards-and-sheets/add-teamplayer-card";
-import PlayerCardWithForm from "@/components/cards-and-sheets/edit-teamplayer-card";
-import CardWithFormEditTeam from "@/components/cards-and-sheets/edit-team-card";
-import DataTablePlayers from "@/components/tables/players-table";
+import DataTablePlayers from "@/components/tables/team-players-table";
+
+/* API Route to populate the Players table */
+const TEAMPLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/players/`;
 
 export default function Page() {
   return (
@@ -21,15 +20,37 @@ export default function Page() {
 
 function PageContent() {
   const searchParams = useSearchParams();
-  let name = searchParams.get("name") ?? "Team Name";
-  let id = searchParams.get("id") ?? "1";
 
-  // Get this data from the database
-  const averageRank = "Grandmaster  4";
-  const formationDate = "2024-06-31";
-  const players = "5";
-  name = name ?? "Team Name"; // Update this with tournament name if name is changed
-  id = id ?? "1";
+  const [id] = useState(searchParams.get("id") ?? "1");
+  const [name, setName] = useState(searchParams.get("name") ?? "Player Name");
+  const [players, setplayers] = useState("loading...");
+  const [formationDate, setFormationDate] = useState("loading...");
+  const [averageRank, setAverageRank] = useState("loading...");
+
+  // Fetch the team's player information
+  const fetchPlayerInfo = useCallback(async () => {
+    const response = await fetch(`${TEAMPLAYERS_API_URL}?id=${id}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    // Update the state with the fetched data
+    const [player] = result.playersRows;
+    setName(player.name);
+    setplayers(player.players);
+    setFormationDate(player.date);
+    setAverageRank(player.averageRank);
+  }, [id]); // Add an empty array as the second argument
+
+  /* Load and update the player information */
+  useEffect(() => {
+    fetchPlayerInfo().catch((e) => {
+      console.error("An error occurred while fetching the players data.", e);
+    });
+  }, [fetchPlayerInfo, id]);
 
   return (
     <main className="p-24">
@@ -57,23 +78,6 @@ function PageContent() {
 
           {/* Top Banner */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-1 items-center space-x-2">
-                {/* Add Information Button */}
-                <CardWithFormEditTeam name={name} />
-
-                <div>
-                  <p>|</p>
-                </div>
-
-                {/* Edit Information Button */}
-                <CardWithForm />
-
-                {/* Edit Information Button */}
-                <PlayerCardWithForm />
-              </div>
-            </div>
-
             {/* Table Section */}
             <div className="rounded-md border">
               <div className="relative w-full overflow-auto">

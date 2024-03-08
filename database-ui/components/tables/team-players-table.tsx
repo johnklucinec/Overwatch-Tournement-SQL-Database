@@ -46,8 +46,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-/* Dialog with Button to add a new player */
-import DialogWithForm from "@/components/cards-and-sheets/add-player-dialog";
+
+/* Need to change these to dialogs */
+import CardWithForm from "@/components/cards-and-sheets/add-teamplayer-card";
+import PlayerCardWithForm from "@/components/cards-and-sheets/edit-teamplayer-card";
+import CardWithFormEditTeam from "@/components/cards-and-sheets/edit-team-card";
 
 /* API Route to populate the players table */
 const PLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/players/`;
@@ -329,8 +332,25 @@ export default function DataTablePlayers() {
     <div className="w-full p-5">
       <div className="flex flex-4 items-center space-x-2">
         {/* Pass fetchPlayers so Dialog can update table */}
-        <DialogWithForm onClose={fetchPlayers}/>
-      </div>
+        {/* <DialogWithForm onClose={fetchPlayers}/> */}
+        <div className="flex items-center justify-between">
+              <div className="flex flex-1 items-center space-x-2">
+                {/* Add Information Button */}
+                <CardWithFormEditTeam />
+
+                <div>
+                  <p>|</p>
+                </div>
+
+                {/* Edit Information Button */}
+                <CardWithForm />
+
+                {/* Edit Information Button */}
+                <PlayerCardWithForm />
+              </div>
+            </div>
+          </div>
+
 
       <div className="flex items-center py-4">
         <Input
