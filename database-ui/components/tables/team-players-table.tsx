@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -53,7 +53,7 @@ import PlayerCardWithForm from "@/components/cards-and-sheets/edit-teamplayer-ca
 import CardWithFormEditTeam from "@/components/cards-and-sheets/edit-team-card";
 
 /* API Route to populate the players table */
-const PLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/players/`;
+const TEAMPLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teamplayers/`;
 
 export type Player = {
   id: string;
@@ -61,7 +61,7 @@ export type Player = {
   highestrank: string;
   mmr: number;
   email: string;
-  createdat: string;
+  createdAt: string;
   name: string;
 };
 
@@ -133,17 +133,17 @@ export const columns: ColumnDef<Player>[] = [
   // Add the players highest rank to the table. Sortable.
   // Sorts behind the scenes with the players MMR
   {
-    accessorKey: "highestrank",
+    accessorKey: "highestRole",
     header: ({ column }) => (
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        MMR
+        Highest Role
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div className="ml-4">{row.getValue("highestrank")}</div>,
+    cell: ({ row }) => <div className="ml-4">{row.getValue("highestRole")}</div>,
     sortingFn: (rowA: Row<Player>, rowB: Row<Player>) => {
       const a = rowA.original;
       const b = rowB.original;
@@ -173,7 +173,7 @@ export const columns: ColumnDef<Player>[] = [
 
   // Add the players created at date to the table. Sortable.
   {
-    accessorKey: "createdat",
+    accessorKey: "createdAt",
     header: ({ column }) => {
       return (
         <Button
@@ -186,8 +186,8 @@ export const columns: ColumnDef<Player>[] = [
       );
     },
     cell: ({ row }) => {
-      const { createdat } = row.original;
-      return <div className="ml-4">{createdat}</div>;
+      const { createdAt } = row.original;
+      return <div className="ml-4">{createdAt}</div>;
     },
   },
 
@@ -256,7 +256,13 @@ export const columns: ColumnDef<Player>[] = [
 {
   /* Generate the table */
 }
-export default function DataTablePlayers() {
+interface DataTablePlayersProps {
+  id: string;
+  fetchTeamPlayerInfo: () => Promise<void>;
+}
+
+// eslint-disable-next-line no-unused-vars
+export default function DataTablePlayers({id, fetchTeamPlayerInfo}: DataTablePlayersProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
@@ -266,26 +272,25 @@ export default function DataTablePlayers() {
   const [data, setData] = useState<Player[]>([]);
 
   /* Load and Update the table information */
-  const fetchPlayers = async () => {
-
-    const response = await fetch(PLAYERS_API_URL);
+  const fetchPlayers = useCallback(async () => {
+    const response = await fetch(`${TEAMPLAYERS_API_URL}?id=${id}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const result = await response.json();
-    setData(result.playersRows);
-  };
+    setData(result.playerRolesRows);
+  },[id]);
 
   useEffect(() => {
     fetchPlayers().catch((e) => {
-      console.error("An error occurred while fetching the players data.", e);
+      console.error("An error occurred while fetching the teamplayers data.", e);
     });
-  }, []);
+  }, [fetchPlayers]);
 
   /* Process Player Deletion */
   const handleContinue = async () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
-    const getDeletePlayerUrl = (id: string) => `${PLAYERS_API_URL}?id=${id}`;
+    const getDeletePlayerUrl = (id: string) => `${TEAMPLAYERS_API_URL}?id=${id}`;
 
     for (const row of selectedRows) {
       const response = await fetch(getDeletePlayerUrl(row.original.id), {

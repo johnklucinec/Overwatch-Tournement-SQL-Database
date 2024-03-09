@@ -8,7 +8,7 @@ import Nav from "@/components/header-bar";
 import DataTablePlayers from "@/components/tables/team-players-table";
 
 /* API Route to populate the Players table */
-const TEAMPLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/players/`;
+const TEAMS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teams/`;
 
 export default function Page() {
   return (
@@ -28,8 +28,8 @@ function PageContent() {
   const [averageRank, setAverageRank] = useState("loading...");
 
   // Fetch the team's player information
-  const fetchPlayerInfo = useCallback(async () => {
-    const response = await fetch(`${TEAMPLAYERS_API_URL}?id=${id}`);
+  const fetchTeamPlayerInfo = useCallback(async () => {
+    const response = await fetch(`${TEAMS_API_URL}?id=${id}`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -41,16 +41,16 @@ function PageContent() {
     const [player] = result.playersRows;
     setName(player.name);
     setplayers(player.players);
-    setFormationDate(player.date);
+    setFormationDate(player.formationDate);
     setAverageRank(player.averageRank);
   }, [id]); // Add an empty array as the second argument
 
   /* Load and update the player information */
   useEffect(() => {
-    fetchPlayerInfo().catch((e) => {
+    fetchTeamPlayerInfo().catch((e) => {
       console.error("An error occurred while fetching the players data.", e);
     });
-  }, [fetchPlayerInfo, id]);
+  }, [fetchTeamPlayerInfo, id]);
 
   return (
     <main className="p-24">
@@ -69,7 +69,7 @@ function PageContent() {
               <strong>Average Rank: </strong> {averageRank}
             </p>
             <p className="text-muted-foreground">
-              <strong>Formation Date</strong> {formationDate}
+              <strong>Formation Date: </strong> {formationDate}
             </p>
             <p className="text-muted-foreground">
               <strong>Players: </strong> {players}
@@ -82,7 +82,7 @@ function PageContent() {
             <div className="rounded-md border">
               <div className="relative w-full overflow-auto">
                 {/* Add Data Table*/}
-                <DataTablePlayers />
+                <DataTablePlayers id={id} fetchTeamPlayerInfo={fetchTeamPlayerInfo}/>
               </div>
             </div>
 

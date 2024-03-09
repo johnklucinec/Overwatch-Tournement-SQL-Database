@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -27,6 +27,7 @@ import {
 import {
   ColumnDef,
   ColumnFiltersState,
+  Row,
   SortingState,
   VisibilityState,
   flexRender,
@@ -46,25 +47,29 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-/* Dialog with Button to add a new tournament */
-import DialogWithForm from "@/components/cards-and-sheets/add-player-dialog";
+/* Dialog with Button to add a new player */
+import DialogWithForm from "@/components/cards-and-sheets/add-team-dialog";
 
 /* API Route to populate the players table */
-const TOURNAMENTS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/tournaments/`;
+const TEAMS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teams/`;
 
-
-export type Tournament = {
+export type Team = {
   id: string;
-  teams: number;
-  status: string;
+  players: number;
+  averageRank: string;
+  mmr: number;
   name: string;
-  startDate: string; // Start date of the tournament
-  endDate: string;   // End date of the tournament
+  formationDate: string;
 };
 
+{
+  /* We need to sort the data with the mmr */
+}
 
-{/* Fill the table with data */}
-export const columns: ColumnDef<Tournament>[] = [
+{
+  /* Fill the table with data */
+}
+export const columns: ColumnDef<Team>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -100,12 +105,12 @@ export const columns: ColumnDef<Tournament>[] = [
           ID
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      );
+      )
     },
     cell: ({ row }) => <div className="ml-4">{row.getValue("id")}</div>,
   },
 
-  // Add the tournament name to the table. Sortable.
+  // Add the team names to the table. Sortable.
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -119,97 +124,76 @@ export const columns: ColumnDef<Tournament>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => {
-      const { name } = row.original;
-      return <div className="ml-4">{name}</div>;
-    },
+    cell: ({ row }) => <div className="ml-4">{row.getValue("name")}</div>,
   },
 
-  // Add the tournament status to the table. Sortable.
+  // Add the teams average rank to the table. Sortable.
+  // Sorts behind the scenes with the players MMR
   {
-    accessorKey: "status",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Status
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const { status } = row.original;
-      return <div className="ml-4">{status}</div>;
-    },
-  },
-
-  // Add the players startDate to the table. Sortable.
-  {
-    accessorKey: "startDate",
+    accessorKey: "averageRank",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Start Date
+          Average Rank
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => {
-      const { startDate } = row.original;
-      return <div className="ml-4">{startDate}</div>;
+    cell: ({ row }) => <div className="ml-4">{row.getValue("averageRank")}</div>,
+    sortingFn: (rowA: Row<Team>, rowB: Row<Team>) => {
+      const a = rowA.original;
+      const b = rowB.original;
+      return a.mmr - b.mmr;
     },
   },
 
-  // Add the players endDate at date to the table. Sortable.
+  // Add the teams formation date to the table. Sortable.
   {
-    accessorKey: "endDate",
+    accessorKey: "formationDate",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          End Date
+          Formation Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => {
-      const { endDate } = row.original;
-      return <div className="ml-4">{endDate}</div>;
-    },
+    cell: ({ row }) => <div className="ml-4">{row.getValue("formationDate")}</div>,
   },
 
-  // Add the players endDate at date to the table. Sortable.
+  // Add the players created at date to the table. Sortable.
   {
-    accessorKey: "teams",
+    accessorKey: "players",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Teams
+          Players
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
     cell: ({ row }) => {
-      const { teams } = row.original;
-      return <div className="ml-4">{teams}</div>;
+      const { players } = row.original;
+      return <div className="ml-4">{players}</div>;
     },
   },
 
-  { /* All the Actions */
-
+  /* All the Actions */ 
+  {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const tournament = row.original
-      const router = useRouter()
+      const team = row.original;
+      const router = useRouter();
 
       return (
         <DropdownMenu>
@@ -222,54 +206,66 @@ export const columns: ColumnDef<Tournament>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(tournament.name)}
+              onClick={() => navigator.clipboard.writeText(team.name)}
             >
-              Copy Tournament Name
+              Copy Team Name
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                router.push(`/tournaments/tournament-info?id=${tournament.id}&name=${encodeURIComponent(tournament.name)}`);
+                router.push(
+                  `/teams/players-info?id=${team.id}&name=${encodeURIComponent(
+                    team.name
+                  )}`
+                );
               }}
             >
-              View tournament details
+              View team details
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
     },
   },
-]
+];
 
-{/* Generate the table */}
-export default function DataTableTournament() {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
-  const [data, setData] = useState<Tournament[]>([]);
+{
+  /* Generate the table */
+}
+interface DataTablePlayersProps {
+  id: string;
+  fetchTournamentTeamsInfo: () => Promise<void>;
+}
+export default function DataTableTeams({id, fetchTournamentTeamsInfo}: DataTablePlayersProps) {
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    {}
+  );
+  const [rowSelection, setRowSelection] = useState({});
+  const [data, setData] = useState<Team[]>([]);
 
   /* Load and Update the table information */
-  const fetchTournaments = useCallback(async () => {
-    const response = await fetch(`${TOURNAMENTS_API_URL}`);
+  const fetchTeams = async () => {
+
+    const response = await fetch(TEAMS_API_URL);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const result = await response.json();
-    setData(result.tournamentsRows);
-  },[]);
+    setData(result.playersRows);
+    // WHY IS THIS PLAYER ROWS??
+  };
 
   useEffect(() => {
-    fetchTournaments().catch((e) => {
-      console.error("An error occurred while fetching the players data.", e);
+    fetchTeams().catch((e) => {
+      console.error("An error occurred while fetching the teams data.", e);
     });
-  }, [fetchTournaments]);
+  }, []);
 
   /* Process Team Deletion */
   const handleContinue = async () => {
+
 
     toast({
       title: "Error",
@@ -307,7 +303,7 @@ export default function DataTableTournament() {
     });
 
     // Refresh the table
-    fetchTournaments().catch((e) => {
+    fetchPlayers().catch((e) => {
       console.error("An error occurred while refreshing the players data.", e);
     });
     */
@@ -333,19 +329,18 @@ export default function DataTableTournament() {
       columnVisibility,
       rowSelection,
     },
-  })
+  });
 
   return (
     <div className="w-full p-5">
-
       <div className="flex flex-4 items-center space-x-2">
-        {/* Pass fetchTournaments so Dialog can update table */}
-        <DialogWithForm onClose={fetchTournaments}/>
+        {/* Pass fetchTeams so Dialog can update table */}
+        <DialogWithForm onClose={fetchTeams}/>
       </div>
 
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter tournaments..."
+          placeholder="Filter teams..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -374,7 +369,7 @@ export default function DataTableTournament() {
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
-                )
+                );
               })}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -394,7 +389,7 @@ export default function DataTableTournament() {
                             header.getContext()
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -463,9 +458,8 @@ export default function DataTableTournament() {
               Delete
             </Button>
           </DeleteAlertNoSSR>
-
         </div>
       </div>
     </div>
-  )
+  );
 }

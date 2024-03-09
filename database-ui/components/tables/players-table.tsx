@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -263,21 +263,20 @@ export default function DataTablePlayers() {
   const [data, setData] = useState<Player[]>([]);
 
   /* Load and Update the table information */
-  const fetchPlayers = async () => {
-
-    const response = await fetch(PLAYERS_API_URL);
+  const fetchPlayers = useCallback(async () => {
+    const response = await fetch(`${PLAYERS_API_URL}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const result = await response.json();
     setData(result.playersRows);
-  };
+  },[]);
 
   useEffect(() => {
     fetchPlayers().catch((e) => {
       console.error("An error occurred while fetching the players data.", e);
     });
-  }, []);
+  }, [fetchPlayers]);
 
   /* Process Player Deletion */
   const handleContinue = async () => {

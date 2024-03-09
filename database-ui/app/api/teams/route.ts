@@ -24,8 +24,8 @@ function createResponse(message: string, status: number): Response {
 }
 
 
-/** Usage Example: Send a GET request to 'http://localhost:3000/api/players/?id=1' to retrieve the player role with ID 1.
- * Usage Example: Send a GET request to 'http://localhost:3000/api/players/' to retrieve all the players.
+/** Usage Example: Send a GET request to 'http://localhost:3000/api/teams/?id=1' to retrieve the team role with ID 1.
+ * Usage Example: Send a GET request to 'http://localhost:3000/api/teams/' to retrieve all the teams.
  */
 async function readPlayersHandler(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -58,31 +58,33 @@ async function readPlayersHandler(req: NextRequest) {
             WHEN AVG(highest_mmr.max_mmr) % 500 < 300 THEN '3'
             WHEN AVG(highest_mmr.max_mmr) % 500 < 400 THEN '2'
             WHEN AVG(highest_mmr.max_mmr) % 500 < 500 THEN '1'
-        END AS "AverageRank",
+        END AS "averageRank",
         FLOOR(AVG(highest_mmr.max_mmr)) AS "mmr",
-        TO_CHAR(t.formationdate, 'YYYY-MM-DD') AS "FormationDate",
-        COUNT(DISTINCT highest_mmr.playerid) AS "Players"
-    FROM 
-        public.teams t
-    JOIN 
-        (
-            SELECT 
-                tp.teamid,
-                tp.playerid,
-                MAX(r.mmr) AS max_mmr
-            FROM 
-                public.teamplayers tp
-            JOIN 
-                public.playerroles pr ON tp.playerid = pr.playerid AND tp.roleid = pr.roleid
-            JOIN 
-                public.ranks r ON pr.rankid = r.rankid
-            GROUP BY 
-                tp.teamid, tp.playerid
-        ) AS highest_mmr ON t.teamid = highest_mmr.teamid
-    GROUP BY 
-        t.teamid
-    ORDER BY 
-        "MMR" DESC, "Name";
+        TO_CHAR(t.formationdate, 'YYYY-MM-DD') AS "formationDate",
+        COUNT(DISTINCT highest_mmr.playerid) AS "players"
+        FROM 
+            public.teams t
+        JOIN 
+            (
+                SELECT 
+                    tp.teamid,
+                    tp.playerid,
+                    MAX(r.mmr) AS max_mmr
+                FROM 
+                    public.teamplayers tp
+                JOIN 
+                    public.playerroles pr ON tp.playerid = pr.playerid AND tp.roleid = pr.roleid
+                JOIN 
+                    public.ranks r ON pr.rankid = r.rankid
+                GROUP BY 
+                    tp.teamid, tp.playerid
+            ) AS highest_mmr ON t.teamid = highest_mmr.teamid
+        WHERE 
+            t.teamid = ?
+        GROUP BY 
+            t.teamid
+        ORDER BY 
+            "mmr" DESC, "name";
     `,
         [id]
       )
@@ -110,7 +112,7 @@ async function readPlayersHandler(req: NextRequest) {
         WHEN AVG(highest_mmr.max_mmr) % 500 < 300 THEN '3'
         WHEN AVG(highest_mmr.max_mmr) % 500 < 400 THEN '2'
         WHEN AVG(highest_mmr.max_mmr) % 500 < 500 THEN '1'
-    END AS "AverageRank",
+    END AS "averageRank",
     FLOOR(AVG(highest_mmr.max_mmr)) AS "mmr",
     TO_CHAR(t.formationdate, 'YYYY-MM-DD') AS "formationDate",
     COUNT(DISTINCT highest_mmr.playerid) AS "players"
