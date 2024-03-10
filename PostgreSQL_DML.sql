@@ -179,6 +179,59 @@ GROUP BY
 ORDER BY 
     "mmr" DESC, "name";
 
+-- Query to retrieve all the teams information (as above), but only for a spesific tournament
+-- Average rank is only calculated based on the highest role that each player has on the team.
+-- It does not take into consideration all the players roles, only the roles for that team. 
+SELECT 
+    t.teamid AS "id",
+    t.teamname AS "name",
+    CASE
+        WHEN AVG(highest_mmr.max_mmr) >= 4500 THEN 'Champion'
+        WHEN AVG(highest_mmr.max_mmr) >= 4000 THEN 'Grandmaster'
+        WHEN AVG(highest_mmr.max_mmr) >= 3500 THEN 'Master'
+        WHEN AVG(highest_mmr.max_mmr) >= 3000 THEN 'Diamond'
+        WHEN AVG(highest_mmr.max_mmr) >= 2500 THEN 'Platinum'
+        WHEN AVG(highest_mmr.max_mmr) >= 2000 THEN 'Gold'
+        WHEN AVG(highest_mmr.max_mmr) >= 1500 THEN 'Silver'
+        WHEN AVG(highest_mmr.max_mmr) >= 1000 THEN 'Bronze'
+        ELSE 'Unranked'
+    END || ' ' ||
+    CASE
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 100 THEN '5'
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 200 THEN '4'
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 300 THEN '3'
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 400 THEN '2'
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 500 THEN '1'
+    END AS "averageRank",
+    FLOOR(AVG(highest_mmr.max_mmr)) AS "mmr",
+    TO_CHAR(t.formationdate, 'YYYY-MM-DD') AS "formationDate",
+    COUNT(DISTINCT highest_mmr.playerid) AS "players"
+FROM 
+    public.teams t
+JOIN 
+    (
+        SELECT 
+            tp.teamid,
+            tp.playerid,
+            MAX(r.mmr) AS max_mmr
+        FROM 
+            public.teamplayers tp
+        JOIN 
+            public.playerroles pr ON tp.playerid = pr.playerid AND tp.roleid = pr.roleid
+        JOIN 
+            public.ranks r ON pr.rankid = r.rankid
+        GROUP BY 
+            tp.teamid, tp.playerid
+    ) AS highest_mmr ON t.teamid = highest_mmr.teamid
+JOIN 
+    public.tournamentteams tt ON t.teamid = tt.teamid
+WHERE 
+    tt.tournamentid = :tournamentID
+GROUP BY 
+    t.teamid
+ORDER BY 
+    "mmr" DESC, "name";
+
 -- Query to retrieve a spesific team's information, including Name, AverageRank, MMR, FormationDate, and Players(amount)
 -- Average rank is only calculated based on the highest role that each player has on the team.
 -- It does not take into consideration all the players roles. 

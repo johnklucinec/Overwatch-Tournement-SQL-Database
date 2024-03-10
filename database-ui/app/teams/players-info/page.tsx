@@ -21,13 +21,12 @@ export default function Page() {
 function PageContent() {
   const searchParams = useSearchParams();
 
-  const [id] = useState(searchParams.get("id") ?? "1");
+  const id = searchParams.get('id') ?? '1';
   const [name, setName] = useState(searchParams.get("name") ?? "Player Name");
-  const [players, setplayers] = useState("loading...");
-  const [formationDate, setFormationDate] = useState("loading...");
-  const [averageRank, setAverageRank] = useState("loading...");
+  const [players, setplayers] = useState("Loading...");
+  const [formationDate, setFormationDate] = useState("Loading...");
+  const [averageRank, setAverageRank] = useState("Loading...");
 
-  // Fetch the team's player information
   const fetchTeamPlayerInfo = useCallback(async () => {
     const response = await fetch(`${TEAMS_API_URL}?id=${id}`);
 
@@ -37,15 +36,13 @@ function PageContent() {
 
     const result = await response.json();
 
-    // Update the state with the fetched data
     const [player] = result.playersRows;
     setName(player.name);
     setplayers(player.players);
     setFormationDate(player.formationDate);
     setAverageRank(player.averageRank);
-  }, [id]); // Add an empty array as the second argument
+  }, [id]);
 
-  /* Load and update the player information */
   useEffect(() => {
     fetchTeamPlayerInfo().catch((e) => {
       console.error("An error occurred while fetching the players data.", e);
@@ -76,13 +73,12 @@ function PageContent() {
             </p>
           </div>
 
-          {/* Top Banner */}
           <div className="space-y-4">
-            {/* Table Section */}
             <div className="rounded-md border">
               <div className="relative w-full overflow-auto">
-                {/* Add Data Table*/}
+
                 <DataTablePlayers id={id} fetchTeamPlayerInfo={fetchTeamPlayerInfo}/>
+
               </div>
             </div>
 

@@ -51,7 +51,7 @@ import {
 import DialogWithForm from "@/components/cards-and-sheets/add-team-dialog";
 
 /* API Route to populate the players table */
-const TEAMS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teams/`;
+const TEAMS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/tournamentteams/`;
 
 export type Team = {
   id: string;
@@ -236,6 +236,7 @@ interface DataTablePlayersProps {
   id: string;
   fetchTournamentTeamsInfo: () => Promise<void>;
 }
+// eslint-disable-next-line no-unused-vars
 export default function DataTableTeams({id, fetchTournamentTeamsInfo}: DataTablePlayersProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -248,12 +249,12 @@ export default function DataTableTeams({id, fetchTournamentTeamsInfo}: DataTable
   /* Load and Update the table information */
   const fetchTeams = async () => {
 
-    const response = await fetch(TEAMS_API_URL);
+    const response = await fetch(`${TEAMS_API_URL}?id=${id}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const result = await response.json();
-    setData(result.playersRows);
+    setData(result.tournamentTeamsRows);
     // WHY IS THIS PLAYER ROWS??
   };
 
