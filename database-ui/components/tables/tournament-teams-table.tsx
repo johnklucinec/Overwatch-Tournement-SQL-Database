@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -236,6 +236,8 @@ interface DataTablePlayersProps {
   id: string;
   fetchTournamentTeamsInfo: () => Promise<void>;
 }
+
+
 // eslint-disable-next-line no-unused-vars
 export default function DataTableTeams({id, fetchTournamentTeamsInfo}: DataTablePlayersProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -247,22 +249,20 @@ export default function DataTableTeams({id, fetchTournamentTeamsInfo}: DataTable
   const [data, setData] = useState<Team[]>([]);
 
   /* Load and Update the table information */
-  const fetchTeams = async () => {
-
+  const fetchTeams = useCallback(async () => {
     const response = await fetch(`${TEAMS_API_URL}?id=${id}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const result = await response.json();
     setData(result.tournamentTeamsRows);
-    // WHY IS THIS PLAYER ROWS??
-  };
+  },[id]);
 
   useEffect(() => {
     fetchTeams().catch((e) => {
       console.error("An error occurred while fetching the teams data.", e);
     });
-  }, []);
+  }, [fetchTeams]);
 
   /* Process Team Deletion */
   const handleContinue = async () => {

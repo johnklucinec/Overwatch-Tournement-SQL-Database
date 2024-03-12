@@ -47,15 +47,14 @@ import {
 } from "@/components/ui/table";
 
 
-/* Need to change these to dialogs */
-import CardWithForm from "@/components/cards-and-sheets/add-teamplayer-card";
-import PlayerCardWithForm from "@/components/cards-and-sheets/edit-teamplayer-card";
-import CardWithFormEditTeam from "@/components/cards-and-sheets/edit-team-card";
+import EditTeamDialog from "@/components/cards-and-sheets/edit-team-dialog";
+import EditTeamPlayersDialog from "@/components/cards-and-sheets/edit-teamplayers-dialog";
+import AddTeamPlayersDialog from "@/components/cards-and-sheets/add-teamplayers-dialog";
 
 /* API Route to populate the players table */
 const TEAMPLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teamplayers/`;
 
-export type Player = {
+export type Players = {
   id: string;
   roles: string;
   highestrank: string;
@@ -65,11 +64,26 @@ export type Player = {
   name: string;
 };
 
+export type Player = {
+  id: string;
+  name: string;
+  roles: string[];
+};
+
+function convertPlayersToPlayer(players: Players[]): Player[] {
+  const convertedPlayers = players.map(player => ({
+    id: player.id,
+    name: player.name,
+    roles: player.roles.split(','),
+  }));
+
+  return convertedPlayers;
+}
 
 {
   /* Fill the table with data */
 }
-export const columns: ColumnDef<Player>[] = [
+export const columns: ColumnDef<Players>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -144,7 +158,7 @@ export const columns: ColumnDef<Player>[] = [
       </Button>
     ),
     cell: ({ row }) => <div className="ml-4">{row.getValue("highestRole")}</div>,
-    sortingFn: (rowA: Row<Player>, rowB: Row<Player>) => {
+    sortingFn: (rowA: Row<Players>, rowB: Row<Players>) => {
       const a = rowA.original;
       const b = rowB.original;
       return a.mmr - b.mmr;
@@ -232,7 +246,7 @@ export const columns: ColumnDef<Player>[] = [
                 }
               }}
             >
-              Copy Player Name
+              Copy Players Name
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -265,11 +279,11 @@ interface DataTablePlayersProps {
 export default function DataTablePlayers({id, fetchTeamPlayerInfo}: DataTablePlayersProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [rowSelection, setRowSelection] = useState({});
+  const [data, setData] = useState<Players[]>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     {}
   );
-  const [rowSelection, setRowSelection] = useState({});
-  const [data, setData] = useState<Player[]>([]);
 
   /* Load and Update the table information */
   const fetchPlayers = useCallback(async () => {
@@ -287,7 +301,7 @@ export default function DataTablePlayers({id, fetchTeamPlayerInfo}: DataTablePla
     });
   }, [fetchPlayers]);
 
-  /* Process Player Deletion */
+  /* Process Players Deletion */
   const handleContinue = async () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
     const getDeletePlayerUrl = (id: string) => `${TEAMPLAYERS_API_URL}?id=${id}`;
@@ -305,6 +319,7 @@ export default function DataTablePlayers({id, fetchTeamPlayerInfo}: DataTablePla
       console.log(`Deleted player with id: ${row.original.id}`);
     }
 
+    console.log(convertPlayersToPlayer(data))
     // Refresh the table
     fetchPlayers().catch((e) => {
       console.error("An error occurred while refreshing the players data.", e);
@@ -341,17 +356,19 @@ export default function DataTablePlayers({id, fetchTeamPlayerInfo}: DataTablePla
         <div className="flex items-center justify-between">
               <div className="flex flex-1 items-center space-x-2">
                 {/* Add Information Button */}
-                <CardWithFormEditTeam />
+                <EditTeamDialog onClose={fetchTeamPlayerInfo} />
 
                 <div>
                   <p>|</p>
                 </div>
 
                 {/* Edit Information Button */}
-                <CardWithForm />
-
+                <AddTeamPlayersDialog onClose={fetchTeamPlayerInfo} id={id}/>
+                
                 {/* Edit Information Button */}
-                <PlayerCardWithForm />
+                
+                {/* Edit Information Button */}
+                <EditTeamPlayersDialog onClose={fetchTeamPlayerInfo} id={id} data={convertPlayersToPlayer(data)}/>
               </div>
             </div>
           </div>

@@ -25,16 +25,19 @@ function createResponse(message: string, status: number): Response {
 
 
 /** Usage Example: Send a GET request to 'http://localhost:3000/api/teamplayers/?id=1' to retrieve all the players on the team with the ID 1.
+ * Send a GET request to 'http://localhost:3000/api/teamplayers/?eid=1' to retrieve all the players NOT on the team with the ID 1.
+ * Send a GET request to 'http://localhost:3000/api/teamplayers/?iid=1' to retrieve all the players ARE on the team with the ID 1.
+ * Technically, you can use the first query, but this one is better performance wise. 
  */
 async function readTeamPlayersHandler(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
   const id = searchParams.get("id");
+  const eid = searchParams.get("eid");
+  const iid = searchParams.get("iid");
 
-  if (!id) {
-    return new Response("Player not Found", {
-      status: 404,
-    });
+  if (!id && !eid && !iid) {
+    return createResponse("No Players found", 404);
   }
 
   const pool = new Pool({
@@ -81,12 +84,78 @@ async function readTeamPlayersHandler(req: NextRequest) {
     [id, id, id]
   );
 
-  try {
-    const { rows: playerRolesRows } = await pool.query(getPlayerRolesQuery);
+  const getAvailablePlayersQuery = sqlstring.format(
+    `
+    SELECT
+    p.playerid AS id,
+    p.username AS name,
+    ARRAY_AGG(DISTINCT ro.rolename ORDER BY ro.rolename) AS roles
+    FROM
+        players p
+    JOIN playerroles pr ON p.playerid = pr.playerid
+    JOIN roles ro ON pr.roleid = ro.roleid
+    WHERE
+        p.playerid NOT IN (
+            SELECT
+                tp.playerid
+            FROM
+                teamplayers tp
+            WHERE
+                tp.teamid = ?
+        )
+    GROUP BY
+        p.playerid, p.username
+    ORDER BY
+        p.username;
+    `,
+    [eid]
+  )
 
-    return new Response(JSON.stringify({ playerRolesRows }), {
+  const getCurrentPlayersQuery = sqlstring.format(
+    `
+    SELECT
+    p.playerid AS id,
+    p.username AS name,
+    ARRAY_AGG(DISTINCT ro.rolename ORDER BY ro.rolename) AS roles
+    FROM
+        public.players p
+    JOIN
+        public.playerroles pr ON p.playerid = pr.playerid
+    JOIN
+        public.roles ro ON pr.roleid = ro.roleid
+    JOIN
+        public.teamplayers tp ON p.playerid = tp.playerid
+    WHERE
+        tp.teamid = ?
+    GROUP BY
+        p.playerid, p.username
+    ORDER BY
+        p.username;
+    `,
+    [iid]
+  )
+
+  try {
+
+    let query;
+    if (id) {
+      query = getPlayerRolesQuery;
+    } else if (eid) {
+      query = getAvailablePlayersQuery;
+    } else {
+      query = getCurrentPlayersQuery;
+    }
+      
+      const result = await pool.query(query);
+
+    if (result.rowCount === 0) {
+      return createResponse("No Players found", 400);
+    }
+
+    return new Response(JSON.stringify({ playerRolesRows: result.rows }), {
       status: 200,
     });
+
   } catch (e) {
     console.error(e);
     return createResponse((e as Error).message, 500);
@@ -94,9 +163,6 @@ async function readTeamPlayersHandler(req: NextRequest) {
     await pool.end();
   }
 }
-
-
-
 
 export async function GET(req: NextRequest) {
   return readTeamPlayersHandler(req);

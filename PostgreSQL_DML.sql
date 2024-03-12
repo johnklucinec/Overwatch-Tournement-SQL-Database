@@ -39,6 +39,30 @@ GROUP BY
 ORDER BY
     MMR DESC;
 
+-- Query to retrieve all the players that ARE NOT on a given team. 
+-- Returns their playerID, Name, and Roles. 
+SELECT
+    p.playerid AS id,
+    p.username AS name,
+    ARRAY_AGG(DISTINCT ro.rolename ORDER BY ro.rolename) AS roles
+FROM
+    players p
+JOIN playerroles pr ON p.playerid = pr.playerid
+JOIN roles ro ON pr.roleid = ro.roleid
+WHERE
+    p.playerid NOT IN (
+        SELECT
+            tp.playerid
+        FROM
+            teamplayers tp
+        WHERE
+            tp.teamid = :teamID
+    )
+GROUP BY
+    p.playerid, p.username
+ORDER BY
+    p.username;
+
 -- Query to get a spesific players roles
 -- Replace :playerID with the playersID
 
