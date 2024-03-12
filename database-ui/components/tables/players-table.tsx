@@ -1,28 +1,18 @@
 "use client";
 
-import * as React from "react";
-import { useRouter } from "next/navigation";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
 
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 const DeleteAlertNoSSR = dynamic(() => import("@/components/delete-alert"), {
   ssr: false,
 });
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -32,7 +22,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  Row,
+  SortingState,
+  VisibilityState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+
 import {
   Table,
   TableBody,
@@ -41,11 +45,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useEffect, useState } from "react";
 
-{
-  /* Add the sample data */
-}
+/* Dialog with Button to add a new player */
+import DialogWithForm from "@/components/cards-and-sheets/add-player-dialog";
+
+/* API Route to populate the players table */
+const PLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/players/`;
 
 export type Player = {
   id: string;
@@ -57,9 +62,6 @@ export type Player = {
   name: string;
 };
 
-{
-  /* We need to sort the data with the mmr */
-}
 
 {
   /* Fill the table with data */
@@ -105,6 +107,7 @@ export const columns: ColumnDef<Player>[] = [
     cell: ({ row }) => <div className="ml-4">{row.getValue("id")}</div>,
   },
 
+  // Add the players name to the table. Sortable.
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -118,27 +121,34 @@ export const columns: ColumnDef<Player>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="ml-4">{row.getValue("name")}</div>,
+    cell: ({ row }) => {
+      const { name } = row.original;
+      return <div className="ml-4">{name}</div>;
+    },
   },
 
+  // Add the players highest rank to the table. Sortable.
+  // Sorts behind the scenes with the players MMR
   {
     accessorKey: "highestrank",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Highest Rank
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => (
-      <div className="ml-4">{row.getValue("highestrank")}</div>
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        MMR
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
     ),
+    cell: ({ row }) => <div className="ml-4">{row.getValue("highestrank")}</div>,
+    sortingFn: (rowA: Row<Player>, rowB: Row<Player>) => {
+      const a = rowA.original;
+      const b = rowB.original;
+      return a.mmr - b.mmr;
+    },
   },
 
+  // Add the players email to the table. Sortable.
   {
     accessorKey: "email",
     header: ({ column }) => {
@@ -152,9 +162,13 @@ export const columns: ColumnDef<Player>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="ml-4">{row.getValue("email")}</div>,
+    cell: ({ row }) => {
+      const { email } = row.original;
+      return <div className="ml-4">{email}</div>;
+    },
   },
 
+  // Add the players created at date to the table. Sortable.
   {
     accessorKey: "createdat",
     header: ({ column }) => {
@@ -168,19 +182,29 @@ export const columns: ColumnDef<Player>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="ml-4">{row.getValue("createdat")}</div>,
+    cell: ({ row }) => {
+      const { createdat } = row.original;
+      return <div className="ml-4">{createdat}</div>;
+    },
   },
 
+  // Add the players roles to the table. Sortable.
   {
     accessorKey: "roles",
-    header: () => <div className="text-right">Roles</div>,
-    cell: ({ row }) => (
-      <div className="text-right font-medium">{row.getValue("roles")}</div>
+    header: () => (
+      <Button variant="ghost">
+        Roles
+      </Button>
     ),
+    cell: ({ row }) => {
+      const { roles } = row.original;
+      return <div className="ml-4">{roles}</div>;
+    },
   },
 
+  /* Create the action menu (...) */
   {
-    /* All the Actions */ id: "actions",
+    id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
       const player = row.original;
@@ -197,7 +221,13 @@ export const columns: ColumnDef<Player>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(player.name)}
+              onClick={() => {
+                try {
+                  navigator.clipboard.writeText(player.name);
+                } catch (error) {
+                  console.error("Error copying player name:", error);
+                }
+              }}
             >
               Copy Player Name
             </DropdownMenuItem>
@@ -205,9 +235,9 @@ export const columns: ColumnDef<Player>[] = [
             <DropdownMenuItem
               onClick={() => {
                 router.push(
-                  `/players/player-info?id=${
-                    player.id
-                  }&name=${encodeURIComponent(player.name)}`
+                  `/players/player-info?id=${player.id}&name=${encodeURIComponent(
+                    player.name
+                  )}`
                 );
               }}
             >
@@ -226,31 +256,36 @@ export const columns: ColumnDef<Player>[] = [
 export default function DataTablePlayers() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    {}
+  );
   const [rowSelection, setRowSelection] = useState({});
   const [data, setData] = useState<Player[]>([]);
 
-  const fetchPlayers = async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/players/`);
+  /* Load and Update the table information */
+  const fetchPlayers = useCallback(async () => {
+    const response = await fetch(`${PLAYERS_API_URL}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const result = await response.json();
     setData(result.playersRows);
-  };
+  },[]);
 
   useEffect(() => {
     fetchPlayers().catch((e) => {
       console.error("An error occurred while fetching the players data.", e);
     });
-  }, []);
+  }, [fetchPlayers]);
 
+  /* Process Player Deletion */
   const handleContinue = async () => {
-    console.log("Continued");
     const selectedRows = table.getFilteredSelectedRowModel().rows;
+    const getDeletePlayerUrl = (id: string) => `${PLAYERS_API_URL}?id=${id}`;
+
     for (const row of selectedRows) {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/players/?id=${row.original.id}`, {
-        method: 'DELETE',
+      const response = await fetch(getDeletePlayerUrl(row.original.id), {
+        method: "DELETE",
       });
 
       if (!response.ok) {
@@ -267,9 +302,8 @@ export default function DataTablePlayers() {
     });
   };
 
-  const handleCancel = () => {
-    console.log("Cancelled");
-  };
+  /* Do nothing */
+  const handleCancel = () => {};
 
   const table = useReactTable({
     data,
@@ -292,6 +326,11 @@ export default function DataTablePlayers() {
 
   return (
     <div className="w-full p-5">
+      <div className="flex flex-4 items-center space-x-2">
+        {/* Pass fetchPlayers so Dialog can update table */}
+        <DialogWithForm onClose={fetchPlayers}/>
+      </div>
+
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter players..."

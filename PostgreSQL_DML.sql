@@ -39,6 +39,30 @@ GROUP BY
 ORDER BY
     MMR DESC;
 
+-- Query to retrieve all the players that ARE NOT on a given team. 
+-- Returns their playerID, Name, and Roles. 
+SELECT
+    p.playerid AS id,
+    p.username AS name,
+    ARRAY_AGG(DISTINCT ro.rolename ORDER BY ro.rolename) AS roles
+FROM
+    players p
+JOIN playerroles pr ON p.playerid = pr.playerid
+JOIN roles ro ON pr.roleid = ro.roleid
+WHERE
+    p.playerid NOT IN (
+        SELECT
+            tp.playerid
+        FROM
+            teamplayers tp
+        WHERE
+            tp.teamid = :teamID
+    )
+GROUP BY
+    p.playerid, p.username
+ORDER BY
+    p.username;
+
 -- Query to get a spesific players roles
 -- Replace :playerID with the playersID
 
@@ -96,8 +120,8 @@ LIMIT 1;
 -- :teamID is the variable to use when searching for the team. 
 -- Only the ranks the player players for the team are taken into consideration
 SELECT 
-    p.playerid AS "PlayerID",
-    p.username AS "Name",
+    p.playerid AS "id",
+    p.username AS "name",
     (SELECT r.rankname || ' ' || r.division::text
      FROM public.playerroles pr
      JOIN public.ranks r ON pr.rankid = r.rankid
@@ -107,7 +131,7 @@ SELECT
          WHERE playerid = p.playerid AND teamid = :teamID
      )
      ORDER BY r.mmr DESC
-     LIMIT 1) AS "HighestRankedRole",
+     LIMIT 1) AS "highestRole",
     (SELECT max(r.mmr)
      FROM public.playerroles pr
      JOIN public.ranks r ON pr.rankid = r.rankid
@@ -115,10 +139,10 @@ SELECT
          SELECT roleid
          FROM public.teamplayers
          WHERE playerid = p.playerid AND teamid = :teamID
-     )) AS "HighestRoleMMR",
-    p.email AS "Email",
-    TO_CHAR(p.createdat, 'YYYY-MM-DD') AS "CreatedAt",
-    ARRAY_AGG(DISTINCT ro.rolename ORDER BY ro.rolename) AS "Roles"
+     )) AS "mmr",
+    p.email AS "email",
+    TO_CHAR(p.createdat, 'YYYY-MM-DD') AS "createdAt",
+    ARRAY_AGG(DISTINCT ro.rolename ORDER BY ro.rolename) AS "roles"
 FROM 
     public.players p
 JOIN 
@@ -128,14 +152,14 @@ JOIN
 GROUP BY 
     p.playerid, p.username, p.email, p.createdat
 ORDER BY 
-    "HighestRoleMMR" DESC, "PlayerID";
+    "mmr" DESC, "id";
 
 -- Query to retrieve all the teams information, including Name, AverageRank, MMR, FormationDate, and Players(amount)
 -- Average rank is only calculated based on the highest role that each player has on the team.
 -- It does not take into consideration all the players roles. 
 SELECT 
-    t.teamid AS "TeamID",
-    t.teamname AS "Name",
+    t.teamid AS "id",
+    t.teamname AS "name",
     CASE
         WHEN AVG(highest_mmr.max_mmr) >= 4500 THEN 'Champion'
         WHEN AVG(highest_mmr.max_mmr) >= 4000 THEN 'Grandmaster'
@@ -153,10 +177,10 @@ SELECT
         WHEN AVG(highest_mmr.max_mmr) % 500 < 300 THEN '3'
         WHEN AVG(highest_mmr.max_mmr) % 500 < 400 THEN '2'
         WHEN AVG(highest_mmr.max_mmr) % 500 < 500 THEN '1'
-    END AS "AverageRank",
-    FLOOR(AVG(highest_mmr.max_mmr)) AS "MMR",
-    TO_CHAR(t.formationdate, 'YYYY-MM-DD') AS "FormationDate",
-    COUNT(DISTINCT highest_mmr.playerid) AS "Players"
+    END AS "averageRank",
+    FLOOR(AVG(highest_mmr.max_mmr)) AS "mmr",
+    TO_CHAR(t.formationdate, 'YYYY-MM-DD') AS "formationDate",
+    COUNT(DISTINCT highest_mmr.playerid) AS "players"
 FROM 
     public.teams t
 JOIN 
@@ -177,7 +201,111 @@ JOIN
 GROUP BY 
     t.teamid
 ORDER BY 
-    "MMR" DESC, "Name";
+    "mmr" DESC, "name";
+
+-- Query to retrieve all the teams information (as above), but only for a spesific tournament
+-- Average rank is only calculated based on the highest role that each player has on the team.
+-- It does not take into consideration all the players roles, only the roles for that team. 
+SELECT 
+    t.teamid AS "id",
+    t.teamname AS "name",
+    CASE
+        WHEN AVG(highest_mmr.max_mmr) >= 4500 THEN 'Champion'
+        WHEN AVG(highest_mmr.max_mmr) >= 4000 THEN 'Grandmaster'
+        WHEN AVG(highest_mmr.max_mmr) >= 3500 THEN 'Master'
+        WHEN AVG(highest_mmr.max_mmr) >= 3000 THEN 'Diamond'
+        WHEN AVG(highest_mmr.max_mmr) >= 2500 THEN 'Platinum'
+        WHEN AVG(highest_mmr.max_mmr) >= 2000 THEN 'Gold'
+        WHEN AVG(highest_mmr.max_mmr) >= 1500 THEN 'Silver'
+        WHEN AVG(highest_mmr.max_mmr) >= 1000 THEN 'Bronze'
+        ELSE 'Unranked'
+    END || ' ' ||
+    CASE
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 100 THEN '5'
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 200 THEN '4'
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 300 THEN '3'
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 400 THEN '2'
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 500 THEN '1'
+    END AS "averageRank",
+    FLOOR(AVG(highest_mmr.max_mmr)) AS "mmr",
+    TO_CHAR(t.formationdate, 'YYYY-MM-DD') AS "formationDate",
+    COUNT(DISTINCT highest_mmr.playerid) AS "players"
+FROM 
+    public.teams t
+JOIN 
+    (
+        SELECT 
+            tp.teamid,
+            tp.playerid,
+            MAX(r.mmr) AS max_mmr
+        FROM 
+            public.teamplayers tp
+        JOIN 
+            public.playerroles pr ON tp.playerid = pr.playerid AND tp.roleid = pr.roleid
+        JOIN 
+            public.ranks r ON pr.rankid = r.rankid
+        GROUP BY 
+            tp.teamid, tp.playerid
+    ) AS highest_mmr ON t.teamid = highest_mmr.teamid
+JOIN 
+    public.tournamentteams tt ON t.teamid = tt.teamid
+WHERE 
+    tt.tournamentid = :tournamentID
+GROUP BY 
+    t.teamid
+ORDER BY 
+    "mmr" DESC, "name";
+
+-- Query to retrieve a spesific team's information, including Name, AverageRank, MMR, FormationDate, and Players(amount)
+-- Average rank is only calculated based on the highest role that each player has on the team.
+-- It does not take into consideration all the players roles. 
+SELECT 
+    t.teamid AS "id",
+    t.teamname AS "name",
+    CASE
+        WHEN AVG(highest_mmr.max_mmr) >= 4500 THEN 'Champion'
+        WHEN AVG(highest_mmr.max_mmr) >= 4000 THEN 'Grandmaster'
+        WHEN AVG(highest_mmr.max_mmr) >= 3500 THEN 'Master'
+        WHEN AVG(highest_mmr.max_mmr) >= 3000 THEN 'Diamond'
+        WHEN AVG(highest_mmr.max_mmr) >= 2500 THEN 'Platinum'
+        WHEN AVG(highest_mmr.max_mmr) >= 2000 THEN 'Gold'
+        WHEN AVG(highest_mmr.max_mmr) >= 1500 THEN 'Silver'
+        WHEN AVG(highest_mmr.max_mmr) >= 1000 THEN 'Bronze'
+        ELSE 'Unranked'
+    END || ' ' ||
+    CASE
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 100 THEN '5'
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 200 THEN '4'
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 300 THEN '3'
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 400 THEN '2'
+        WHEN AVG(highest_mmr.max_mmr) % 500 < 500 THEN '1'
+    END AS "averageRank",
+    FLOOR(AVG(highest_mmr.max_mmr)) AS "mmr",
+    TO_CHAR(t.formationdate, 'YYYY-MM-DD') AS "formationDate",
+    COUNT(DISTINCT highest_mmr.playerid) AS "players"
+FROM 
+    public.teams t
+JOIN 
+    (
+        SELECT 
+            tp.teamid,
+            tp.playerid,
+            MAX(r.mmr) AS max_mmr
+        FROM 
+            public.teamplayers tp
+        JOIN 
+            public.playerroles pr ON tp.playerid = pr.playerid AND tp.roleid = pr.roleid
+        JOIN 
+            public.ranks r ON pr.rankid = r.rankid
+        GROUP BY 
+            tp.teamid, tp.playerid
+    ) AS highest_mmr ON t.teamid = highest_mmr.teamid
+WHERE 
+    t.teamid = :teamID
+GROUP BY 
+    t.teamid
+ORDER BY 
+    "mmr" DESC, "name";
 
 -- Query to retrieve tournament information along as TournamentID, Status, Name, StartDate, EndDate, and Teams
 
@@ -192,6 +320,25 @@ FROM
     public.tournaments t
 LEFT JOIN 
     public.tournamentteams tt ON t.tournamentid = tt.tournamentid
+GROUP BY 
+    t.tournamentid
+ORDER BY 
+    t.startdate DESC;
+
+-- Query to retrieve a spesific tournament's information along as TournamentID, Status, Name, StartDate, EndDate, and Teams
+SELECT 
+    t.tournamentid AS "TournamentID",
+    t.tournamentstatus AS "Status",
+    t.tournamentname AS "Name",
+    TO_CHAR(t.startdate, 'YYYY-MM-DD') AS "StartDate",
+    TO_CHAR(t.enddate, 'YYYY-MM-DD') AS "EndDate",
+    COUNT(tt.teamid) AS "Teams"
+FROM 
+    public.tournaments t
+LEFT JOIN 
+    public.tournamentteams tt ON t.tournamentid = tt.tournamentid
+WHERE 
+    t.tournamentid = :tournamentID
 GROUP BY 
     t.tournamentid
 ORDER BY 
