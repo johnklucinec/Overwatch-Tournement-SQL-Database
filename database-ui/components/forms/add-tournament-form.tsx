@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { SetStateAction, useCallback, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { addDays, format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
+import { DateRange } from "react-day-picker";
 
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
@@ -25,26 +26,50 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 /* API Route to populate the TEAMS table */
-const TEAMS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teams/`;
+const TOURNAMENTS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/tournaments/`;
 
 /**
  * Schema to check for user error
  */
-export const FormSchema = z.object({
-  name: z
-    .string()
-    .min(2, {
-      message: "Team Name must be at least 2 characters.",
-    })
-    .max(20, {
-      message: "Team Name must be at most 20 characters.",
+export const FormSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, {
+        message: "Team Name must be at least 2 characters.",
+      })
+      .max(20, {
+        message: "Team Name must be at most 20 characters.",
+      }),
+    status: z.string().min(2, {
+      message: "Please select a Tournament Status",
     }),
-  date: z.string().min(2, {
-    message: "Please Select a Date",
-  }),
-});
+    startDate: z.string().min(2, {
+      message: "Please Select a Date",
+    }),
+    endDate: z.string().min(2, {
+      message: "Please Select a Date",
+    }),
+  })
+  .refine(
+    (data) => {
+      // Check if endDate is provided
+      return data.endDate && data.endDate.length >= 2;
+    },
+    {
+      message: "Please Select an End Date",
+      path: ["startDate"],
+    }
+  );
 
 /**
  * Toast that shows what the user submitted and the response.
@@ -82,7 +107,9 @@ async function processResponse(
   response: Response,
   data: {
     name: string;
-    date: string;
+    status: string;
+    startDate: string;
+    endDate: string;
   }
 ) {
   let message = "Unknown error";
@@ -119,48 +146,98 @@ async function processResponse(
 /**
  * Function to add the Team
  */
-async function addTeam(name: string, date: string) {
-  const response = await fetch(TEAMS_API_URL, {
+async function addTorunament(
+  name: string,
+  status: string,
+  startDate: string,
+  endDate: string
+) {
+  const response = await fetch(TOURNAMENTS_API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name, date }),
+    body: JSON.stringify({ name, startDate, endDate }),
   });
 
   return response;
 }
 
-export default function CreateTeamsInputForm() {
+export default function CreateTournamentsInputForm() {
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: new Date(),
+    to: addDays(new Date(), 10),
+  });
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       name: "",
-      date: "",
+      status: "",
+      startDate: format(new Date(), "yyyy-MM-dd"),
+      endDate: format(addDays(new Date(), 10), "yyyy-MM-dd"),
     },
   });
 
   // Process the "Submit" button
   const onSubmit = useCallback(
     async (data: z.infer<typeof FormSchema>) => {
-      const response = await addTeam(data.name ?? "", data.date ?? "");
+      const response = await addTorunament(
+        data.name ?? "",
+        data.status ?? "",
+        data.startDate ?? "",
+        data.endDate ?? ""
+      );
 
       // Sends the response and data to be processed
       const result = processResponse(response, {
         name: data.name ?? "",
-        date: data.date ?? "",
+        status: data.status ?? "",
+        startDate: data.startDate ?? "",
+        endDate: data.endDate ?? "",
       });
 
-      // Reset the form after submission, if the response is ok.
+      // Reset the form after submission
       form.reset({
         name: "",
-        date: "",
+        status: "",
+        startDate: format(new Date(), "yyyy-MM-dd"),
+        endDate: format(addDays(new Date(), 10), "yyyy-MM-dd"),
+      });
+
+      // Reset the state of the Select and DateRange components
+      setDate({
+        from: new Date(),
+        to: addDays(new Date(), 10),
       });
 
       return result;
     },
     [form]
   );
+
+  // Handle all the date stuff
+  const handleDateChange = (
+    newDate: SetStateAction<DateRange | undefined>
+  ) => {
+    if (typeof newDate !== "function") {
+      setDate(newDate);
+      const { from: startDate, to: endDate } = newDate || {
+        from: undefined,
+        to: undefined,
+      };
+      const formattedStartDate = startDate
+        ? format(startDate, "yyyy-MM-dd")
+        : "";
+      const formattedEndDate = endDate ? format(endDate, "yyyy-MM-dd") : "";
+      form.setValue("startDate", formattedStartDate);
+      form.setValue("endDate", formattedEndDate);
+    } else {
+      setDate(undefined);
+      form.setValue("startDate", "");
+      form.setValue("endDate", "");
+    }
+  };
 
   return (
     <Form {...form}>
@@ -178,7 +255,7 @@ export default function CreateTeamsInputForm() {
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input placeholder="Team Name" {...field} />
+                <Input placeholder="Tournament Name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -187,10 +264,44 @@ export default function CreateTeamsInputForm() {
 
         <FormField
           control={form.control}
-          name="date"
+          name="status"
           render={({ field }) => (
+            <FormItem>
+              <FormLabel>Status</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <div
+                      className={field.value ? "" : "text-muted-foreground"}
+                    >
+                      <SelectValue
+                        placeholder="Select Tournament Status"
+                        {...field}
+                      />
+                    </div>
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="Registration Closed">
+                    Registration Closed
+                  </SelectItem>
+                  <SelectItem value="Enrollment Open">
+                    Enrollment Open
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Date range picker */}
+        <FormField
+          control={form.control}
+          name="startDate"
+          render={() => (
             <FormItem className="flex flex-col flex-grow">
-              <FormLabel>Team Formation Date</FormLabel>
+              <FormLabel>Date Range</FormLabel>
               <Popover modal={true}>
                 <PopoverTrigger className="flex flex-col flex-grow">
                   <FormControl>
@@ -199,11 +310,18 @@ export default function CreateTeamsInputForm() {
                       variant={"outline"}
                       className={cn(
                         "pl-3 w-full text-left font-normal",
-                        !field.value && "text-muted-foreground"
+                        !date && "text-muted-foreground"
                       )}
                     >
-                      {field.value ? (
-                        format(field.value, "PPP")
+                      {date?.from ? (
+                        date.to ? (
+                          <>
+                            {format(date.from, "LLL dd, y")} -{" "}
+                            {format(date.to, "LLL dd, y")}
+                          </>
+                        ) : (
+                          format(date.from, "LLL dd, y")
+                        )
                       ) : (
                         <span>Pick a date</span>
                       )}
@@ -213,16 +331,12 @@ export default function CreateTeamsInputForm() {
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
-                    mode="single"
-                    selected={field.value ? new Date(field.value) : undefined}
-                    onSelect={(date) => {
-                      const formattedDate = format(date ?? "", "yyyy-MM-dd");
-                      field.onChange(formattedDate);
-                    }}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
+                    mode="range"
+                    selected={date}
+                    onSelect={handleDateChange}
+                    numberOfMonths={2}
+                    min={2}
+                    className="flex flex-col flex-grow"
                   />
                 </PopoverContent>
               </Popover>

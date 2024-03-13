@@ -47,11 +47,10 @@ import {
 } from "@/components/ui/table";
 
 /* Dialog with Button to add a new tournament */
-import DialogWithForm from "@/components/cards-and-sheets/add-player-dialog";
+import DialogWithForm from "@/components/cards-and-sheets/add-tournament-dialog";
 
 /* API Route to populate the players table */
 const TOURNAMENTS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/tournaments/`;
-
 
 export type Tournament = {
   id: string;
@@ -59,11 +58,12 @@ export type Tournament = {
   status: string;
   name: string;
   startDate: string; // Start date of the tournament
-  endDate: string;   // End date of the tournament
+  endDate: string; // End date of the tournament
 };
 
-
-{/* Fill the table with data */}
+{
+  /* Fill the table with data */
+}
 export const columns: ColumnDef<Tournament>[] = [
   {
     id: "select",
@@ -203,13 +203,14 @@ export const columns: ColumnDef<Tournament>[] = [
     },
   },
 
-  { /* All the Actions */
+  {
+    /* All the Actions */
 
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const tournament = row.original
-      const router = useRouter()
+      const tournament = row.original;
+      const router = useRouter();
 
       return (
         <DropdownMenu>
@@ -229,7 +230,11 @@ export const columns: ColumnDef<Tournament>[] = [
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                router.push(`/tournaments/tournament-info?id=${tournament.id}&name=${encodeURIComponent(tournament.name)}`);
+                router.push(
+                  `/tournaments/tournament-info?id=${
+                    tournament.id
+                  }&name=${encodeURIComponent(tournament.name)}`
+                );
               }}
             >
               View tournament details
@@ -239,18 +244,20 @@ export const columns: ColumnDef<Tournament>[] = [
       );
     },
   },
-]
+];
 
-{/* Generate the table */}
+{
+  /* Generate the table */
+}
 export default function DataTableTournament() {
-  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [rowSelection, setRowSelection] = React.useState({});
+  const [data, setData] = useState<Tournament[]>([]);
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
-  )
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
-  const [data, setData] = useState<Tournament[]>([]);
+  );
 
   /* Load and Update the table information */
   const fetchTournaments = useCallback(async () => {
@@ -260,7 +267,7 @@ export default function DataTableTournament() {
     }
     const result = await response.json();
     setData(result.tournamentsRows);
-  },[]);
+  }, []);
 
   useEffect(() => {
     fetchTournaments().catch((e) => {
@@ -270,7 +277,6 @@ export default function DataTableTournament() {
 
   /* Process Team Deletion */
   const handleContinue = async () => {
-
     toast({
       title: "Error",
       description: "This Function is not ready yet",
@@ -333,14 +339,13 @@ export default function DataTableTournament() {
       columnVisibility,
       rowSelection,
     },
-  })
+  });
 
   return (
     <div className="w-full p-5">
-
       <div className="flex flex-4 items-center space-x-2">
         {/* Pass fetchTournaments so Dialog can update table */}
-        <DialogWithForm onClose={fetchTournaments}/>
+        <DialogWithForm onClose={fetchTournaments} />
       </div>
 
       <div className="flex items-center py-4">
@@ -374,7 +379,7 @@ export default function DataTableTournament() {
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
-                )
+                );
               })}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -394,7 +399,7 @@ export default function DataTableTournament() {
                             header.getContext()
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -463,9 +468,8 @@ export default function DataTableTournament() {
               Delete
             </Button>
           </DeleteAlertNoSSR>
-
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -48,7 +48,7 @@ import {
 } from "@/components/ui/table";
 
 /* Dialog with Button to add a new player */
-import DialogWithForm from "@/components/cards-and-sheets/add-team-dialog";
+import DialogWithForm from "@/components/cards-and-sheets/edit-tournament-dialog";
 
 /* API Route to populate the players table */
 const TEAMS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/tournamentteams/`;

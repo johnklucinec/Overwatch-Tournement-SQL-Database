@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -105,7 +105,7 @@ export const columns: ColumnDef<Team>[] = [
           ID
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => <div className="ml-4">{row.getValue("id")}</div>,
   },
@@ -142,7 +142,9 @@ export const columns: ColumnDef<Team>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="ml-4">{row.getValue("averageRank")}</div>,
+    cell: ({ row }) => (
+      <div className="ml-4">{row.getValue("averageRank")}</div>
+    ),
     sortingFn: (rowA: Row<Team>, rowB: Row<Team>) => {
       const a = rowA.original;
       const b = rowB.original;
@@ -164,7 +166,9 @@ export const columns: ColumnDef<Team>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="ml-4">{row.getValue("formationDate")}</div>,
+    cell: ({ row }) => (
+      <div className="ml-4">{row.getValue("formationDate")}</div>
+    ),
   },
 
   // Add the players created at date to the table. Sortable.
@@ -187,7 +191,7 @@ export const columns: ColumnDef<Team>[] = [
     },
   },
 
-  /* All the Actions */ 
+  /* All the Actions */
   {
     id: "actions",
     enableHiding: false,
@@ -235,34 +239,30 @@ export const columns: ColumnDef<Team>[] = [
 export default function DataTableTeams() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [rowSelection, setRowSelection] = useState({});
+  const [data, setData] = useState<Team[]>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     {}
   );
-  const [rowSelection, setRowSelection] = useState({});
-  const [data, setData] = useState<Team[]>([]);
 
   /* Load and Update the table information */
-  const fetchTeams = async () => {
-
+  const fetchTeams = useCallback(async () => {
     const response = await fetch(TEAMS_API_URL);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const result = await response.json();
     setData(result.playersRows);
-    // WHY IS THIS PLAYER ROWS??
-  };
+  }, []);
 
   useEffect(() => {
     fetchTeams().catch((e) => {
       console.error("An error occurred while fetching the teams data.", e);
     });
-  }, []);
+  }, [fetchTeams]);
 
   /* Process Team Deletion */
   const handleContinue = async () => {
-
-
     toast({
       title: "Error",
       description: "This Function is not ready yet",
@@ -331,7 +331,7 @@ export default function DataTableTeams() {
     <div className="w-full p-5">
       <div className="flex flex-4 items-center space-x-2">
         {/* Pass fetchTeams so Dialog can update table */}
-        <DialogWithForm onClose={fetchTeams}/>
+        <DialogWithForm onClose={fetchTeams} />
       </div>
 
       <div className="flex items-center py-4">

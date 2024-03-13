@@ -155,9 +155,6 @@ async function editTeam(
 
 export default function CreateTeamsInputForm() {
 
-  // Gives each varible a default value
-  // Allows only one role to be selected during a query
-
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -165,9 +162,9 @@ export default function CreateTeamsInputForm() {
       date: '',
     },
   });
+
  // Process the "Submit" button
  const onSubmit = useCallback(async (data: z.infer<typeof FormSchema>) => {
-
 
   const response = await editTeam(data.name ?? '', data.date ?? '');
 
@@ -182,7 +179,6 @@ export default function CreateTeamsInputForm() {
     name: '',
     date: '',
   });
-
 
     return result;
   }, [form]);
@@ -216,15 +212,15 @@ export default function CreateTeamsInputForm() {
           name="date"
           render={({ field }) => (
             <FormItem className="flex flex-col flex-grow">
-              <FormLabel>Date of birth</FormLabel>
+              <FormLabel>Team Formation Date</FormLabel>
               <Popover modal={true} >
                 <PopoverTrigger className="flex flex-col flex-grow">
                   <FormControl>
                     <Button
-                      type="button" // Add this line
+                      type="button"
                       variant={"outline"}
                       className={cn(
-                        "pl-3 text-left font-normal",
+                        "pl-3 w-full text-left font-normal",
                         !field.value && "text-muted-foreground"
                       )}
                     >

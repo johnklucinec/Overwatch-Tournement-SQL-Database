@@ -7,12 +7,7 @@ import { z } from "zod";
 
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormField,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
 import PlayersComboBox from "@/components/players-combobox";
 
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -133,12 +128,14 @@ export type Player = {
   roles: string[];
 };
 
-export default function CreateTeamsInputForm({ id, data }: { id: string, data: Player[] }) {
-  // eslint-disable-next-line no-unused-vars
-  const [selectedPlayerId, setSelectedPlayerId] = useState("");
+export default function CreateTeamsInputForm({
+  id,
+  data,
+}: {
+  id: string;
+  data: Player[];
+}) {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
-  // eslint-disable-next-line no-unused-vars
-  const [currentRoles, setCurrentRoles] = useState<string[]>([]);
   const [resetForm, setResetForm] = useState(false);
 
   // Set all toggles to be disabled by
@@ -163,26 +160,24 @@ export default function CreateTeamsInputForm({ id, data }: { id: string, data: P
 
   const handlePlayerSelect = useCallback(
     (selectedPlayer: Player) => {
-        setSelectedPlayerId(selectedPlayer.id);
-        form.setValue("player", selectedPlayer.id.toString());
-        form.setValue("name", selectedPlayer.name);
+      form.setValue("player", selectedPlayer.id.toString());
+      form.setValue("name", selectedPlayer.name);
 
-        setDisabled({
-          tank: !selectedPlayer.roles.includes("TANK"),
-          dps: !selectedPlayer.roles.includes("DPS"),
-          support: !selectedPlayer.roles.includes("SUPPORT"),
-        });
+      setDisabled({
+        tank: !selectedPlayer.roles.includes("TANK"),
+        dps: !selectedPlayer.roles.includes("DPS"),
+        support: !selectedPlayer.roles.includes("SUPPORT"),
+      });
 
       // Reset the selected roles
       const player = data.find((player) => player.id === selectedPlayer.id);
-      const playerRoles = player 
-        ? player.roles.map(role => role.replace(/[{}]/g, '').toUpperCase()) 
+      const playerRoles = player
+        ? player.roles.map((role) => role.replace(/[{}]/g, "").toUpperCase())
         : [];
 
       form.setValue("roles", playerRoles);
       setSelectedRoles(playerRoles);
-
-      },
+    },
     [form, data]
   );
 
@@ -194,7 +189,6 @@ export default function CreateTeamsInputForm({ id, data }: { id: string, data: P
       } else {
         newRoles = [...prevRoles, role];
       }
-
 
       // Update the roles field in the form
       form.setValue("roles", newRoles);
@@ -248,14 +242,18 @@ export default function CreateTeamsInputForm({ id, data }: { id: string, data: P
           onPlayerSelect={handlePlayerSelect}
           reset={resetForm}
         />
-  
+
         <FormField
           control={form.control}
           name="roles"
           render={() => (
             <>
               <FormLabel>Player's Team Roles: </FormLabel>
-              <ToggleGroup variant="outline" type="multiple" className="justify-start">
+              <ToggleGroup
+                variant="outline"
+                type="multiple"
+                className="justify-start"
+              >
                 <CustomToggleGroupItem
                   value="Tank"
                   label="TANK"
@@ -265,7 +263,7 @@ export default function CreateTeamsInputForm({ id, data }: { id: string, data: P
                     toggleRole("TANK");
                   }}
                 />
-                <CustomToggleGroupItem 
+                <CustomToggleGroupItem
                   value="Dps"
                   label="DPS"
                   disabled={disabled.dps}
@@ -288,7 +286,7 @@ export default function CreateTeamsInputForm({ id, data }: { id: string, data: P
             </>
           )}
         />
-  
+
         <Button type="submit">Submit</Button>
       </form>
     </Form>
@@ -322,7 +320,8 @@ function CustomToggleGroupItem({
   };
 
   return (
-    <ToggleGroupItem className="flex-grow"
+    <ToggleGroupItem
+      className="flex-grow"
       value={value}
       aria-label={`Toggle ${label}`}
       disabled={disabled}
