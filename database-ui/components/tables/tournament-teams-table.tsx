@@ -49,6 +49,7 @@ import {
 
 /* Dialog with Button to add a new player */
 import DialogWithForm from "@/components/cards-and-sheets/edit-tournament-dialog";
+import AddTournamentTeamsDialog from "@/components/cards-and-sheets/add-tournamentteams-dialog";
 
 /* API Route to populate the players table */
 const TEAMS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/tournamentteams/`;
@@ -337,6 +338,12 @@ export default function DataTableTeams({id, fetchTournamentTeamsInfo}: DataTable
       <div className="flex flex-4 items-center space-x-2">
         {/* Pass fetchTeams so Dialog can update table */}
         <DialogWithForm onClose={fetchTeams}/>
+        <div>
+                  <p>|</p>
+                </div>
+
+                {/* Edit Information Button */}
+                <AddTournamentTeamsDialog onClose={fetchTeams} id={id}/>
       </div>
 
       <div className="flex items-center py-4">

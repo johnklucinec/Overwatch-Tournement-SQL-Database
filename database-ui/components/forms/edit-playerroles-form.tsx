@@ -8,7 +8,9 @@ import { z } from "zod";
 import { toast } from "@/components/ui/use-toast";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
+import { 
+  Form,
+  FormMessage, } from "@/components/ui/form";
 import RankRole from "@/components/forms/edit-playerroles";
 
 /* API Route to populate the PlayerRoles table */
@@ -27,6 +29,7 @@ export const FormSchema = z
     dpsDivision: z.string().optional(),
     supportRank: z.string().optional(),
     supportDivision: z.string().optional(),
+    errorRanks: z.string().optional(),
   })
   .refine((data) => data.tankRank || !data.tankDivision, {
     message: "Choose a Rank",
@@ -51,6 +54,10 @@ export const FormSchema = z
   .refine((data) => data.supportDivision || !data.supportRank, {
     message: "Choose a Division",
     path: ["supportDivision"],
+  })
+  .refine((data) => data.tankRank || data.dpsRank || data.supportRank, {
+    message: "Select And Fill Out At Least One Role",
+    path: ["errorRanks"],
   });
 
 type PlayerRole = {
@@ -319,54 +326,30 @@ export default function EditPlayerInputForm({
         className="space-y-2"
       >
         <>
-          <ToggleGroup variant="outline" type="multiple">
-            <ToggleGroupItem
-              value="Tank"
-              aria-label="Toggle Tank"
-              onClick={() => handleToggle("Tank")}
-              data-state={showRoles.tank ? "on" : "off"}
-              className={
-                !(showRoles.tank || showRoles.dps || showRoles.support)
-                  ? "text-destructive"
-                  : ""
-              }
-            >
-              TANK
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="Dps"
-              aria-label="Toggle Dps"
-              onClick={() => handleToggle("Dps")}
-              data-state={showRoles.dps ? "on" : "off"}
-              className={
-                !(showRoles.tank || showRoles.dps || showRoles.support)
-                  ? "text-destructive"
-                  : ""
-              }
-            >
-              DPS
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="Support"
-              aria-label="Toggle Support"
-              onClick={() => handleToggle("Support")}
-              data-state={showRoles.support ? "on" : "off"}
-              className={
-                !(showRoles.tank || showRoles.dps || showRoles.support)
-                  ? "text-destructive"
-                  : ""
-              }
-            >
-              SUPPORT
-            </ToggleGroupItem>
-          </ToggleGroup>
 
+        <RoleToggleGroup handleToggle={handleToggle} showRoles={showRoles} />
+
+          {/* Send error if at least one role is not toggled */}
           {!(showRoles.tank || showRoles.dps || showRoles.support) && (
-            <div className="text-sm font-medium text-destructive">
-              At least one role must be selected
-            </div>
+            <FormMessage>
+            {form.formState.errors.errorRanks &&
+              form.formState.errors.errorRanks.message}
+            </FormMessage>
           )}
 
+          {/* Send error if both a Rank and Division are not filled out */}
+          {((showRoles.tank &&
+            (!form.getValues().tankRank || !form.getValues().tankDivision)) ||
+            (showRoles.dps &&
+              (!form.getValues().dpsRank || !form.getValues().dpsDivision)) ||
+            (showRoles.support &&
+              (!form.getValues().supportRank ||
+                !form.getValues().supportDivision))) && (
+            <FormMessage>
+            {form.formState.errors.errorRanks &&
+              form.formState.errors.errorRanks.message}
+            </FormMessage>
+          )}
           {showRoles.tank && <RankRole form={form} playerRole="Tank" />}
           {showRoles.dps && <RankRole form={form} playerRole="Dps" />}
           {showRoles.support && <RankRole form={form} playerRole="Support" />}
@@ -376,6 +359,37 @@ export default function EditPlayerInputForm({
     </Form>
   );
 }
+
+interface RoleToggleGroupProps {
+   // eslint-disable-next-line no-unused-vars
+   handleToggle: (role: string) => void;
+   showRoles: { [key: string]: boolean };
+}
+
+const RoleToggleGroup: React.FC<RoleToggleGroupProps> = ({ handleToggle, showRoles }) => {
+  const roles = ["Tank", "Dps", "Support"];
+
+  return (
+    <ToggleGroup variant="outline" type="multiple">
+      {roles.map((role) => (
+        <ToggleGroupItem
+          key={role}
+          value={role}
+          aria-label={`Toggle ${role}`}
+          onClick={() => handleToggle(role)}
+          data-state={showRoles[role.toLowerCase()] ? "on" : "off"}
+          className={
+            !(showRoles.tank || showRoles.dps || showRoles.support)
+              ? "flex-grow text-destructive"
+              : "flex-grow"
+          }
+        >
+          {role.toUpperCase()}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
+  );
+};
 
 /* I Moved these down here because they were ugly and I did not want to look at them */
 

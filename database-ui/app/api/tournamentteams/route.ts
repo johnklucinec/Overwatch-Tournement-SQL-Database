@@ -29,8 +29,9 @@ async function readTournamentTeamsHandler(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
   const id = searchParams.get("id");
+  const eid = searchParams.get("eid");
 
-  if (!id) {
+  if (!id && !eid) {
     return createResponse("Tournament Not Found", 404);
   }
 
@@ -93,14 +94,45 @@ async function readTournamentTeamsHandler(req: NextRequest) {
     [id]
   );
 
-  try {
-    const { rows: tournamentTeamsRows } = await pool.query(
-      getTournamentTeamsQuery
-    );
+  const getAvailableTeamsQuery = sqlstring.format(
+    `
+    SELECT 
+    teamid AS id, 
+    teamname AS name
+    FROM 
+        public.teams
+    WHERE 
+        teamid NOT IN (
+            SELECT 
+                teamid
+            FROM 
+                public.tournamentteams
+            WHERE 
+                tournamentid = ?
+        );
+    `,
+    [eid]
+  )
 
-    return new Response(JSON.stringify({ tournamentTeamsRows }), {
+  try {
+
+    let query;
+    if (id) {
+      query = getTournamentTeamsQuery;
+    } else {
+      query = getAvailableTeamsQuery;
+    }
+
+    const result = await pool.query(query);
+
+    if (result.rowCount === 0) {
+      return createResponse("No Teams Found", 400);
+    }
+
+    return new Response(JSON.stringify({ tournamentTeamsRows: result.rows }), {
       status: 200,
     });
+
   } catch (e) {
     console.error(e);
     return createResponse((e as Error).message, 500);

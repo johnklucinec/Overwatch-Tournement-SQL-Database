@@ -23,11 +23,10 @@ function createResponse(message: string, status: number): Response {
   });
 }
 
-
 /** Usage Example: Send a GET request to 'http://localhost:3000/api/teamplayers/?id=1' to retrieve all the players on the team with the ID 1.
  * Send a GET request to 'http://localhost:3000/api/teamplayers/?eid=1' to retrieve all the players NOT on the team with the ID 1.
  * Send a GET request to 'http://localhost:3000/api/teamplayers/?iid=1' to retrieve all the players ARE on the team with the ID 1.
- * Technically, you can use the first query, but this one is better performance wise. 
+ * Technically, you can use the first query, but this one is better performance wise.
  */
 async function readTeamPlayersHandler(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -109,7 +108,7 @@ async function readTeamPlayersHandler(req: NextRequest) {
         p.username;
     `,
     [eid]
-  )
+  );
 
   const getCurrentPlayersQuery = sqlstring.format(
     `
@@ -133,10 +132,9 @@ async function readTeamPlayersHandler(req: NextRequest) {
         p.username;
     `,
     [iid]
-  )
+  );
 
   try {
-
     let query;
     if (id) {
       query = getPlayerRolesQuery;
@@ -145,8 +143,8 @@ async function readTeamPlayersHandler(req: NextRequest) {
     } else {
       query = getCurrentPlayersQuery;
     }
-      
-      const result = await pool.query(query);
+
+    const result = await pool.query(query);
 
     if (result.rowCount === 0) {
       return createResponse("No Players found", 400);
@@ -155,7 +153,6 @@ async function readTeamPlayersHandler(req: NextRequest) {
     return new Response(JSON.stringify({ playerRolesRows: result.rows }), {
       status: 200,
     });
-
   } catch (e) {
     console.error(e);
     return createResponse((e as Error).message, 500);

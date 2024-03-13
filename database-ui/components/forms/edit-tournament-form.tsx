@@ -208,9 +208,22 @@ export default function CreateTeamsInputForm() {
     },
   });
 
+  // Formats the dates to yyyy-MM-dd
+  function formatDate(data: z.infer<typeof FormSchema>) {
+    if (data.startDate) {
+      data.startDate = new Date(data.startDate).toISOString().split("T")[0];
+    }
+
+    if (data.endDate) {
+      data.endDate = new Date(data.endDate).toISOString().split("T")[0];
+    }
+  }
+
   // Process the "Submit" button
   const onSubmit = useCallback(
     async (data: z.infer<typeof FormSchema>) => {
+      formatDate(data);
+
       const response = await editTournament(
         data.name ?? "",
         data.status ?? "",
@@ -358,12 +371,11 @@ const DateFormField: React.FC<DateFormFieldProps> = ({
                 mode="single"
                 selected={field.value ? new Date(field.value) : undefined}
                 onSelect={(date) => {
-                  const formattedDate = format(date ?? "", "yyyy-MM-dd");
-                  field.onChange(formattedDate);
+                  //const formattedDate = format(date ?? "", "yyyy-MM-dd");
+                  if (date) {
+                    field.onChange(date.toISOString());
+                  }
                 }}
-                disabled={(date) =>
-                  date > new Date() || date < new Date("1900-01-01")
-                }
                 initialFocus
               />
             </PopoverContent>

@@ -29,80 +29,78 @@ import {
 } from "@/components/ui/popover";
 
 /* API Route to populate the TEAMS table */
-const TEAMPLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teamplayers/`;
+const TOURNAMENTPLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/tournamentteams/`;
 
-export type Player = {
+export type Team = {
   id: string;
   name: string;
-  roles: string[];
 };
 
 const FormSchema = z.object({
-  player: z.string({
-    required_error: "Please select a player.",
+  team: z.string({
+    required_error: "Please select a team.",
   }),
 });
 
-
-type PlayersComboBoxProps = {
-  iid?: string;
-  eid?: string;
+type TeamsComboBoxProps = {
+  id?: string;
   // eslint-disable-next-line no-unused-vars
-  onPlayerSelect: (player: Player) => void;
+  onTeamSelect: (team: Team) => void;
   reset: boolean;
 };
 
-export default function PlayersComboBox({ iid, eid, onPlayerSelect, reset }: PlayersComboBoxProps) {
+export default function TeamsComboBox({
+  id,
+  onTeamSelect,
+  reset,
+}: TeamsComboBoxProps) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = React.useState(false);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
-  const [data, setData] = useState<Player[]>([]);
+  const [data, setData] = useState<Team[]>([]);
 
   /* Load and Update the table information */
   let query = "";
-
-  if (iid) {
-    query = `${TEAMPLAYERS_API_URL}?iid=${iid}`;
-  } else if (eid) {
-    query = `${TEAMPLAYERS_API_URL}?eid=${eid}`;
+  if (id) {
+    query = `${TOURNAMENTPLAYERS_API_URL}?eid=${id}`;
   }
 
-  const fetchPlayers = useCallback(async () => {
+  const fetchTeams = useCallback(async () => {
     setLoading(true);
     const response = await fetch(query);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const result = await response.json();
-    setData(result.playerRolesRows);
+    setData(result.tournamentTeamsRows);
     setLoading(false);
   }, [query]);
 
   useEffect(() => {
-    fetchPlayers().catch((e) => {
+    fetchTeams().catch((e) => {
       console.error(
         "An error occurred while fetching the teamplayers data.",
         e
       );
     });
-  }, [fetchPlayers]);
+  }, [fetchTeams]);
 
   useEffect(() => {
     if (reset) {
-      form.reset({ player: "" });
+      form.reset({ team: "" });
     }
   }, [form, reset]);
 
   return (
     <FormField
       control={form.control}
-      name="player"
+      name="team"
       render={({ field }) => (
         <FormItem className="flex flex-col flex-grow">
-          <FormLabel>Player: </FormLabel>
+          <FormLabel>Team: </FormLabel>
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <FormControl>
@@ -115,40 +113,40 @@ export default function PlayersComboBox({ iid, eid, onPlayerSelect, reset }: Pla
                   )}
                 >
                   {field.value
-                    ? data.find((player) => player.id === field.value)?.name
-                    : "Select player"}
+                    ? data.find((team) => team.id === field.value)?.name
+                    : "Select team"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </FormControl>
             </PopoverTrigger>
-            <PopoverContent className="p-0">
+            <PopoverContent side="bottom" className="p-0">
               <Command>
-              <CommandInput placeholder="Search players..." />
+                <CommandInput placeholder="Search team..." />
                 {loading ? (
                   <CommandEmpty>Loading...</CommandEmpty>
                 ) : !data || data.length === 0 ? (
-                  <CommandEmpty>No Players</CommandEmpty>
+                  <CommandEmpty>No Teams</CommandEmpty>
                 ) : (
                   <CommandGroup>
-                  {data.map((player) => (
-                    <CommandItem
-                    value={player.name}
-                    key={player.id}
-                    onSelect={() => {
-                      form.setValue("player", player.id);
-                      onPlayerSelect(player);
-                      setOpen(false);
-                    }}
-                  >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          player.id === field.value
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
-                      />
-                      {player.name}
+                    {data.map((team) => (
+                      <CommandItem
+                        value={team.name}
+                        key={team.id}
+                        onSelect={() => {
+                          form.setValue("team", team.id);
+                          onTeamSelect(team);
+                          setOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            team.id === field.value
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {team.name}
                       </CommandItem>
                     ))}
                   </CommandGroup>
