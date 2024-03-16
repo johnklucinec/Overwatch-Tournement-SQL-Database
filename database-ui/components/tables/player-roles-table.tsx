@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-
 import dynamic from "next/dynamic";
 
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
@@ -46,7 +45,6 @@ import {
 } from "@/components/ui/table";
 
 import DialogWithForm from "@/components/cards-and-sheets/edit-player-dialog";
-
 import EditRoleDialog from "@/components/cards-and-sheets/edit-playerroles-dialog";
 
 const PLAYERROLES_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/playerroles/`
@@ -179,15 +177,13 @@ interface DataTablePlayersProps {
 }
 
 export default function DataTablePlayers({id, fetchPlayerInfo}: DataTablePlayersProps) {
-  // function body
-
+  const [data, setData] = useState<PlayerRole[]>([]);
+  const [rowSelection, setRowSelection] = React.useState({});
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [data, setData] = useState<PlayerRole[]>([]);
 
   /* Load and Update the table information */
   const fetchPlayers = useCallback(async () => {
@@ -206,14 +202,12 @@ export default function DataTablePlayers({id, fetchPlayerInfo}: DataTablePlayers
   }, [fetchPlayers]);
 
   /* Process Player Role Deletion */
-
-  /* NEED TO MAKE SURE AT LEAST ONE ROLE IS LEFT */
   const handleContinue = async () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
     const totalRows = table.getRowModel().rows; 
   
+    // Prevent last role from being deleted. 
     if (selectedRows.length >= totalRows.length) {
-      
       toast({
         title: "Error",
         description: "You cannot delete all roles. At least one role must be left.",
@@ -252,6 +246,12 @@ export default function DataTablePlayers({id, fetchPlayerInfo}: DataTablePlayers
     fetchPlayers().catch((e) => {
       console.error("An error occurred while refreshing the players data.", e);
     });
+
+    // Refresh the data on the page
+    fetchPlayerInfo().catch((e) => {
+      console.error("An error occurred while refreshing the players data.", e);
+    });
+
   };
 
       /* Do nothing */

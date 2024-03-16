@@ -142,13 +142,17 @@ async function updatePlayerRolesHandler(req: NextRequest) {
 
   const updatePlayerRolesQuery = sqlstring.format(
     `
-    UPDATE playerroles
+    INSERT INTO playerroles (playerid, roleid, rankid)
+    VALUES (
+      ?,
+      (SELECT roleid FROM roles WHERE rolename = ?),
+      (SELECT rankid FROM ranks WHERE rankname = ? AND division = ?)
+    )
+    ON CONFLICT (playerid, roleid) DO UPDATE
     SET
-      roleid = (SELECT roleid FROM roles WHERE rolename = ?),
-      rankid = (SELECT rankid FROM ranks WHERE rankname = ? AND division = ?)
-    WHERE playerid = ?;
+      rankid = EXCLUDED.rankid
     `,
-    [role, rankName, rankDivision, id]
+    [id, role, rankName, rankDivision]
   );
 
   try {
@@ -217,7 +221,7 @@ export async function GET(req: NextRequest) {
   return readPlayerRolesHandler(req);
 }
 
-export async function PUT(req: NextRequest) {
+export async function PATCH(req: NextRequest) {
   return updatePlayerRolesHandler(req);
 }
 

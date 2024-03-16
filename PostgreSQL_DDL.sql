@@ -76,15 +76,15 @@ CREATE TABLE Tournaments (
 );
 
 -- Intersection Table - this links Teams and Players (M:N)
+-- Note: If you delete a players roles, and they had those roles for a team, they are removed from the team. 
 DROP TABLE IF EXISTS TeamPlayers CASCADE;
 CREATE TABLE TeamPlayers (
     playerID INT NOT NULL,
     teamID INT NOT NULL,
     roleID INT NOT NULL,
     PRIMARY KEY (playerID, teamID, roleID),
-    FOREIGN KEY (playerID) REFERENCES Players(playerID) ON DELETE CASCADE,
-    FOREIGN KEY (teamID) REFERENCES Teams(teamID) ON DELETE CASCADE,
-    FOREIGN KEY (roleID) REFERENCES Roles(roleID) ON DELETE CASCADE
+    FOREIGN KEY (playerID, roleID) REFERENCES PlayerRoles(playerID, roleID) ON DELETE CASCADE,
+    FOREIGN KEY (teamID) REFERENCES Teams(teamID) ON DELETE CASCADE
 );
 
 -- Intersection Table - this links Tournaments and Teams (M:N)

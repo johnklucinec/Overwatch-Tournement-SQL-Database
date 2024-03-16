@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -8,9 +8,7 @@ import { z } from "zod";
 import { toast } from "@/components/ui/use-toast";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
-import { 
-  Form,
-  FormMessage, } from "@/components/ui/form";
+import { Form, FormMessage } from "@/components/ui/form";
 import RankRole from "@/components/forms/edit-playerroles";
 
 /* API Route to populate the PlayerRoles table */
@@ -144,8 +142,7 @@ async function processResponse(
 }
 
 /**
- * Function to add a role (Rank and Divison) to the player.
- * Uses their username, since this runs when the add player query runs.
+ * Function to update a role (Rank and Divison) for the player.
  */
 async function updatePlayerRole(
   id: string,
@@ -154,7 +151,7 @@ async function updatePlayerRole(
   rankDivision: string
 ) {
   const response = await fetch(PLAYERROLES_API_URL, {
-    method: "PUT",
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
@@ -164,6 +161,9 @@ async function updatePlayerRole(
   return response;
 }
 
+/**
+ * Function to add a role (Rank and Divison) to the player.
+ */
 async function addPlayerRole(
   id: string,
   role: string,
@@ -181,6 +181,9 @@ async function addPlayerRole(
   return response;
 }
 
+/**
+ * Function to delete a role (Rank and Divison) from the player.
+ */
 async function deletePlayerRole(id: string, role: string) {
   const response = await fetch(PLAYERROLES_API_URL, {
     method: "DELETE",
@@ -194,13 +197,16 @@ async function deletePlayerRole(id: string, role: string) {
 }
 
 /**
- * Function to add a role (Rank and Divison) to the player.
- * Uses their username, since this runs when the add player query runs.
+ * Function to determine whether to add, delete, or update a player's role(s)
+ * Basically, it compares the formData with the roles the player currently has
+ * If the role is present in initial roles, and present in the formData, it updates that role
+ * If the role is not present in initial roles, and present in the formData, it adds that role
+ * If the role is present in initial roles, and not present in the formData, it deletes that role
  */
 async function playerRoleManager(
   id: string,
   formData: z.infer<typeof FormSchema>,
-  lowerCaseRoleData: string[]
+  initialRoles: { [key: string]: boolean }
 ) {
   const TANK_ROLE = "TANK";
   const DPS_ROLE = "DPS";
@@ -217,16 +223,18 @@ async function playerRoleManager(
       formData[`${role.toLowerCase()}Rank` as keyof typeof formData];
 
     if (division && rank) {
-      if (lowerCaseRoleData.includes(role.toLowerCase())) {
-        lastResponse = updatePlayerRole(id, role, rank, division);
+      if (initialRoles[role.toLowerCase()]) {
+        // sends update request even if the data is the same :(
+        lastResponse = await updatePlayerRole(id, role, rank, division);
       } else {
-        lastResponse = addPlayerRole(id, role, rank, division);
+        lastResponse = await addPlayerRole(id, role, rank, division);
       }
-    } else if (lowerCaseRoleData.includes(role.toLowerCase())) {
-      lastResponse = deletePlayerRole(id, role);
+    } else if (initialRoles[role.toLowerCase()]) {
+      lastResponse = await deletePlayerRole(id, role);
     }
   }
 
+  // Only captures the response from the last query because less effort. 
   if (lastResponse) {
     const response = await lastResponse;
     processResponse(response, formData);
@@ -249,14 +257,24 @@ export default function EditPlayerInputForm({
     support: false,
   });
 
-  const lowerCaseRoleData = data.map((roleObj) => roleObj.role.toLowerCase());
+  // Save the initial roles the player has.
+  // This is used later to determine whether to UPDATE, ADD, or DELETE a role.
+  const initialRoles = useMemo(() => {
+    const roles = {
+      tank: false,
+      dps: false,
+      support: false,
+    };
 
-  // Check if each role is present in roleData
-  const [hasRoles, setHasRoles] = useState({
-    tank: lowerCaseRoleData.includes("tank"),
-    dps: lowerCaseRoleData.includes("dps"),
-    support: lowerCaseRoleData.includes("support"),
-  });
+    data.forEach((roleObj) => {
+      const role = roleObj.role.toLowerCase() as keyof typeof roles;
+      if (role in roles) {
+        roles[role] = true;
+      }
+    });
+
+    return roles;
+  }, [data]);
 
   // Gives each varible a default value
   // Allows only one role to be selected during a query
@@ -279,7 +297,7 @@ export default function EditPlayerInputForm({
 
   // Show a RankRole form when its accompanying toggle is toggled
   const handleToggle = (role: string) => {
-    handleToggleHelper(role, form, showRoles, setHasRoles, setShowRoles);
+    handleToggleHelper(role, form, showRoles, setShowRoles);
   };
 
   // Set the form values based on the data and form props.
@@ -289,29 +307,13 @@ export default function EditPlayerInputForm({
 
   // Proccess the "Sumbit" button
   async function onSubmit(formData: z.infer<typeof FormSchema>) {
-    // Make sure at least one toggle button is active
-    // Also, make sure both a Rank and Division is selected
-    if (
-      (showRoles.tank &&
-        hasRoles.tank &&
-        (!formData.tankRank || !formData.tankDivision)) ||
-      (showRoles.dps &&
-        hasRoles.dps &&
-        (!formData.dpsRank || !formData.dpsDivision)) ||
-      (showRoles.support &&
-        hasRoles.support &&
-        (!formData.supportRank || !formData.supportDivision)) ||
-      !(showRoles.tank || showRoles.dps || showRoles.support)
-    ) {
-      toast({
-        title: "Error",
-        description: "Please select a Rank and a Role",
-      });
-
+    // Remind user if they forgot to fill out a rank.
+    if (!validateRoles(showRoles, formData)) {
       return;
     }
 
-    playerRoleManager(id, formData, lowerCaseRoleData);
+    // Sends information to be processed.
+    playerRoleManager(id, formData, initialRoles);
 
     return;
   }
@@ -326,14 +328,13 @@ export default function EditPlayerInputForm({
         className="space-y-2"
       >
         <>
-
-        <RoleToggleGroup handleToggle={handleToggle} showRoles={showRoles} />
+          <RoleToggleGroup handleToggle={handleToggle} showRoles={showRoles} />
 
           {/* Send error if at least one role is not toggled */}
           {!(showRoles.tank || showRoles.dps || showRoles.support) && (
             <FormMessage>
-            {form.formState.errors.errorRanks &&
-              form.formState.errors.errorRanks.message}
+              {form.formState.errors.errorRanks &&
+                form.formState.errors.errorRanks.message}
             </FormMessage>
           )}
 
@@ -346,14 +347,17 @@ export default function EditPlayerInputForm({
               (!form.getValues().supportRank ||
                 !form.getValues().supportDivision))) && (
             <FormMessage>
-            {form.formState.errors.errorRanks &&
-              form.formState.errors.errorRanks.message}
+              {form.formState.errors.errorRanks &&
+                form.formState.errors.errorRanks.message}
             </FormMessage>
           )}
+
+          {/* Role Input Forms */}
           {showRoles.tank && <RankRole form={form} playerRole="Tank" />}
           {showRoles.dps && <RankRole form={form} playerRole="Dps" />}
           {showRoles.support && <RankRole form={form} playerRole="Support" />}
         </>
+
         <Button type="submit">Submit</Button>
       </form>
     </Form>
@@ -361,12 +365,16 @@ export default function EditPlayerInputForm({
 }
 
 interface RoleToggleGroupProps {
-   // eslint-disable-next-line no-unused-vars
-   handleToggle: (role: string) => void;
-   showRoles: { [key: string]: boolean };
+  // eslint-disable-next-line no-unused-vars
+  handleToggle: (role: string) => void;
+  // eslint-disable-next-line no-unused-vars
+  showRoles: { [key in "tank" | "dps" | "support"]: boolean };
 }
 
-const RoleToggleGroup: React.FC<RoleToggleGroupProps> = ({ handleToggle, showRoles }) => {
+const RoleToggleGroup: React.FC<RoleToggleGroupProps> = ({
+  handleToggle,
+  showRoles,
+}) => {
   const roles = ["Tank", "Dps", "Support"];
 
   return (
@@ -376,8 +384,12 @@ const RoleToggleGroup: React.FC<RoleToggleGroupProps> = ({ handleToggle, showRol
           key={role}
           value={role}
           aria-label={`Toggle ${role}`}
-          onClick={() => handleToggle(role)}
-          data-state={showRoles[role.toLowerCase()] ? "on" : "off"}
+          onClick={() => handleToggle(role as "tank" | "dps" | "support")}
+          data-state={
+            showRoles[role.toLowerCase() as keyof typeof showRoles]
+              ? "on"
+              : "off"
+          }
           className={
             !(showRoles.tank || showRoles.dps || showRoles.support)
               ? "flex-grow text-destructive"
@@ -392,6 +404,29 @@ const RoleToggleGroup: React.FC<RoleToggleGroupProps> = ({ handleToggle, showRol
 };
 
 /* I Moved these down here because they were ugly and I did not want to look at them */
+
+function validateRoles(
+  // eslint-disable-next-line no-unused-vars
+  showRoles: { [key in "tank" | "dps" | "support"]: boolean },
+  formData: any
+) {
+  if (
+    (showRoles.tank && (!formData.tankRank || !formData.tankDivision)) ||
+    (showRoles.dps && (!formData.dpsRank || !formData.dpsDivision)) ||
+    (showRoles.support &&
+      (!formData.supportRank || !formData.supportDivision)) ||
+    !(showRoles.tank || showRoles.dps || showRoles.support)
+  ) {
+    toast({
+      title: "Incomplete Role Information",
+      description: "Update or deselect any roles not being added.",
+    });
+
+    return false;
+  }
+
+  return true;
+}
 
 /**
  * Sets the form values for player roles.
@@ -462,7 +497,6 @@ export const handleToggleHelper = (
   role: string,
   form: any,
   showRoles: any,
-  setHasRoles: any,
   setShowRoles: any
 ) => {
   switch (role) {
@@ -470,7 +504,6 @@ export const handleToggleHelper = (
       if (showRoles.tank) {
         form.setValue("tankRank", "");
         form.setValue("tankDivision", "");
-        setHasRoles((prevState: any) => ({ ...prevState, tank: false }));
       }
       setShowRoles((prevState: any) => ({
         ...prevState,
@@ -481,7 +514,6 @@ export const handleToggleHelper = (
       if (showRoles.dps) {
         form.setValue("dpsRank", "");
         form.setValue("dpsDivision", "");
-        setHasRoles((prevState: any) => ({ ...prevState, dps: false }));
       }
       setShowRoles((prevState: any) => ({
         ...prevState,
@@ -492,7 +524,6 @@ export const handleToggleHelper = (
       if (showRoles.support) {
         form.setValue("supportRank", "");
         form.setValue("supportDivision", "");
-        setHasRoles((prevState: any) => ({ ...prevState, support: false }));
       }
       setShowRoles((prevState: any) => ({
         ...prevState,

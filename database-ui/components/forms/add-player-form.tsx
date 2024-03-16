@@ -279,6 +279,12 @@ export default function CreatePlayerInputForm() {
 
   // Proccess the "Sumbit" button
   async function onSubmit(data: z.infer<typeof FormSchema>) {
+
+    // Remind user if they forgot to fill out a rank.
+    if (!validateRoles({showTank, showDps, showSupport, formData: data})) {
+      return;
+    }
+
     // Send the fetch request to create a player
     // This only uses the player name and email
     const response = await fetch(PLAYERS_API_URL, {
@@ -392,6 +398,38 @@ export default function CreatePlayerInputForm() {
       </form>
     </Form>
   );
+}
+
+interface ValidateRolesProps {
+  showTank: boolean;
+  showDps: boolean;
+  showSupport: boolean;
+  formData: {
+    tankRank?: string;
+    tankDivision?: string;
+    dpsRank?: string;
+    dpsDivision?: string;
+    supportRank?: string;
+    supportDivision?: string;
+  };
+}
+
+function validateRoles({showTank, showDps, showSupport, formData}: ValidateRolesProps) {
+  if (
+    (showTank && (formData.tankRank === "" || formData.tankDivision === "")) ||
+    (showDps && (formData.dpsRank === "" || formData.dpsDivision === "")) ||
+    (showSupport && (formData.supportRank === "" || formData.supportDivision === "")) ||
+    !(showTank || showDps || showSupport)
+  ) {
+    toast({
+      title: "Incomplete Role Information",
+      description: "Update or deselect any roles not being added.",
+    });
+
+    return false;
+  }
+
+  return true;
 }
 
 /**

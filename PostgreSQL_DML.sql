@@ -8,6 +8,18 @@
 
 -- SELECT Queries:
 
+-- Used to calculate the AverageRank name + division when given an MMR number
+-- Ideally, this is used instead of all the Hardcoded case statements. 
+SELECT 
+    rankname || ' ' || division::text AS AverageRank
+FROM 
+    public.ranks
+WHERE 
+    mmr <= FLOOR(:averageMMR / 10) * 10
+ORDER BY 
+    mmr DESC
+LIMIT 1;
+
 -- Query to retrieve player information along with their Name, HighestRank, MMR, Email, CreatedAt, and Roles.
 SELECT
     p.username AS Name,
