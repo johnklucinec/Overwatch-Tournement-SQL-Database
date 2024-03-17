@@ -300,6 +300,9 @@ export default function DataTablePlayers() {
     fetchPlayers().catch((e) => {
       console.error("An error occurred while refreshing the players data.", e);
     });
+
+    // Make sure nothing is selected after deletion
+    table.toggleAllRowsSelected(false);
   };
 
   /* Do nothing */

@@ -9,6 +9,7 @@ import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
 const DeleteAlertNoSSR = dynamic(() => import("@/components/delete-alert"), {
   ssr: false,
 });
@@ -304,26 +305,51 @@ export default function DataTablePlayers({id, fetchTeamPlayerInfo}: DataTablePla
   /* Process Players Deletion */
   const handleContinue = async () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
-    const getDeletePlayerUrl = (id: string) => `${TEAMPLAYERS_API_URL}?id=${id}`;
+    const teamID = id;
+    let deletedRoles = [];
 
     for (const row of selectedRows) {
-      const response = await fetch(getDeletePlayerUrl(row.original.id), {
-        method: "DELETE",
-      });
+
+      let playerID = row.original.id
+
+      const response = await fetch(
+        TEAMPLAYERS_API_URL,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ teamID: teamID.toString(), playerID: playerID.toString()}),
+        }
+      );
 
       if (!response.ok) {
-        console.error(`Failed to delete player with id: ${row.original.id}`);
-        continue;
+        toast({
+          title: "Error",
+          description: "There was a problem deleting the roles.",
+        });
+        return
       }
-
-      console.log(`Deleted player with id: ${row.original.id}`);
+      deletedRoles.push("{ " + row.original.name + " } ")
     }
 
-    console.log(convertPlayersToPlayer(data))
+    toast({
+      title: "Player(s) Removed: ",
+      description: deletedRoles,
+    });
+    
     // Refresh the table
     fetchPlayers().catch((e) => {
       console.error("An error occurred while refreshing the players data.", e);
     });
+
+    // Refresh the data on the page
+    fetchTeamPlayerInfo().catch((e) => {
+      console.error("An error occurred while refreshing the players data.", e);
+    });
+
+    // Make sure nothing is selected after deletion
+    table.toggleAllRowsSelected(false);
   };
 
   /* Do nothing */
@@ -363,12 +389,12 @@ export default function DataTablePlayers({id, fetchTeamPlayerInfo}: DataTablePla
                 </div>
 
                 {/* Edit Information Button */}
-                <AddTeamPlayersDialog onClose={fetchTeamPlayerInfo} id={id}/>
+                <AddTeamPlayersDialog onClose={fetchTeamPlayerInfo} id={id} refreshTable={fetchPlayers}/>
                 
                 {/* Edit Information Button */}
                 
                 {/* Edit Information Button */}
-                <EditTeamPlayersDialog onClose={fetchTeamPlayerInfo} id={id} data={convertPlayersToPlayer(data)}/>
+                <EditTeamPlayersDialog onClose={fetchTeamPlayerInfo} refreshTable={fetchPlayers} id={id} data={convertPlayersToPlayer(data)}/>
               </div>
             </div>
           </div>
@@ -491,7 +517,7 @@ export default function DataTablePlayers({id, fetchTeamPlayerInfo}: DataTablePla
               size="sm"
               disabled={table.getFilteredSelectedRowModel().rows.length === 0}
             >
-              Delete
+              Remove
             </Button>
           </DeleteAlertNoSSR>
         </div>

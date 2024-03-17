@@ -308,6 +308,9 @@ export default function DataTableTeams({id, fetchTournamentTeamsInfo}: DataTable
     fetchPlayers().catch((e) => {
       console.error("An error occurred while refreshing the players data.", e);
     });
+
+        // Make sure nothing is selected after deletion
+    table.toggleAllRowsSelected(false);
     */
   };
 

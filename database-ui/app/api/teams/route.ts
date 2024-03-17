@@ -165,8 +165,6 @@ async function readPlayersHandler(req: NextRequest) {
   }
 }
 
-
-
 export async function GET(req: NextRequest) {
   return readPlayersHandler(req);
 }

@@ -39,7 +39,7 @@ const AddTeamDialog: React.FC<AddPlayerDialogProps> = ({ onClose }) => {
       </DialogTrigger>
 
       {/* Adds Dialog title, description, and form */}
-      <DialogContent className="w-full">
+      <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle>Add Team</DialogTitle>
           <DialogDescription>Add Team Info Here</DialogDescription>

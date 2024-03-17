@@ -5,9 +5,9 @@ Adapted from Build & Deploy a Next.js Project with Neon & Vercel:
 Source URL: https://youtu.be/_LF-IvJsr5Y
 */
 
-//import { extractbody } from "@/utils/extractBody";
+import { extractbody } from "@/utils/extractBody";
 import { NextRequest } from "next/server";
-//import zod from "zod";
+import zod from "zod";
 import sqlstring from "sqlstring";
 import { Pool } from "@neondatabase/serverless";
 
@@ -147,6 +147,9 @@ async function readTeamPlayersHandler(req: NextRequest) {
     const result = await pool.query(query);
 
     if (result.rowCount === 0) {
+      if (iid || eid) {
+        return createResponse("No Players found", 409);
+      }
       return createResponse("No Players found", 400);
     }
 
@@ -161,6 +164,111 @@ async function readTeamPlayersHandler(req: NextRequest) {
   }
 }
 
+/**
+ * Schema to check for valid entries into the database
+ */
+const createTeamPlayerSchema = zod.object({
+  teamID: zod.string().max(255).min(1),
+  playerID: zod.string().max(255).min(1),
+  role: zod.enum(['TANK', 'DPS', 'SUPPORT']),
+});
+
+/**
+ * Usage Example: Send a POST request to 'http://localhost:3000/api/teamplayers/' with a body containing 'teamID', 'playerID' and 'role' to add a player and thier role to a team. 
+ */
+async function createTeamPlayerHandler(req: NextRequest) {
+  const body = await extractbody(req);
+  const { teamID, playerID, role } = createTeamPlayerSchema.parse(body);
+
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+  });
+
+  const createRoleQuery = sqlstring.format(
+    `
+    INSERT INTO TeamPlayers (playerID, roleID, teamID) 
+    VALUES (?, (SELECT roleID FROM Roles WHERE roleName = ?), ?);
+    `,
+    [playerID, role, teamID]
+  );
+
+  try {
+    const result = await pool.query(createRoleQuery);
+
+    if (result.rowCount === 0) {
+      return createResponse("Failed to create role", 400);
+    }
+
+    return createResponse("Role added successfully", 200);
+
+  } catch (e) {
+    console.error((e as Error).message);
+    return createResponse((e as Error).message, 500);
+
+  } finally {
+    await pool.end();
+  }
+}
+
+const deletePlayerRolesSchema = zod.object({
+  teamID: zod.string().max(255).min(1),
+  playerID: zod.string().max(255).min(1),
+  role: zod.enum(['TANK', 'DPS', 'SUPPORT']).optional(),
+});
+
+/**
+ * Usage Example: Send a DELETE request to 'http://localhost:3000/api/teamplayers/' with a body containing 'id', 'role' to delete a player role.
+ */
+async function deletePlayerRolesHandler(req: NextRequest) {
+  const body = await extractbody(req);
+  const { teamID, playerID, role } = deletePlayerRolesSchema.parse(body);
+
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+  });
+
+  const deletePlayerRolesQuery = role ? sqlstring.format(
+    `
+    DELETE FROM TeamPlayers
+    WHERE playerID = ?
+      AND teamID = ?
+      AND roleID = (SELECT roleID FROM Roles WHERE roleName = ?);
+    `,
+    [playerID, teamID, role]
+  ) : sqlstring.format(
+    `
+    DELETE FROM TeamPlayers
+    WHERE playerID = ?
+      AND teamID = ?;
+    `,
+    [playerID, teamID]
+  );
+
+  try {
+    const result = await pool.query(deletePlayerRolesQuery);
+
+    if (result.rowCount === 0) {
+      return createResponse("Failed to remove player's roles", 400);
+    }
+
+    return createResponse("Player's role removed", 200);
+  } catch (e) {
+    console.error((e as Error).message);
+    return createResponse((e as Error).message, 500);
+  } finally {
+    await pool.end();
+  }
+}
+
+
 export async function GET(req: NextRequest) {
   return readTeamPlayersHandler(req);
+}
+
+export async function POST(req: NextRequest) {
+  return createTeamPlayerHandler(req);
+}
+
+export async function DELETE(req: NextRequest) {
+  return deletePlayerRolesHandler(req);
 }

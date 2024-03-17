@@ -18,7 +18,7 @@ import PlayersComboBox from "@/components/players-combobox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 /* API Route to populate the TEAMS table */
-//const TEAMPLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teamplayers/`;
+const TEAMPLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teamplayers/`;
 
 /**
  * Schema to check for user error
@@ -105,11 +105,13 @@ async function processResponse(
 }
 
 /**
- * Function to edit the team's name.
+ * Function to add a player's roles to a team
  */
-/*
-async function editTeam(
-  id: string,
+
+async function addTeamPlayerRole(
+  teamID: string,
+  playerID: string,
+  role: string
 ) {
 
   const response = await fetch(
@@ -119,13 +121,36 @@ async function editTeam(
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, date }),
+      body: JSON.stringify({ teamID, playerID, role }),
     }
   );
 
   return response;
 }
-*/
+
+async function processRoles(teamID: string, playerID: string, roles: string[], playerName: string) {
+  let response;
+
+  for (const role of roles) {
+    try {
+      response = await addTeamPlayerRole(teamID, playerID, role);
+      if (!response.ok) {
+        showSubmissionToast({player: playerID, name: playerName, roles}, { message: "Error occurred while processing roles", status: 400 });
+        return;
+      }
+    } catch (e) {
+      showSubmissionToast({player: playerID, name: playerName, roles}, { message: "Error occurred while processing roles", status: 400 });
+      return;
+    }
+  }
+
+  if (response) {
+    await processResponse(response, { player: playerID, name: playerName, roles });
+  }
+
+  return;
+}
+
 
 export type Player = {
   id: string;
@@ -187,7 +212,6 @@ export default function CreateTeamsInputForm({ id }: { id: string }) {
         newRoles = [...prevRoles, role];
       }
 
-
       // Update the roles field in the form
       form.setValue("roles", newRoles);
 
@@ -197,12 +221,8 @@ export default function CreateTeamsInputForm({ id }: { id: string }) {
 
   // Proccess the "Sumbit" button
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    //const response = await addTeam(data.name, data.date)
-
     // Sends the response and data to be processed
-    //const result = processResponse(response, data);
-
-    showSubmissionToast(data, { message: "Poggies", status: 200 });
+    await processRoles(id, data.player, data.roles, data.name ?? "")
 
     // Reset the form values
     form.reset({

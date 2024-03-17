@@ -19,15 +19,21 @@ import AddTeamPlayersForm from "@/components/forms/add-teamplayers-form";
 interface AddTeamPlayersDialogProps {
   onClose: () => Promise<void>,
   id: string,
+  refreshTable: () => Promise<void>,
 }
 
-const AddTeamPlayersDialog: React.FC<AddTeamPlayersDialogProps> = ({ onClose, id }) => {
+const AddTeamPlayersDialog: React.FC<AddTeamPlayersDialogProps> = ({ onClose, id, refreshTable }) => {
   // Refresh the table when the dialog is opened or closed.
   // Ideally this should only run when closed, but thats not possible.
   const handleClose = () => {
     onClose().catch((e) => {
       console.error("An error occurred while fetching the players data.", e);
     });
+
+    refreshTable().catch((e) => {
+      console.error("An error occurred while fetching the players data.", e);
+    });
+    
   };
 
   return (

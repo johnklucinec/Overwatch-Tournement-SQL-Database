@@ -13,7 +13,7 @@ import PlayersComboBox from "@/components/players-combobox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 /* API Route to populate the TEAMS table */
-//const TEAMPLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teamplayers/`;
+const TEAMPLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teamplayers/`;
 
 /**
  * Schema to check for user error
@@ -100,11 +100,13 @@ async function processResponse(
 }
 
 /**
- * Function to edit the team's name.
+ * Function to add a player's roles to a team
  */
-/*
-async function editTeam(
-  id: string,
+
+async function addTeamPlayerRole(
+  teamID: string,
+  playerID: string,
+  role: string
 ) {
 
   const response = await fetch(
@@ -114,13 +116,75 @@ async function editTeam(
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, date }),
+      body: JSON.stringify({ teamID, playerID, role }),
     }
   );
 
   return response;
 }
-*/
+
+/**
+ * Function to remove a player's role from a team
+ */
+
+async function deleteTeamPlayerRole(
+  teamID: string,
+  playerID: string,
+  role: string
+) {
+
+  const response = await fetch(
+    TEAMPLAYERS_API_URL,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ teamID, playerID, role }),
+    }
+  );
+
+  return response;
+}
+
+async function processRoles(teamID: string, playerID: string, roles: string[], playerName: string, hasRoles: { tank: boolean; dps: boolean; support: boolean; [key: string]: boolean; }) {
+  let response;
+
+  const allRoles = ['TANK', 'DPS', 'SUPPORT'];
+
+  for (const role of allRoles) {
+
+    if (roles.includes(role) && !hasRoles[role.toLowerCase()]) {
+      try {
+        response = await addTeamPlayerRole(teamID, playerID, role);
+        if (!response.ok) {
+          showSubmissionToast({player: playerID, name: playerName, roles}, { message: "Error occurred while adding role", status: 400 });
+          return;
+        }
+      } catch (e) {
+        showSubmissionToast({player: playerID, name: playerName, roles}, { message: "Error occurred while adding role", status: 400 });
+        return;
+      }
+    } else if (!roles.includes(role) && hasRoles[role.toLowerCase()]) {
+      try {
+        response = await deleteTeamPlayerRole(teamID, playerID, role);
+        if (!response.ok) {
+          showSubmissionToast({player: playerID, name: playerName, roles}, { message: "Error occurred while deleting role", status: 400 });
+          return;
+        }
+      } catch (e) {
+        showSubmissionToast({player: playerID, name: playerName, roles}, { message: "Error occurred while deleting role", status: 400 });
+        return;
+      }
+    }
+  }
+
+  if (response) {
+    await processResponse(response, { player: playerID, name: playerName, roles });
+  }
+
+  return;
+}
 
 export type Player = {
   id: string;
@@ -131,9 +195,11 @@ export type Player = {
 export default function CreateTeamsInputForm({
   id,
   data,
+  refreshData,
 }: {
   id: string;
   data: Player[];
+  refreshData: () => Promise<void>;
 }) {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [resetForm, setResetForm] = useState(false);
@@ -148,6 +214,17 @@ export default function CreateTeamsInputForm({
     dps: true,
     support: true,
   });
+
+    // Set all toggles to be disabled by
+    const [hasRoles, setHasRoles] = useState<{
+      tank: boolean;
+      dps: boolean;
+      support: boolean;
+    }>({
+      tank: false,
+      dps: false,
+      support: false,
+    });
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -169,17 +246,27 @@ export default function CreateTeamsInputForm({
         support: !selectedPlayer.roles.includes("SUPPORT"),
       });
 
+
       // Reset the selected roles
       const player = data.find((player) => player.id === selectedPlayer.id);
+
       const playerRoles = player
         ? player.roles.map((role) => role.replace(/[{}]/g, "").toUpperCase())
         : [];
+
+      setHasRoles({
+          tank: playerRoles.includes("TANK"),
+          dps: playerRoles.includes("DPS"),
+          support: playerRoles.includes("SUPPORT"),
+        });
+
 
       form.setValue("roles", playerRoles);
       setSelectedRoles(playerRoles);
     },
     [form, data]
   );
+
 
   const toggleRole = (role: string) => {
     setSelectedRoles((prevRoles) => {
@@ -199,12 +286,9 @@ export default function CreateTeamsInputForm({
 
   // Proccess the "Sumbit" button
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    //const response = await addTeam(data.name, data.date)
 
     // Sends the response and data to be processed
-    //const result = processResponse(response, data);
-
-    showSubmissionToast(data, { message: "Poggies", status: 200 });
+    await processRoles(id, data.player, data.roles, data.name ?? "", hasRoles)
 
     // Reset the form values
     form.reset({
@@ -213,10 +297,16 @@ export default function CreateTeamsInputForm({
       roles: [],
     });
 
+    refreshData().catch((e) => {
+      console.error("An error occurred while fetching the players data.", e);
+    });
+
     // Reset the toggle buttons
     setDisabled({ tank: true, dps: true, support: true });
     setSelectedRoles([]);
     setResetForm(true);
+
+
 
     //return result;
     return;

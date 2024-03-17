@@ -74,7 +74,11 @@ export default function PlayersComboBox({ iid, eid, onPlayerSelect, reset }: Pla
     setLoading(true);
     const response = await fetch(query);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      if(response.status === 409) {
+        console.log('No players found');
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
     }
     const result = await response.json();
     setData(result.playerRolesRows);
@@ -82,19 +86,21 @@ export default function PlayersComboBox({ iid, eid, onPlayerSelect, reset }: Pla
   }, [query]);
 
   useEffect(() => {
-    fetchPlayers().catch((e) => {
-      console.error(
-        "An error occurred while fetching the teamplayers data.",
-        e
-      );
-    });
-  }, [fetchPlayers]);
-
-  useEffect(() => {
     if (reset) {
       form.reset({ player: "" });
     }
-  }, [form, reset]);
+  
+    fetchPlayers().catch((e) => {
+      if(e.message.includes('409')) {
+        console.log('No players found');
+      } else {
+        console.error(
+          "An error occurred while fetching the teamplayers data. This error is normal if no more players can be added to the team.",
+          e
+        );
+      }
+    });
+  }, [fetchPlayers, form, reset]);
 
   return (
     <FormField
