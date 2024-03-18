@@ -5,8 +5,6 @@ Installed from shadcn GitHub:
 Source URL: https://github.com/shadcn-ui/ui
 */
 
-"use client";
-
 import React from "react";
 
 export default function SiteFooter() {
