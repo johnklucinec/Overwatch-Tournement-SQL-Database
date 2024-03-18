@@ -23,7 +23,7 @@ import RankRole from "@/components/forms/add-playerroles-form";
 const PLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/players/`;
 
 /* API Route to populate the PlayerRoles table */
-const PLAYERROLES_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/playerroles/`
+const PLAYERROLES_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/playerroles/`;
 
 /**
  * Schema to check for user error
@@ -47,6 +47,7 @@ export const FormSchema = z
     dpsDivision: z.string().optional(),
     supportRank: z.string().optional(),
     supportDivision: z.string().optional(),
+    errorRanks: z.string().optional(),
   })
   .refine((data) => data.tankRank || !data.tankDivision, {
     message: "Choose a Rank",
@@ -71,6 +72,10 @@ export const FormSchema = z
   .refine((data) => data.supportDivision || !data.supportRank, {
     message: "Choose a Division",
     path: ["supportDivision"],
+  })
+  .refine((data) => data.tankRank || data.dpsRank || data.supportRank, {
+    message: "Select And Fill Out At Least One Role",
+    path: ["errorRanks"],
   });
 
 /**
@@ -198,16 +203,13 @@ async function addPlayerRole(
   rankName: string,
   rankDivision: string
 ) {
-  const response = await fetch(
-    PLAYERROLES_API_URL,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, role, rankName, rankDivision }),
-    }
-  );
+  const response = await fetch(PLAYERROLES_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ username, role, rankName, rankDivision }),
+  });
 
   return response;
 }
@@ -225,12 +227,33 @@ export default function CreatePlayerInputForm() {
   const handleToggle = (role: string) => {
     switch (role) {
       case "Tank":
+        if (showTank) {
+          form.reset({
+            ...form.getValues(),
+            tankRank: "",
+            tankDivision: "",
+          });
+        }
         setShowTank(!showTank);
         break;
       case "Dps":
+        if (showDps) {
+          form.reset({
+            ...form.getValues(),
+            dpsRank: "",
+            dpsDivision: "",
+          });
+        }
         setShowDps(!showDps);
         break;
       case "Support":
+        if (showSupport) {
+          form.reset({
+            ...form.getValues(),
+            supportRank: "",
+            supportDivision: "",
+          });
+        }
         setShowSupport(!showSupport);
         break;
       default:
@@ -256,32 +279,21 @@ export default function CreatePlayerInputForm() {
 
   // Proccess the "Sumbit" button
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    // Make sure at least one toggle button is active
-    // Also, make sure both a Rank and Division is selected
-    if (
-      (showTank && (!data.tankRank || !data.tankDivision)) ||
-      (showDps && (!data.dpsRank || !data.dpsDivision)) ||
-      (showSupport && (!data.supportRank || !data.supportDivision))
-    ) {
-      toast({
-        title: "Error",
-        description: "Please select a Rank and a Role",
-      });
+
+    // Remind user if they forgot to fill out a rank.
+    if (!validateRoles({showTank, showDps, showSupport, formData: data})) {
       return;
     }
 
     // Send the fetch request to create a player
     // This only uses the player name and email
-    const response = await fetch(
-      PLAYERS_API_URL,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      }
-    );
+    const response = await fetch(PLAYERS_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
 
     // Sends the response and data to be processed
     // This involves adding the roles and creating the toast
@@ -314,6 +326,7 @@ export default function CreatePlayerInputForm() {
         }}
         className="space-y-2"
       >
+        {/* Username Input */}
         <FormField
           control={form.control}
           name="username"
@@ -327,6 +340,8 @@ export default function CreatePlayerInputForm() {
             </FormItem>
           )}
         />
+
+        {/* Email Input */}
         <FormField
           control={form.control}
           name="email"
@@ -341,60 +356,143 @@ export default function CreatePlayerInputForm() {
           )}
         />
         <>
-          <ToggleGroup variant="outline" type="multiple">
-            <ToggleGroupItem
-              value="Tank"
-              aria-label="Toggle Tank"
-              onClick={() => handleToggle("Tank")}
-              data-state={showTank ? "on" : "off"}
-              className={
-                isSubmitted && !(showTank || showDps || showSupport)
-                  ? "text-destructive"
-                  : ""
-              }
-            >
-              TANK
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="Dps"
-              aria-label="Toggle Dps"
-              onClick={() => handleToggle("Dps")}
-              data-state={showDps ? "on" : "off"}
-              className={
-                isSubmitted && !(showTank || showDps || showSupport)
-                  ? "text-destructive"
-                  : ""
-              }
-            >
-              DPS
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="Support"
-              aria-label="Toggle Support"
-              onClick={() => handleToggle("Support")}
-              data-state={showSupport ? "on" : "off"}
-              className={
-                isSubmitted && !(showTank || showDps || showSupport)
-                  ? "text-destructive"
-                  : ""
-              }
-            >
-              SUPPORT
-            </ToggleGroupItem>
-          </ToggleGroup>
+        
+          {/* Role Buttons Input */}
+          <RoleToggleGroup
+            isSubmitted={isSubmitted}
+            handleToggle={handleToggle}
+            showTank={showTank}
+            showDps={showDps}
+            showSupport={showSupport}
+          />
 
-          {isSubmitted && !(showTank || showDps || showSupport) && (
-            <div className="text-sm font-medium text-destructive">
-              At least one role must be selected
-            </div>
+          {/* Send error if at least one role is not toggled */}
+          {!(showTank || showDps || showSupport) && (
+            <FormMessage>
+              {form.formState.errors.errorRanks &&
+                form.formState.errors.errorRanks.message}
+            </FormMessage>
           )}
 
+          {/* Send error if both a Rank and Division are not filled out */}
+          {((showTank &&
+            (!form.getValues().tankRank || !form.getValues().tankDivision)) ||
+            (showDps &&
+              (!form.getValues().dpsRank || !form.getValues().dpsDivision)) ||
+            (showSupport &&
+              (!form.getValues().supportRank ||
+                !form.getValues().supportDivision))) && (
+            <FormMessage>
+              {form.formState.errors.errorRanks &&
+                form.formState.errors.errorRanks.message}
+            </FormMessage>
+          )}
+
+          {/* Role Input Forms */}
           {showTank && <RankRole form={form} playerRole="Tank" />}
           {showDps && <RankRole form={form} playerRole="Dps" />}
           {showSupport && <RankRole form={form} playerRole="Support" />}
         </>
+
         <Button type="submit">Submit</Button>
       </form>
     </Form>
+  );
+}
+
+interface ValidateRolesProps {
+  showTank: boolean;
+  showDps: boolean;
+  showSupport: boolean;
+  formData: {
+    tankRank?: string;
+    tankDivision?: string;
+    dpsRank?: string;
+    dpsDivision?: string;
+    supportRank?: string;
+    supportDivision?: string;
+  };
+}
+
+function validateRoles({showTank, showDps, showSupport, formData}: ValidateRolesProps) {
+  if (
+    (showTank && (formData.tankRank === "" || formData.tankDivision === "")) ||
+    (showDps && (formData.dpsRank === "" || formData.dpsDivision === "")) ||
+    (showSupport && (formData.supportRank === "" || formData.supportDivision === "")) ||
+    !(showTank || showDps || showSupport)
+  ) {
+    toast({
+      title: "Incomplete Role Information",
+      description: "Update or deselect any roles not being added.",
+    });
+
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Creates the role toggle buttons that then create forms for each role.
+ */
+interface RoleToggleGroupProps {
+  isSubmitted: boolean;
+  // eslint-disable-next-line no-unused-vars
+  handleToggle: (_role: string) => void;
+  showTank: boolean;
+  showDps: boolean;
+  showSupport: boolean;
+}
+
+function RoleToggleGroup({
+  isSubmitted,
+  handleToggle,
+  showTank,
+  showDps,
+  showSupport,
+}: RoleToggleGroupProps) {
+  // Create class name for toggle button
+  // Turns buttons red if there is an error
+  function getClassName(
+    isSubmitted: boolean,
+    showTank: boolean,
+    showDps: boolean,
+    showSupport: boolean
+  ) {
+    return isSubmitted && !(showTank || showDps || showSupport)
+      ? "flex-grow text-destructive"
+      : "flex-grow";
+  }
+
+  return (
+    <ToggleGroup variant="outline" type="multiple">
+      <ToggleGroupItem
+        value="Tank"
+        aria-label="Toggle Tank"
+        onClick={() => handleToggle("Tank")}
+        data-state={showTank ? "on" : "off"}
+        className={getClassName(isSubmitted, showTank, showDps, showSupport)}
+      >
+        TANK
+      </ToggleGroupItem>
+      <ToggleGroupItem
+        value="Dps"
+        aria-label="Toggle Dps"
+        onClick={() => handleToggle("Dps")}
+        data-state={showDps ? "on" : "off"}
+        className={getClassName(isSubmitted, showTank, showDps, showSupport)}
+      >
+        DPS
+      </ToggleGroupItem>
+      <ToggleGroupItem
+        value="Support"
+        aria-label="Toggle Support"
+        onClick={() => handleToggle("Support")}
+        data-state={showSupport ? "on" : "off"}
+        className={getClassName(isSubmitted, showTank, showDps, showSupport)}
+      >
+        SUPPORT
+      </ToggleGroupItem>
+    </ToggleGroup>
   );
 }

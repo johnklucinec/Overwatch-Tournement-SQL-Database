@@ -24,10 +24,11 @@ export type Player = {
 interface EditTeamPlayersDialogProps {
   onClose: () => Promise<void>;
   id: string;
-  data: Player[]
+  data: Player[];
+  refreshTable: () => Promise<void>;
 }
 
-const EditTeamPlayersDialog: React.FC<EditTeamPlayersDialogProps> = ({ onClose, id, data }) => {
+const EditTeamPlayersDialog: React.FC<EditTeamPlayersDialogProps> = ({ onClose, id, data, refreshTable }) => {
   // Refresh the table when the dialog is opened or closed.
   // Ideally this should only run when closed, but thats not possible.
   const handleClose = () => {
@@ -51,7 +52,7 @@ const EditTeamPlayersDialog: React.FC<EditTeamPlayersDialogProps> = ({ onClose, 
           <DialogTitle>Edit Team Players</DialogTitle>
           <DialogDescription>Edit The Player Roles Here</DialogDescription>
         </DialogHeader>
-        <EditTeamPlayersForm id={id} data={data}/>
+        <EditTeamPlayersForm id={id} data={data} refreshData={refreshTable }/>
       </DialogContent>
     </Dialog>
   );

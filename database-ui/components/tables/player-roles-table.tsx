@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-
 import dynamic from "next/dynamic";
 
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
@@ -45,11 +44,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import DialogWithForm from "@/components/cards-and-sheets/edit-player-dialog";
+import DialogWithForm from "@/components/dialogs/edit-player-dialog";
+import EditRoleDialog from "@/components/dialogs/edit-playerroles-dialog";
 
-import EditRoleDialog from "@/components/cards-and-sheets/edit-playerroles-dialog";
-
-const PLAYERROLES_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/playerroles/`
+const PLAYERROLES_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/playerroles/`;
 
 export type PlayerRole = {
   id: string;
@@ -102,7 +100,7 @@ export const columns: ColumnDef<PlayerRole>[] = [
     cell: ({ row }) => <div className="ml-4">{row.getValue("id")}</div>,
   },
 
-    // Add the player role to the table. Sortable.
+  // Add the player role to the table. Sortable.
   {
     accessorKey: "role",
     header: ({ column }) => (
@@ -178,26 +176,31 @@ interface DataTablePlayersProps {
   fetchPlayerInfo: () => Promise<void>;
 }
 
-export default function DataTablePlayers({id, fetchPlayerInfo}: DataTablePlayersProps) {
-  // function body
-
+export default function DataTablePlayers({
+  id,
+  fetchPlayerInfo,
+}: DataTablePlayersProps) {
+  const [data, setData] = useState<PlayerRole[]>([]);
+  const [rowSelection, setRowSelection] = React.useState({});
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [data, setData] = useState<PlayerRole[]>([]);
 
   /* Load and Update the table information */
   const fetchPlayers = useCallback(async () => {
     const response = await fetch(`${PLAYERROLES_API_URL}?id=${id}`);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      setData([]);
+      return;
+      // Database API already LOGS this.
+      //throw new Error(`HTTP error! status: ${response.status}. This error usually happens when a query returns nothing.`);
     }
     const result = await response.json();
     setData(result.playerRolesRows);
-  },[id]);
+  }, [id]);
 
   useEffect(() => {
     fetchPlayers().catch((e) => {
@@ -206,25 +209,23 @@ export default function DataTablePlayers({id, fetchPlayerInfo}: DataTablePlayers
   }, [fetchPlayers]);
 
   /* Process Player Role Deletion */
-
-  /* NEED TO MAKE SURE AT LEAST ONE ROLE IS LEFT */
   const handleContinue = async () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
-    const totalRows = table.getRowModel().rows; 
-  
+    const totalRows = table.getRowModel().rows;
+
+    // Prevent last role from being deleted.
     if (selectedRows.length >= totalRows.length) {
-      
       toast({
         title: "Error",
-        description: "You cannot delete all roles. At least one role must be left.",
+        description:
+          "You cannot delete all roles. At least one role must be left.",
       });
       return;
     }
-  
+
     let deletedRoles = [];
 
     for (const row of selectedRows) {
-
       const response = await fetch(PLAYERROLES_API_URL, {
         method: "DELETE",
         headers: {
@@ -238,24 +239,32 @@ export default function DataTablePlayers({id, fetchPlayerInfo}: DataTablePlayers
           title: "Error",
           description: "There was a problem deleting the roles.",
         });
-        return
+        return;
       }
-      deletedRoles.push("{ " + row.original.role.toUpperCase() + " } ")
+      deletedRoles.push("{ " + row.original.role.toUpperCase() + " } ");
     }
 
     toast({
       title: "Roles Deleted: ",
       description: deletedRoles,
     });
-  
+
     // Refresh the table
     fetchPlayers().catch((e) => {
       console.error("An error occurred while refreshing the players data.", e);
     });
+
+    // Refresh the data on the page
+    fetchPlayerInfo().catch((e) => {
+      console.error("An error occurred while refreshing the players data.", e);
+    });
+
+    // Make sure nothing is selected after deletion
+    table.toggleAllRowsSelected(false);
   };
 
-      /* Do nothing */
-      const handleCancel = () => {}; // Wintah if he was a function
+  /* Do nothing */
+  const handleCancel = () => {}; // Wintah if he was a function
 
   const table = useReactTable({
     data,
@@ -280,12 +289,14 @@ export default function DataTablePlayers({id, fetchPlayerInfo}: DataTablePlayers
     <div className="w-full p-5">
       <div className="flex flex-4 items-center space-x-2">
         {/* Pass fetchPlayers so Edit Player Dialog can update table */}
-        <DialogWithForm onClose={fetchPlayerInfo} id={id}/>
+        <DialogWithForm onClose={fetchPlayerInfo} id={id} />
 
         {/* Pass fetchPlayers so Edit Role Dialog can update table */}
-        <EditRoleDialog onClose={() => [fetchPlayers(), fetchPlayerInfo()]} 
-        id={id}
-        data={data} />
+        <EditRoleDialog
+          onClose={() => [fetchPlayers(), fetchPlayerInfo()]}
+          id={id}
+          data={data}
+        />
       </div>
 
       <div className="flex items-center py-4">

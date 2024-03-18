@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -48,7 +48,7 @@ import {
 } from "@/components/ui/table";
 
 /* Dialog with Button to add a new player */
-import DialogWithForm from "@/components/cards-and-sheets/add-team-dialog";
+import DialogWithForm from "@/components/dialogs/add-team-dialog";
 
 /* API Route to populate the players table */
 const TEAMS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teams/`;
@@ -105,7 +105,7 @@ export const columns: ColumnDef<Team>[] = [
           ID
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => <div className="ml-4">{row.getValue("id")}</div>,
   },
@@ -142,7 +142,9 @@ export const columns: ColumnDef<Team>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="ml-4">{row.getValue("averageRank")}</div>,
+    cell: ({ row }) => (
+      <div className="ml-4">{row.getValue("averageRank")}</div>
+    ),
     sortingFn: (rowA: Row<Team>, rowB: Row<Team>) => {
       const a = rowA.original;
       const b = rowB.original;
@@ -164,7 +166,9 @@ export const columns: ColumnDef<Team>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="ml-4">{row.getValue("formationDate")}</div>,
+    cell: ({ row }) => (
+      <div className="ml-4">{row.getValue("formationDate")}</div>
+    ),
   },
 
   // Add the players created at date to the table. Sortable.
@@ -187,7 +191,7 @@ export const columns: ColumnDef<Team>[] = [
     },
   },
 
-  /* All the Actions */ 
+  /* All the Actions */
   {
     id: "actions",
     enableHiding: false,
@@ -206,9 +210,13 @@ export const columns: ColumnDef<Team>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(team.name)}
+              onClick={() =>
+                navigator.clipboard.writeText(
+                  `ID: ${team.id}\nName: ${team.name}\nAverage Rank: ${team.averageRank}\nMMR: ${team.mmr}\nFormation Date: ${team.formationDate}\nPlayers: ${team.players}`
+                )
+              }
             >
-              Copy Team Name
+              Copy Team Details
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -235,52 +243,45 @@ export const columns: ColumnDef<Team>[] = [
 export default function DataTableTeams() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [rowSelection, setRowSelection] = useState({});
+  const [data, setData] = useState<Team[]>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     {}
   );
-  const [rowSelection, setRowSelection] = useState({});
-  const [data, setData] = useState<Team[]>([]);
 
   /* Load and Update the table information */
-  const fetchTeams = async () => {
-
+  const fetchTeams = useCallback(async () => {
     const response = await fetch(TEAMS_API_URL);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      setData([]);
+      return;
+      // Database API already LOGS this.
+      //throw new Error(`HTTP error! status: ${response.status}. This error usually happens when a query returns nothing.`);
     }
     const result = await response.json();
     setData(result.playersRows);
-    // WHY IS THIS PLAYER ROWS??
-  };
+  }, []);
 
   useEffect(() => {
     fetchTeams().catch((e) => {
       console.error("An error occurred while fetching the teams data.", e);
     });
-  }, []);
+  }, [fetchTeams]);
 
-  /* Process Team Deletion */
+  /* Process Teams Deletion */
   const handleContinue = async () => {
-
-
-    toast({
-      title: "Error",
-      description: "This Function is not ready yet",
-    });
-
-    return;
-    /*
     const selectedRows = table.getFilteredSelectedRowModel().rows;
-    //const getDeletePlayerUrl = (id: string) => `${TEAMS_API_URL}?id=${id}`;
-    let deletedTeams = [];
+    let deletedRoles = [];
 
     for (const row of selectedRows) {
+      let teamID = row.original.id;
+
       const response = await fetch(TEAMS_API_URL, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id, role: row.original.role.toUpperCase() }),
+        body: JSON.stringify({ teamID: teamID.toString() }),
       });
 
       if (!response.ok) {
@@ -288,21 +289,24 @@ export default function DataTableTeams() {
           title: "Error",
           description: "There was a problem deleting the teams.",
         });
-        return
+        return;
       }
-      deletedTeams.push("{ " + row.original.name + " } ")
+
+      deletedRoles.push("{ " + row.original.name + " } ");
     }
 
     toast({
-      title: "Teams Deleted: ",
+      title: "Team(s) Removed: ",
       description: deletedRoles,
     });
 
     // Refresh the table
-    fetchPlayers().catch((e) => {
-      console.error("An error occurred while refreshing the players data.", e);
+    fetchTeams().catch((e) => {
+      console.error("An error occurred while refreshing the teams data.", e);
     });
-    */
+
+    // Make sure nothing is selected after deletion
+    table.toggleAllRowsSelected(false);
   };
 
   /* Do nothing */
@@ -331,7 +335,7 @@ export default function DataTableTeams() {
     <div className="w-full p-5">
       <div className="flex flex-4 items-center space-x-2">
         {/* Pass fetchTeams so Dialog can update table */}
-        <DialogWithForm onClose={fetchTeams}/>
+        <DialogWithForm onClose={fetchTeams} />
       </div>
 
       <div className="flex items-center py-4">

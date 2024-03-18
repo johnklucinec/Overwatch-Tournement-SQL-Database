@@ -5,13 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-
-import { Input } from "@/components/ui/input";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+
 import {
   Form,
   FormControl,
@@ -25,26 +22,39 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 
-/* API Route to populate the TEAMS table */
-const TEAMS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teams/`;
+/* API Route to populate the ROLES table */
+const ROLES_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/roles/`;
 
 /**
  * Schema to check for user error
  */
 export const FormSchema = z.object({
-  name: z
+  role: z
     .string()
     .min(2, {
-      message: "Team Name must be at least 2 characters.",
+      message: "Please Select a Role.",
     })
     .max(20, {
-      message: "Team Name must be at most 20 characters.",
+      message: "INVALID ROLE",
     }),
-  date: z.string().min(2, {
-    message: "Please Select a Date",
-  }),
 });
+
+/**
+ * All the Available Roles
+ */
+const availableRoles = [
+  { label: "TANK", value: "TANK" },
+  { label: "DPS", value: "DPS" },
+  { label: "SUPPORT", value: "SUPPORT" },
+] as const;
 
 /**
  * Toast that shows what the user submitted and the response.
@@ -81,8 +91,7 @@ function showSubmissionToast(
 async function processResponse(
   response: Response,
   data: {
-    name: string;
-    date: string;
+    role: string;
   }
 ) {
   let message = "Unknown error";
@@ -117,53 +126,38 @@ async function processResponse(
 }
 
 /**
- * Function to add the Team
+ * Function to add the Role
  */
-async function addTeam(name: string, date: string) {
-  const response = await fetch(TEAMS_API_URL, {
+async function addRole(role: string) {
+  const response = await fetch(ROLES_API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name, date }),
+    body: JSON.stringify({ role }),
   });
 
   return response;
 }
 
-export default function CreateTeamsInputForm() {
+export default function CreateRolesInputForm() {
+  const [open, setOpen] = React.useState(false);
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
-      name: "",
-      date: "",
-    },
   });
-
-    // Formats the dates to yyyy-MM-dd
-    function formatDate(data: z.infer<typeof FormSchema>) {
-      if (data.date) {
-        data.date = new Date(data.date).toISOString().split("T")[0];
-      }
-    }
 
   // Process the "Submit" button
   const onSubmit = useCallback(
     async (data: z.infer<typeof FormSchema>) => {
-      formatDate(data);
-      
-      const response = await addTeam(data.name ?? "", data.date ?? "");
+      const response = await addRole(data.role);
 
       // Sends the response and data to be processed
-      const result = processResponse(response, {
-        name: data.name ?? "",
-        date: data.date ?? "",
-      });
+      const result = processResponse(response, { role: data.role });
 
       // Reset the form after submission, if the response is ok.
       form.reset({
-        name: "",
-        date: "",
+        role: "",
       });
 
       return result;
@@ -182,58 +176,57 @@ export default function CreateTeamsInputForm() {
       >
         <FormField
           control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Team Name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="date"
+          name="role"
           render={({ field }) => (
             <FormItem className="flex flex-col flex-grow">
-              <FormLabel>Team Formation Date</FormLabel>
-              <Popover modal={true}>
-                <PopoverTrigger className="flex flex-col flex-grow">
+              <FormLabel>Role</FormLabel>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
                   <FormControl>
                     <Button
-                      type="button"
-                      variant={"outline"}
+                      variant="outline"
+                      role="combobox"
                       className={cn(
-                        "pl-3 w-full text-left font-normal",
+                        "justify-between",
                         !field.value && "text-muted-foreground"
                       )}
                     >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      {field.value
+                        ? availableRoles.find(
+                            (role) => role.value === field.value
+                          )?.label
+                        : "Select role"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value ? new Date(field.value) : undefined}
-                    onSelect={(date) => {
-                      if (date) {
-                        field.onChange(date.toISOString());
-                      }
-                    }}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                  />
+                <PopoverContent className="p-0">
+                  <Command>
+                    <CommandInput placeholder="Search role..." />
+                    <CommandEmpty>No role found.</CommandEmpty>
+                    <CommandGroup>
+                      {availableRoles.map((role) => (
+                        <CommandItem
+                          value={role.label}
+                          key={role.value}
+                          onSelect={() => {
+                            form.setValue("role", role.value);
+                            setOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              role.value === field.value
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {role.label}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
                 </PopoverContent>
               </Popover>
               <FormMessage />

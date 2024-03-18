@@ -9,6 +9,7 @@ import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
 const DeleteAlertNoSSR = dynamic(() => import("@/components/delete-alert"), {
   ssr: false,
 });
@@ -46,10 +47,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-
-import EditTeamDialog from "@/components/cards-and-sheets/edit-team-dialog";
-import EditTeamPlayersDialog from "@/components/cards-and-sheets/edit-teamplayers-dialog";
-import AddTeamPlayersDialog from "@/components/cards-and-sheets/add-teamplayers-dialog";
+import EditTeamDialog from "@/components/dialogs/edit-team-dialog";
+import EditTeamPlayersDialog from "@/components/dialogs/edit-teamplayers-dialog";
+import AddTeamPlayersDialog from "@/components/dialogs/add-teamplayers-dialog";
 
 /* API Route to populate the players table */
 const TEAMPLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teamplayers/`;
@@ -57,7 +57,7 @@ const TEAMPLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teamplayers
 export type Players = {
   id: string;
   roles: string;
-  highestrank: string;
+  highestRank: string;
   mmr: number;
   email: string;
   createdAt: string;
@@ -71,10 +71,10 @@ export type Player = {
 };
 
 function convertPlayersToPlayer(players: Players[]): Player[] {
-  const convertedPlayers = players.map(player => ({
+  const convertedPlayers = players.map((player) => ({
     id: player.id,
     name: player.name,
-    roles: player.roles.split(','),
+    roles: player.roles.split(","),
   }));
 
   return convertedPlayers;
@@ -147,7 +147,7 @@ export const columns: ColumnDef<Players>[] = [
   // Add the players highest rank to the table. Sortable.
   // Sorts behind the scenes with the players MMR
   {
-    accessorKey: "highestRole",
+    accessorKey: "highestRank",
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -157,7 +157,9 @@ export const columns: ColumnDef<Players>[] = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div className="ml-4">{row.getValue("highestRole")}</div>,
+    cell: ({ row }) => (
+      <div className="ml-4">{row.getValue("highestRank")}</div>
+    ),
     sortingFn: (rowA: Row<Players>, rowB: Row<Players>) => {
       const a = rowA.original;
       const b = rowB.original;
@@ -208,11 +210,7 @@ export const columns: ColumnDef<Players>[] = [
   // Add the players roles to the table. Sortable.
   {
     accessorKey: "roles",
-    header: () => (
-      <Button variant="ghost">
-        Roles
-      </Button>
-    ),
+    header: () => <Button variant="ghost">Roles</Button>,
     cell: ({ row }) => {
       const { roles } = row.original;
       return <div className="ml-4">{roles}</div>;
@@ -240,21 +238,23 @@ export const columns: ColumnDef<Players>[] = [
             <DropdownMenuItem
               onClick={() => {
                 try {
-                  navigator.clipboard.writeText(player.name);
+                  navigator.clipboard.writeText(
+                    `ID: ${player.id}\nName: ${player.name}\nHighest Role: ${player.highestRank}\nMMR: ${player.mmr}\nEmail: ${player.email}\nCreated At: ${player.createdAt}\nRoles: ${player.roles}`
+                  );
                 } catch (error) {
-                  console.error("Error copying player name:", error);
+                  console.error("Error copying player details:", error);
                 }
               }}
             >
-              Copy Players Name
+              Copy Player Details
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
                 router.push(
-                  `/players/player-info?id=${player.id}&name=${encodeURIComponent(
-                    player.name
-                  )}`
+                  `/players/player-info?id=${
+                    player.id
+                  }&name=${encodeURIComponent(player.name)}`
                 );
               }}
             >
@@ -276,7 +276,10 @@ interface DataTablePlayersProps {
 }
 
 // eslint-disable-next-line no-unused-vars
-export default function DataTablePlayers({id, fetchTeamPlayerInfo}: DataTablePlayersProps) {
+export default function DataTablePlayers({
+  id,
+  fetchTeamPlayerInfo,
+}: DataTablePlayersProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState({});
@@ -289,41 +292,71 @@ export default function DataTablePlayers({id, fetchTeamPlayerInfo}: DataTablePla
   const fetchPlayers = useCallback(async () => {
     const response = await fetch(`${TEAMPLAYERS_API_URL}?id=${id}`);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      setData([]);
+      return;
+      // Database API already LOGS this.
+      //throw new Error(`HTTP error! status: ${response.status}. This error usually happens when a query returns nothing.`);
     }
     const result = await response.json();
     setData(result.playerRolesRows);
-  },[id]);
+  }, [id]);
 
   useEffect(() => {
     fetchPlayers().catch((e) => {
-      console.error("An error occurred while fetching the teamplayers data.", e);
+      console.error(
+        "An error occurred while fetching the teamplayers data.",
+        e
+      );
     });
   }, [fetchPlayers]);
 
   /* Process Players Deletion */
   const handleContinue = async () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
-    const getDeletePlayerUrl = (id: string) => `${TEAMPLAYERS_API_URL}?id=${id}`;
+    const teamID = id;
+    let deletedRoles = [];
 
     for (const row of selectedRows) {
-      const response = await fetch(getDeletePlayerUrl(row.original.id), {
+      let playerID = row.original.id;
+
+      const response = await fetch(TEAMPLAYERS_API_URL, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          teamID: teamID.toString(),
+          playerID: playerID.toString(),
+        }),
       });
 
       if (!response.ok) {
-        console.error(`Failed to delete player with id: ${row.original.id}`);
-        continue;
+        toast({
+          title: "Error",
+          description: "There was a problem deleting the roles.",
+        });
+        return;
       }
-
-      console.log(`Deleted player with id: ${row.original.id}`);
+      deletedRoles.push("{ " + row.original.name + " } ");
     }
 
-    console.log(convertPlayersToPlayer(data))
+    toast({
+      title: "Player(s) Removed: ",
+      description: deletedRoles,
+    });
+
     // Refresh the table
     fetchPlayers().catch((e) => {
       console.error("An error occurred while refreshing the players data.", e);
     });
+
+    // Refresh the data on the page
+    fetchTeamPlayerInfo().catch((e) => {
+      console.error("An error occurred while refreshing the players data.", e);
+    });
+
+    // Make sure nothing is selected after deletion
+    table.toggleAllRowsSelected(false);
   };
 
   /* Do nothing */
@@ -354,25 +387,33 @@ export default function DataTablePlayers({id, fetchTeamPlayerInfo}: DataTablePla
         {/* Pass fetchPlayers so Dialog can update table */}
         {/* <DialogWithForm onClose={fetchPlayers}/> */}
         <div className="flex items-center justify-between">
-              <div className="flex flex-1 items-center space-x-2">
-                {/* Add Information Button */}
-                <EditTeamDialog onClose={fetchTeamPlayerInfo} />
+          <div className="flex flex-1 items-center space-x-2">
+            {/* Add Information Button */}
+            <EditTeamDialog onClose={fetchTeamPlayerInfo} id={id} />
 
-                <div>
-                  <p>|</p>
-                </div>
-
-                {/* Edit Information Button */}
-                <AddTeamPlayersDialog onClose={fetchTeamPlayerInfo} id={id}/>
-                
-                {/* Edit Information Button */}
-                
-                {/* Edit Information Button */}
-                <EditTeamPlayersDialog onClose={fetchTeamPlayerInfo} id={id} data={convertPlayersToPlayer(data)}/>
-              </div>
+            <div>
+              <p>|</p>
             </div>
-          </div>
 
+            {/* Edit Information Button */}
+            <AddTeamPlayersDialog
+              onClose={fetchTeamPlayerInfo}
+              id={id}
+              refreshTable={fetchPlayers}
+            />
+
+            {/* Edit Information Button */}
+
+            {/* Edit Information Button */}
+            <EditTeamPlayersDialog
+              onClose={fetchTeamPlayerInfo}
+              refreshTable={fetchPlayers}
+              id={id}
+              data={convertPlayersToPlayer(data)}
+            />
+          </div>
+        </div>
+      </div>
 
       <div className="flex items-center py-4">
         <Input
@@ -491,7 +532,7 @@ export default function DataTablePlayers({id, fetchTeamPlayerInfo}: DataTablePla
               size="sm"
               disabled={table.getFilteredSelectedRowModel().rows.length === 0}
             >
-              Delete
+              Remove
             </Button>
           </DeleteAlertNoSSR>
         </div>
