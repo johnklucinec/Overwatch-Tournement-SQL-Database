@@ -140,9 +140,18 @@ export default function CreateTeamsInputForm() {
     },
   });
 
+    // Formats the dates to yyyy-MM-dd
+    function formatDate(data: z.infer<typeof FormSchema>) {
+      if (data.date) {
+        data.date = new Date(data.date).toISOString().split("T")[0];
+      }
+    }
+
   // Process the "Submit" button
   const onSubmit = useCallback(
     async (data: z.infer<typeof FormSchema>) => {
+      formatDate(data);
+      
       const response = await addTeam(data.name ?? "", data.date ?? "");
 
       // Sends the response and data to be processed
@@ -216,8 +225,9 @@ export default function CreateTeamsInputForm() {
                     mode="single"
                     selected={field.value ? new Date(field.value) : undefined}
                     onSelect={(date) => {
-                      const formattedDate = format(date ?? "", "yyyy-MM-dd");
-                      field.onChange(formattedDate);
+                      if (date) {
+                        field.onChange(date.toISOString());
+                      }
                     }}
                     disabled={(date) =>
                       date > new Date() || date < new Date("1900-01-01")

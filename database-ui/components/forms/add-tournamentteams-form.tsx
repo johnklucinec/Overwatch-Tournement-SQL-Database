@@ -14,7 +14,7 @@ import {
 import TeamsComboBox from "@/components/teams-combobox";
 
 /* API Route to populate the TEAMS table */
-//const TEAMPLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teamplayers/`;
+const TOURNAMENTTEAMS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/tournamentteams/`;
 
 /**
  * Schema to check for user error
@@ -59,11 +59,11 @@ function showSubmissionToast(
  */
 // eslint-disable-next-line no-unused-vars
 async function processResponse(
-  response: Response,
-  data: {
-    team: string;
-    name: string;
-  }
+   response: Response,
+   data: {
+     team: string;
+     name?: string;
+   }
 ) {
   let message = "Unknown error";
   let result;
@@ -99,25 +99,26 @@ async function processResponse(
 /**
  * Function to edit the team's name.
  */
-/*
-async function editTeam(
-  id: string,
+
+async function addTeam(
+  tournamentID: string,
+  teamID: string,
 ) {
 
   const response = await fetch(
-    TEAMPLAYERS_API_URL,
+    TOURNAMENTTEAMS_API_URL,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, date }),
+      body: JSON.stringify({ tournamentID, teamID }),
     }
   );
 
   return response;
 }
-*/
+
 
 export type Team = {
   id: string;
@@ -152,12 +153,10 @@ export default function CreateTeamsInputForm({ id }: { id: string }) {
 
   // Proccess the "Sumbit" button
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    //const response = await addTeam(data.name, data.date)
 
     // Sends the response and data to be processed
-    //const result = processResponse(response, data);
-
-    showSubmissionToast(data, { message: "Poggies", status: 200 });
+    const response = await addTeam(id, data.team)
+    processResponse(response, data);
 
     // Reset the form values
     form.reset({

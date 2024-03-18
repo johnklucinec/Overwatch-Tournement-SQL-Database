@@ -42,7 +42,7 @@ function Content() {
     setEmail(player.email);
     setCreatedDate(player.createdAt);
     setHighestRank(player.highestRank);
-  }, [id]); // Add an empty array as the second argument
+  }, [id]); 
 
   /* Load and update the player information */
   useEffect(() => {

@@ -38,7 +38,7 @@ import { useCallback, useEffect, useState } from "react";
 const RANKS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/ranks/`;
 
 /* Dialog with Button to add a new player */
-import DialogWithForm from "@/components/cards-and-sheets/add-rank-dialog";
+import DialogWithForm from "@/components/dialogs/add-rank-dialog";
 
 export type Rank = {
   id: string;

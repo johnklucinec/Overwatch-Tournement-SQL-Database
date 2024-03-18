@@ -306,8 +306,6 @@ export default function CreateTeamsInputForm({
     setSelectedRoles([]);
     setResetForm(true);
 
-
-
     //return result;
     return;
   }

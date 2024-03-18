@@ -70,21 +70,28 @@ export default function TeamsComboBox({
 
   const fetchTeams = useCallback(async () => {
     setLoading(true);
+
     const response = await fetch(query);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      if(response.status === 409) {
+        console.log('No Teams avaiable to add to this tournament.');
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
     }
     const result = await response.json();
     setData(result.tournamentTeamsRows);
+
     setLoading(false);
   }, [query]);
 
   useEffect(() => {
     fetchTeams().catch((e) => {
-      console.error(
-        "An error occurred while fetching the teamplayers data.",
-        e
-      );
+      if(e.message.includes('409')) {
+        console.log('No Teams avaiable to add to this tournament.');
+      } else {
+        throw new Error(`HTTP error! status: ${e.status}`);
+      }
     });
   }, [fetchTeams]);
 
@@ -92,7 +99,16 @@ export default function TeamsComboBox({
     if (reset) {
       form.reset({ team: "" });
     }
-  }, [form, reset]);
+
+    fetchTeams().catch((e) => {
+      if(e.message.includes('409')) {
+        console.log('No Teams avaiable to add to this tournament.');
+      } else {
+        throw new Error(`HTTP error! status: ${e.status}`);
+      }
+    });
+
+  }, [form, reset, fetchTeams]);
 
   return (
     <FormField

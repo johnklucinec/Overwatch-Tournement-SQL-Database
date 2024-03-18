@@ -45,7 +45,7 @@ const AddTournamentTeamsDialog: React.FC<AddTournamentTeamsDialogProps> = ({ onC
           <DialogTitle>Add Tournament Teams</DialogTitle>
           <DialogDescription>Add Teams To The Tournament Here</DialogDescription>
         </DialogHeader>
-        <AddTournamentTeamsForm id={id}/>
+        <AddTournamentTeamsForm id={id} />
       </DialogContent>
     </Dialog>
   );

@@ -48,7 +48,7 @@ import {
 } from "@/components/ui/table";
 
 /* Dialog with Button to add a new player */
-import DialogWithForm from "@/components/cards-and-sheets/add-team-dialog";
+import DialogWithForm from "@/components/dialogs/add-team-dialog";
 
 /* API Route to populate the players table */
 const TEAMS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teams/`;
@@ -210,9 +210,13 @@ export const columns: ColumnDef<Team>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(team.name)}
+              onClick={() =>
+                navigator.clipboard.writeText(
+                  `ID: ${team.id}\nName: ${team.name}\nAverage Rank: ${team.averageRank}\nMMR: ${team.mmr}\nFormation Date: ${team.formationDate}\nPlayers: ${team.players}`
+                )
+              }
             >
-              Copy Team Name
+              Copy Team Details
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -249,7 +253,10 @@ export default function DataTableTeams() {
   const fetchTeams = useCallback(async () => {
     const response = await fetch(TEAMS_API_URL);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      setData([]);
+      return;
+      // Database API already LOGS this.
+      //throw new Error(`HTTP error! status: ${response.status}. This error usually happens when a query returns nothing.`);
     }
     const result = await response.json();
     setData(result.playersRows);
@@ -261,26 +268,20 @@ export default function DataTableTeams() {
     });
   }, [fetchTeams]);
 
-  /* Process Team Deletion */
+  /* Process Teams Deletion */
   const handleContinue = async () => {
-    toast({
-      title: "Error",
-      description: "This Function is not ready yet",
-    });
-
-    return;
-    /*
     const selectedRows = table.getFilteredSelectedRowModel().rows;
-    //const getDeletePlayerUrl = (id: string) => `${TEAMS_API_URL}?id=${id}`;
-    let deletedTeams = [];
+    let deletedRoles = [];
 
     for (const row of selectedRows) {
+      let teamID = row.original.id;
+
       const response = await fetch(TEAMS_API_URL, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id, role: row.original.role.toUpperCase() }),
+        body: JSON.stringify({ teamID: teamID.toString() }),
       });
 
       if (!response.ok) {
@@ -288,24 +289,24 @@ export default function DataTableTeams() {
           title: "Error",
           description: "There was a problem deleting the teams.",
         });
-        return
+        return;
       }
-      deletedTeams.push("{ " + row.original.name + " } ")
+
+      deletedRoles.push("{ " + row.original.name + " } ");
     }
 
     toast({
-      title: "Teams Deleted: ",
+      title: "Team(s) Removed: ",
       description: deletedRoles,
     });
 
     // Refresh the table
-    fetchPlayers().catch((e) => {
-      console.error("An error occurred while refreshing the players data.", e);
+    fetchTeams().catch((e) => {
+      console.error("An error occurred while refreshing the teams data.", e);
     });
 
-        // Make sure nothing is selected after deletion
+    // Make sure nothing is selected after deletion
     table.toggleAllRowsSelected(false);
-    */
   };
 
   /* Do nothing */

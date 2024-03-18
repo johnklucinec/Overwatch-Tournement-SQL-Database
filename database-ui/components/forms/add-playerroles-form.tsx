@@ -65,12 +65,12 @@ export const RankRole: React.FC<RankRoleProps> = ({ form, playerRole}) => {
                 onValueChange={field.onChange}
                 defaultValue={field.value}
               >
-                <FormControl>
+                <FormControl className=" w-[275px]">
                   <SelectTrigger>
                     <SelectValue placeholder="Select a rank" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent >
                   {ranks.map((rank) => (
                     <SelectItem key={rank} value={rank}>
                       {rank}
@@ -92,7 +92,7 @@ export const RankRole: React.FC<RankRoleProps> = ({ form, playerRole}) => {
                 onValueChange={field.onChange}
                 defaultValue={field.value}
               >
-                <FormControl>
+                <FormControl className=" w-[150px]">
                   <SelectTrigger>
                     <SelectValue placeholder="Select a division" />
                   </SelectTrigger>

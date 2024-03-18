@@ -47,7 +47,7 @@ import {
 } from "@/components/ui/table";
 
 /* Dialog with Button to add a new player */
-import DialogWithForm from "@/components/cards-and-sheets/add-player-dialog";
+import DialogWithForm from "@/components/dialogs/add-player-dialog";
 
 /* API Route to populate the players table */
 const PLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/players/`;
@@ -61,7 +61,6 @@ export type Player = {
   createdat: string;
   name: string;
 };
-
 
 {
   /* Fill the table with data */
@@ -140,7 +139,9 @@ export const columns: ColumnDef<Player>[] = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div className="ml-4">{row.getValue("highestrank")}</div>,
+    cell: ({ row }) => (
+      <div className="ml-4">{row.getValue("highestrank")}</div>
+    ),
     sortingFn: (rowA: Row<Player>, rowB: Row<Player>) => {
       const a = rowA.original;
       const b = rowB.original;
@@ -191,11 +192,7 @@ export const columns: ColumnDef<Player>[] = [
   // Add the players roles to the table. Sortable.
   {
     accessorKey: "roles",
-    header: () => (
-      <Button variant="ghost">
-        Roles
-      </Button>
-    ),
+    header: () => <Button variant="ghost">Roles</Button>,
     cell: ({ row }) => {
       const { roles } = row.original;
       return <div className="ml-4">{roles}</div>;
@@ -223,21 +220,23 @@ export const columns: ColumnDef<Player>[] = [
             <DropdownMenuItem
               onClick={() => {
                 try {
-                  navigator.clipboard.writeText(player.name);
+                  navigator.clipboard.writeText(
+                    `ID: ${player.id}\nName: ${player.name}\nHighest Rank: ${player.highestrank}\nMMR: ${player.mmr}\nEmail: ${player.email}\nCreated At: ${player.createdat}\nRoles: ${player.roles}`
+                  );
                 } catch (error) {
-                  console.error("Error copying player name:", error);
+                  console.error("Error copying player details:", error);
                 }
               }}
             >
-              Copy Player Name
+              Copy Player Details
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
                 router.push(
-                  `/players/player-info?id=${player.id}&name=${encodeURIComponent(
-                    player.name
-                  )}`
+                  `/players/player-info?id=${
+                    player.id
+                  }&name=${encodeURIComponent(player.name)}`
                 );
               }}
             >
@@ -266,11 +265,14 @@ export default function DataTablePlayers() {
   const fetchPlayers = useCallback(async () => {
     const response = await fetch(`${PLAYERS_API_URL}`);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      setData([]);
+      return;
+      // Database API already LOGS this.
+      //throw new Error(`HTTP error! status: ${response.status}. This error usually happens when a query returns nothing.`);
     }
     const result = await response.json();
     setData(result.playersRows);
-  },[]);
+  }, []);
 
   useEffect(() => {
     fetchPlayers().catch((e) => {
@@ -331,7 +333,7 @@ export default function DataTablePlayers() {
     <div className="w-full p-5">
       <div className="flex flex-4 items-center space-x-2">
         {/* Pass fetchPlayers so Dialog can update table */}
-        <DialogWithForm onClose={fetchPlayers}/>
+        <DialogWithForm onClose={fetchPlayers} />
       </div>
 
       <div className="flex items-center py-4">

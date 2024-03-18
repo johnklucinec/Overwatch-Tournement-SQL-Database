@@ -187,7 +187,7 @@ async function editTournament(
   endDate: string
 ) {
   const response = await fetch(TOURNAMENTS_API_URL, {
-    method: "POST",
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
@@ -340,6 +340,7 @@ const DateFormField: React.FC<DateFormFieldProps> = ({
   placeholder,
 }) => {
   return (
+    
     <FormField
       control={control}
       name={name}
@@ -371,7 +372,6 @@ const DateFormField: React.FC<DateFormFieldProps> = ({
                 mode="single"
                 selected={field.value ? new Date(field.value) : undefined}
                 onSelect={(date) => {
-                  //const formattedDate = format(date ?? "", "yyyy-MM-dd");
                   if (date) {
                     field.onChange(date.toISOString());
                   }

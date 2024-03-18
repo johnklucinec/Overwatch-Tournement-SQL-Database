@@ -146,7 +146,7 @@ async function processResponse(
 /**
  * Function to add the Team
  */
-async function addTorunament(
+async function addTournament(
   name: string,
   status: string,
   startDate: string,
@@ -157,7 +157,7 @@ async function addTorunament(
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name, startDate, endDate }),
+    body: JSON.stringify({ name, status, startDate, endDate }),
   });
 
   return response;
@@ -182,7 +182,7 @@ export default function CreateTournamentsInputForm() {
   // Process the "Submit" button
   const onSubmit = useCallback(
     async (data: z.infer<typeof FormSchema>) => {
-      const response = await addTorunament(
+      const response = await addTournament(
         data.name ?? "",
         data.status ?? "",
         data.startDate ?? "",

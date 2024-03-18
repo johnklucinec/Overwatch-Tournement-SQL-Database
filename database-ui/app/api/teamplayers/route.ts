@@ -57,7 +57,7 @@ async function readTeamPlayersHandler(req: NextRequest) {
          WHERE playerid = p.playerid AND teamid = ?
      )
      ORDER BY r.mmr DESC
-     LIMIT 1) AS "highestRole",
+     LIMIT 1) AS "highestRank",
     (SELECT max(r.mmr)
      FROM public.playerroles pr
      JOIN public.ranks r ON pr.rankid = r.rankid

@@ -38,7 +38,7 @@ import {
 const ROLES_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/roles/`;
 
 /* Dialog with Button to add a new player */
-import DialogWithForm from "@/components/cards-and-sheets/add-role-dialog";
+import DialogWithForm from "@/components/dialogs/add-role-dialog";
 
 export type Role = {
   id: string;
