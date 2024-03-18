@@ -135,7 +135,7 @@ export const columns: ColumnDef<Player>[] = [
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        MMR
+        Highest Rank
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
@@ -240,7 +240,7 @@ export const columns: ColumnDef<Player>[] = [
                 );
               }}
             >
-              View player details
+              View Player Details
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

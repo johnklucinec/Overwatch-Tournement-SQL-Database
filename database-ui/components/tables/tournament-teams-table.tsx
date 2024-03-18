@@ -229,7 +229,7 @@ export const columns: ColumnDef<Team>[] = [
                 );
               }}
             >
-              View team details
+              View Team Details
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -261,6 +261,11 @@ export default function DataTableTeams({
 
   /* Load and Update the table information */
   const fetchTeams = useCallback(async () => {
+    // Refresh the data on the page
+    await fetchTournamentTeamsInfo().catch((e) => {
+      console.error("An error occurred while refreshing the players data.", e);
+    });
+
     const response = await fetch(`${TEAMS_API_URL}?id=${id}`);
     if (!response.ok) {
       setData([]);
@@ -270,7 +275,7 @@ export default function DataTableTeams({
     }
     const result = await response.json();
     setData(result.tournamentTeamsRows);
-  }, [id]);
+  }, [fetchTournamentTeamsInfo, id]);
 
   useEffect(() => {
     fetchTeams().catch((e) => {
@@ -349,11 +354,15 @@ export default function DataTableTeams({
     },
   });
 
+  useEffect(() => {
+    table.toggleAllRowsSelected(false);
+  }, [data, table]);
+
   return (
     <div className="w-full p-5">
       <div className="flex flex-4 items-center space-x-2">
         {/* Pass fetchTeams so Dialog can update table */}
-        <DialogWithForm onClose={fetchTeams} />
+        <DialogWithForm onClose={fetchTournamentTeamsInfo} id={id} />
         <div>
           <p>|</p>
         </div>

@@ -1,4 +1,9 @@
-// https://github.com/shadcn-ui/ui/blob/main/apps/www/app/examples/dashboard/page.tsx
+/*
+Citation for the following code:
+Date: 3/18/2024
+Adapted from shadcn GitHub:
+Source URL: https://github.com/shadcn-ui/ui/blob/main/apps/www/app/examples/dashboard/page.tsx
+*/
 
 "use client";
 

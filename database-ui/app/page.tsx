@@ -1,5 +1,6 @@
 import React from "react";
 import Nav from "@/components/header-bar";
+import Foot from "@/components/site-footer";
 import DarkModeCard from "@/components/homepage/darkmodecard";
 import GitHubCard from "@/components/homepage/githubcard";
 import VideoCard from "@/components/homepage/videoexamplecard";
@@ -53,6 +54,7 @@ export default function Home() {
           </div>
         </div>
       </div>
+      <Foot />
     </main>
   );
 }

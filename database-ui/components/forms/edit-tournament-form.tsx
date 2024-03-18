@@ -181,23 +181,42 @@ async function processResponse(
  * Function to edit the tournament info
  */
 async function editTournament(
+  id: string,
   name: string,
   status: string,
   startDate: string,
   endDate: string
 ) {
+  const body: { id: string, name?: string, status?: string, startDate?: string, endDate?: string } = { id };
+
+  if (name !== "") {
+    body.name = name;
+  }
+
+  if (status !== "") {
+    body.status = status;
+  }
+
+  if (startDate !== "") {
+    body.startDate = startDate;
+  }
+
+  if (endDate !== "") {
+    body.endDate = endDate;
+  }
+
   const response = await fetch(TOURNAMENTS_API_URL, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name, status, startDate, endDate }),
+    body: JSON.stringify(body),
   });
 
   return response;
 }
 
-export default function CreateTeamsInputForm() {
+export default function CreateTeamsInputForm({ id }: { id: string }) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -225,6 +244,7 @@ export default function CreateTeamsInputForm() {
       formatDate(data);
 
       const response = await editTournament(
+        id,
         data.name ?? "",
         data.status ?? "",
         data.startDate ?? "",
@@ -249,7 +269,7 @@ export default function CreateTeamsInputForm() {
 
       return result;
     },
-    [form]
+    [form, id]
   );
 
   return (

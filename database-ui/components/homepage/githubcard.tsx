@@ -13,21 +13,22 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-// eslint-disable-next-line react/prop-types
+function raiseInvoiceClicked({ url }: { url: string }) {
+  window.open(url, "_blank");
+}
+
 export default function DarkModeCard() {
   return (
     <Card className={cn("w-[600px] mb-3 ml-2")}>
       <CardHeader className="mb-4">
         <CardTitle>Team Members</CardTitle>
-        <CardDescription >
-          People who worked on this project. 
-        </CardDescription>
+        <CardDescription>People who worked on this project.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6">
         <div className="flex items-center justify-between space-x-4">
           <div className="flex space-x-4">
             <Avatar className="w-16 h-16">
-              <AvatarImage src="https://github.com/johnklucinec.png" />
+              <AvatarImage src={`${process.env.NEXT_PUBLIC_JOHN_GITHUB}.png` || ""} />
               <AvatarFallback>JK</AvatarFallback>
             </Avatar>
             <div>
@@ -44,15 +45,21 @@ export default function DarkModeCard() {
               </div>
             </div>
           </div>
-
-          <Button variant="outline" className="ml-auto">
+          <Button
+            className="ml-auto"
+            onClick={() =>
+              raiseInvoiceClicked({
+                url: process.env.NEXT_PUBLIC_JOHN_GITHUB || "",
+              })
+            }
+          >
             View GitHub
           </Button>
         </div>
         <div className="flex items-center justify-between space-x-4">
-          <div className="flex items-center space-x-4">
+          <div className="flex space-x-4">
             <Avatar className="w-16 h-16">
-              <AvatarImage src="https://github.com/RemyTroy.png" />
+              <AvatarImage src={`${process.env.NEXT_PUBLIC_TROY_GITHUB}.png` || ""} />
               <AvatarFallback>TH</AvatarFallback>
             </Avatar>
             <div>
@@ -68,7 +75,14 @@ export default function DarkModeCard() {
               </div>
             </div>
           </div>
-          <Button variant="outline" className="ml-auto">
+          <Button
+            className="ml-auto"
+            onClick={() =>
+              raiseInvoiceClicked({
+                url: process.env.NEXT_PUBLIC_TROY_GITHUB || "",
+              })
+            }
+          >
             View GitHub
           </Button>
         </div>

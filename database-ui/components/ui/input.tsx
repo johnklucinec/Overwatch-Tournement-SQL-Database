@@ -1,3 +1,10 @@
+/*
+Citation for the following code:
+Date: 3/18/2024
+Installed from shadcn GitHub:
+Source URL: https://github.com/shadcn-ui/ui
+*/
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"

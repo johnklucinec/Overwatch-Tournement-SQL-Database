@@ -1,3 +1,10 @@
+/*
+Citation for the following code:
+Date: 3/18/2024
+Adapted from shadcn:
+Source URL: https://ui.shadcn.com/docs/components/alert-dialog
+*/
+
 "use client";
 
 import React from "react";

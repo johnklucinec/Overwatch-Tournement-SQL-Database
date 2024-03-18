@@ -241,7 +241,7 @@ export const columns: ColumnDef<Tournament>[] = [
                 );
               }}
             >
-              View tournament details
+              View Tournament Details
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

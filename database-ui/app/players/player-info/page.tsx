@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import Nav from "@/components/header-bar";
+import Foot from "@/components/site-footer";
 import React, { useState, Suspense, useEffect, useCallback } from "react";
 
 import DataTablePlayers from "@/components/tables/player-roles-table";
@@ -42,7 +43,7 @@ function Content() {
     setEmail(player.email);
     setCreatedDate(player.createdAt);
     setHighestRank(player.highestRank);
-  }, [id]); 
+  }, [id]);
 
   /* Load and update the player information */
   useEffect(() => {
@@ -59,12 +60,22 @@ function Content() {
         <div className="hidden h-full flex-1 flex-col space-y-8 p-8 md:flex">
           <div className="flex flex-col items-left justify-beginning space-y-2">
             <h2 className="text-2xl font-bold tracking-tight">{name}</h2>
-            <p className="text-muted-foreground pl-1">PlayerRoles Table</p>
+            <p className="text-muted-foreground text-1xl">
+              <span className="font-bold ">
+                PlayerRoles Intersection Table
+              </span>{" "}
+              - View and edit all the details about {name}
+            </p>
             <div className="rounded-md border"></div>
             <p className="text-muted-foreground">
-              Here you can view and edit all the details about the {name}
+              Players must have 1 to 3 roles assigned (NOT NULL).
             </p>
             <p className="text-muted-foreground">
+              Removing a player's team assigned roles will remove them from the
+              team (NOT NULL).
+            </p>
+            <div className="rounded-md border"></div>
+            <p className="text-muted-foreground pt-3">
               <strong>Player ID: </strong> {id}
             </p>
             <p className="text-muted-foreground">
@@ -81,7 +92,7 @@ function Content() {
           {/* Top Banner */}
           <div className="space-y-4">
             {/* Table Section */}
-            <div className="rounded-md border">
+            <div className="rounded-md border bg-card text-card-foreground shadow">
               <div className="relative w-full overflow-auto">
                 {/* Add Data Table*/}
 
@@ -93,6 +104,7 @@ function Content() {
           </div>
         </div>
       </div>
+      <Foot />
     </main>
   );
 }

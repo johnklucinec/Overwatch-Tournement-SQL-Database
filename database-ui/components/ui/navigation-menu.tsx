@@ -1,4 +1,11 @@
+/*
+Citation for the following code:
+Date: 3/18/2024
+Installed from shadcn GitHub:
+Source URL: https://github.com/shadcn-ui/ui
+*/
 /* eslint-disable react/prop-types */
+
 import * as React from "react"
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu"
 import { cva } from "class-variance-authority"

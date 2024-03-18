@@ -258,7 +258,7 @@ export const columns: ColumnDef<Players>[] = [
                 );
               }}
             >
-              View player details
+              View Player Details
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -26,7 +26,6 @@ function createResponse(message: string, status: number): Response {
 /** Usage Example: Send a GET request to 'http://localhost:3000/api/ranks/' to retrieve all the ranks.
  */
 async function readRanksHandler() {
-
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
   });
@@ -53,11 +52,9 @@ async function readRanksHandler() {
     return new Response(JSON.stringify({ ranksRows: result.rows }), {
       status: 200,
     });
-
   } catch (e) {
     console.error((e as Error).message);
     return createResponse((e as Error).message, 500);
-
   } finally {
     await pool.end();
   }
@@ -67,8 +64,17 @@ async function readRanksHandler() {
  * Schema to check for valid entries into the database for the Ranks table
  */
 const createRankSchema = zod.object({
-  rankName: zod.enum(['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'Grandmaster', 'Champion']),
-  division: zod.enum(['1', '2', '3', '4', '5']),
+  rankName: zod.enum([
+    "Bronze",
+    "Silver",
+    "Gold",
+    "Platinum",
+    "Diamond",
+    "Master",
+    "Grandmaster",
+    "Champion",
+  ]),
+  division: zod.enum(["1", "2", "3", "4", "5"]),
   mmr: zod.number().int().min(0),
 });
 
@@ -99,21 +105,18 @@ async function createRankHandler(req: NextRequest) {
     }
 
     return createResponse("Rank added successfully", 200);
-
   } catch (e) {
     console.error((e as Error).message);
     return createResponse((e as Error).message, 500);
-
   } finally {
     await pool.end();
   }
 }
 
 export async function GET() {
-   return readRanksHandler();
+  return readRanksHandler();
 }
 
 export async function POST(req: NextRequest) {
   return createRankHandler(req);
 }
-

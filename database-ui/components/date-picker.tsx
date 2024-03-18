@@ -1,3 +1,10 @@
+/*
+Citation for the following code:
+Date: 3/18/2024
+Adapted from shadcn:
+Source URL: https://ui.shadcn.com/docs/components/date-picker
+*/
+
 /* eslint-disable react/prop-types */
 "use client";
 
