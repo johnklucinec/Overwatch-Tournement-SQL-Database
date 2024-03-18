@@ -18,9 +18,10 @@ import EditTeamForm from "@/components/forms/edit-team-form";
 // Makes typescript not complain for some reason.
 interface EditTeamDialogProps {
   onClose: () => Promise<void>;
+  id: string;
 }
 
-const EditTeamDialog: React.FC<EditTeamDialogProps> = ({ onClose }) => {
+const EditTeamDialog: React.FC<EditTeamDialogProps> = ({ onClose, id }) => {
   // Refresh the table when the dialog is opened or closed.
   // Ideally this should only run when closed, but thats not possible.
   const handleClose = () => {
@@ -44,7 +45,7 @@ const EditTeamDialog: React.FC<EditTeamDialogProps> = ({ onClose }) => {
           <DialogTitle>Edit Team</DialogTitle>
           <DialogDescription>Edit Team Info Here</DialogDescription>
         </DialogHeader>
-        <EditTeamForm />
+        <EditTeamForm id={id} />
       </DialogContent>
     </Dialog>
   );

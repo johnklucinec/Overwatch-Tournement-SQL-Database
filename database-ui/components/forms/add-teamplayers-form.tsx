@@ -7,12 +7,7 @@ import { z } from "zod";
 
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormField,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
 import PlayersComboBox from "@/components/players-combobox";
 
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -113,44 +108,54 @@ async function addTeamPlayerRole(
   playerID: string,
   role: string
 ) {
-
-  const response = await fetch(
-    TEAMPLAYERS_API_URL,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ teamID, playerID, role }),
-    }
-  );
+  const response = await fetch(TEAMPLAYERS_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ teamID, playerID, role }),
+  });
 
   return response;
 }
 
-async function processRoles(teamID: string, playerID: string, roles: string[], playerName: string) {
+async function processRoles(
+  teamID: string,
+  playerID: string,
+  roles: string[],
+  playerName: string
+) {
   let response;
 
   for (const role of roles) {
     try {
       response = await addTeamPlayerRole(teamID, playerID, role);
       if (!response.ok) {
-        showSubmissionToast({player: playerID, name: playerName, roles}, { message: "Error occurred while processing roles", status: 400 });
+        showSubmissionToast(
+          { player: playerID, name: playerName, roles },
+          { message: "Error occurred while processing roles", status: 400 }
+        );
         return;
       }
     } catch (e) {
-      showSubmissionToast({player: playerID, name: playerName, roles}, { message: "Error occurred while processing roles", status: 400 });
+      showSubmissionToast(
+        { player: playerID, name: playerName, roles },
+        { message: "Error occurred while processing roles", status: 400 }
+      );
       return;
     }
   }
 
   if (response) {
-    await processResponse(response, { player: playerID, name: playerName, roles });
+    await processResponse(response, {
+      player: playerID,
+      name: playerName,
+      roles,
+    });
   }
 
   return;
 }
-
 
 export type Player = {
   id: string;
@@ -222,7 +227,7 @@ export default function CreateTeamsInputForm({ id }: { id: string }) {
   // Proccess the "Sumbit" button
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     // Sends the response and data to be processed
-    await processRoles(id, data.player, data.roles, data.name ?? "")
+    await processRoles(id, data.player, data.roles, data.name ?? "");
 
     // Reset the form values
     form.reset({
@@ -260,14 +265,18 @@ export default function CreateTeamsInputForm({ id }: { id: string }) {
           onPlayerSelect={handlePlayerSelect}
           reset={resetForm}
         />
-  
+
         <FormField
           control={form.control}
           name="roles"
           render={() => (
             <>
               <FormLabel>Player's Team Roles: </FormLabel>
-              <ToggleGroup variant="outline" type="multiple" className="justify-start">
+              <ToggleGroup
+                variant="outline"
+                type="multiple"
+                className="justify-start"
+              >
                 <CustomToggleGroupItem
                   value="Tank"
                   label="TANK"
@@ -277,7 +286,7 @@ export default function CreateTeamsInputForm({ id }: { id: string }) {
                     toggleRole("TANK");
                   }}
                 />
-                <CustomToggleGroupItem 
+                <CustomToggleGroupItem
                   value="Dps"
                   label="DPS"
                   disabled={disabled.dps}
@@ -300,7 +309,7 @@ export default function CreateTeamsInputForm({ id }: { id: string }) {
             </>
           )}
         />
-  
+
         <Button type="submit">Submit</Button>
       </form>
     </Form>
@@ -334,7 +343,8 @@ function CustomToggleGroupItem({
   };
 
   return (
-    <ToggleGroupItem className="flex-grow"
+    <ToggleGroupItem
+      className="flex-grow"
       value={value}
       aria-label={`Toggle ${label}`}
       disabled={disabled}

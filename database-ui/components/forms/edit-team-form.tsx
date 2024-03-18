@@ -134,19 +134,29 @@ async function processResponse(
 /**
  * Function to edit the team's name.
  */
-async function editTeam(name: string, date: string) {
+async function editTeam(id: string, name: string, date: string) {
+  const body: { id: string, name?: string, date?: string } = { id };
+
+  if (name !== "") {
+    body.name = name;
+  }
+
+  if (date !== "") {
+    body.date = date;
+  }
+
   const response = await fetch(TEAMS_API_URL, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name, date }),
+    body: JSON.stringify(body),
   });
 
   return response;
 }
 
-export default function CreateTeamsInputForm() {
+export default function CreateTeamsInputForm( { id }: { id: string }) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -167,7 +177,7 @@ export default function CreateTeamsInputForm() {
     async (data: z.infer<typeof FormSchema>) => {
       formatDate(data);
 
-      const response = await editTeam(data.name ?? "", data.date ?? "");
+      const response = await editTeam(id, data.name ?? "", data.date ?? "");
 
       // Sends the response and data to be processed
       const result = processResponse(response, {
@@ -183,7 +193,7 @@ export default function CreateTeamsInputForm() {
 
       return result;
     },
-    [form]
+    [form, id]
   );
 
   return (

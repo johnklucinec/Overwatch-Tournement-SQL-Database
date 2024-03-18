@@ -389,7 +389,7 @@ export default function DataTablePlayers({
         <div className="flex items-center justify-between">
           <div className="flex flex-1 items-center space-x-2">
             {/* Add Information Button */}
-            <EditTeamDialog onClose={fetchTeamPlayerInfo} />
+            <EditTeamDialog onClose={fetchTeamPlayerInfo} id={id} />
 
             <div>
               <p>|</p>
