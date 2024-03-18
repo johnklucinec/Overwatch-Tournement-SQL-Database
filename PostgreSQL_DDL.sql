@@ -25,7 +25,7 @@ CREATE TYPE RoleT AS ENUM('TANK', 'DPS', 'SUPPORT');
 DROP TABLE IF EXISTS Roles CASCADE;
 CREATE TABLE Roles (
     roleID SERIAL PRIMARY KEY,
-    roleName RoleT NOT NULL
+    roleName RoleT NOT NULL UNIQUE
 );
 
 -- Create a type for Ranks
@@ -38,7 +38,8 @@ CREATE TABLE Ranks (
     rankID SERIAL PRIMARY KEY,
     rankName RankT NOT NULL,
     division INT NOT NULL CHECK (division BETWEEN 1 AND 5),
-    mmr INT NOT NULL
+    mmr INT NOT NULL,
+    UNIQUE (rankName, division)
 );
 
 -- Intersection Table - this links Players with their Roles (M:N)
@@ -49,8 +50,8 @@ CREATE TABLE PlayerRoles (
     rankID INT NOT NULL,
     PRIMARY KEY (playerID, roleID),
     FOREIGN KEY (playerID) REFERENCES Players(playerID) ON DELETE CASCADE,
-    FOREIGN KEY (roleID) REFERENCES Roles(roleID) ON DELETE CASCADE,
-    FOREIGN KEY (rankID) REFERENCES Ranks(rankID) ON DELETE CASCADE
+    FOREIGN KEY (roleID) REFERENCES Roles(roleID) ON DELETE RESTRICT,
+    FOREIGN KEY (rankID) REFERENCES Ranks(rankID) ON DELETE RESTRICT
 );
 
 -- Entity that stores the teams
@@ -76,15 +77,16 @@ CREATE TABLE Tournaments (
 );
 
 -- Intersection Table - this links Teams and Players (M:N)
+-- Note: If you delete a players roles, and they had those roles for a team, they are removed from the team. 
+-- Make (playerID, roleID) ON DELETE RESTRICT, if you want to make it impossible to remove a player's role if they have it on a team. 
 DROP TABLE IF EXISTS TeamPlayers CASCADE;
 CREATE TABLE TeamPlayers (
     playerID INT NOT NULL,
     teamID INT NOT NULL,
     roleID INT NOT NULL,
     PRIMARY KEY (playerID, teamID, roleID),
-    FOREIGN KEY (playerID) REFERENCES Players(playerID) ON DELETE CASCADE,
-    FOREIGN KEY (teamID) REFERENCES Teams(teamID) ON DELETE CASCADE,
-    FOREIGN KEY (roleID) REFERENCES Roles(roleID) ON DELETE CASCADE
+    FOREIGN KEY (playerID, roleID) REFERENCES PlayerRoles(playerID, roleID) ON DELETE CASCADE,
+    FOREIGN KEY (teamID) REFERENCES Teams(teamID) ON DELETE CASCADE
 );
 
 -- Intersection Table - this links Tournaments and Teams (M:N)

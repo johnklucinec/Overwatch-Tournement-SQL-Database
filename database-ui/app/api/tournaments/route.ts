@@ -5,9 +5,15 @@ Adapted from Build & Deploy a Next.js Project with Neon & Vercel:
 Source URL: https://youtu.be/_LF-IvJsr5Y
 */
 
+<<<<<<< HEAD
 import { extractbody } from "@/utils/extractBody";
 import { NextRequest } from "next/server";
 import zod from "zod";
+=======
+//import { extractbody } from "@/utils/extractBody";
+import { NextRequest } from "next/server";
+//import zod from "zod";
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
 import sqlstring from "sqlstring";
 import { Pool } from "@neondatabase/serverless";
 
@@ -43,15 +49,25 @@ async function readTournamentsHandler(req: NextRequest) {
         t.tournamentname AS "name",
         TO_CHAR(t.startdate, 'YYYY-MM-DD') AS "startDate",
         TO_CHAR(t.enddate, 'YYYY-MM-DD') AS "endDate",
+<<<<<<< HEAD
         COALESCE(COUNT(tt.teamid), 0) AS "teams"
+=======
+        COUNT(tt.teamid) AS "teams"
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
         FROM 
             public.tournaments t
         LEFT JOIN 
             public.tournamentteams tt ON t.tournamentid = tt.tournamentid
         WHERE 
+<<<<<<< HEAD
             t.tournamentid = ?
         GROUP BY 
             t.tournamentid;
+=======
+            t.tournamentid = 1
+        GROUP BY 
+            t.tournamentid
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
     `,
         [id]
       )
@@ -88,6 +104,7 @@ async function readTournamentsHandler(req: NextRequest) {
     return new Response(JSON.stringify({ tournamentsRows: result.rows }), {
       status: 200,
     });
+<<<<<<< HEAD
   } catch (e) {
     console.error((e as Error).message);
     return createResponse((e as Error).message, 500);
@@ -250,6 +267,13 @@ async function updateTournamentHandler(req: NextRequest) {
   } catch (e) {
     console.error((e as Error).message);
     return createResponse((e as Error).message, 500);
+=======
+
+  } catch (e) {
+    console.error((e as Error).message);
+    return createResponse((e as Error).message, 500);
+
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
   } finally {
     await pool.end();
   }
@@ -258,6 +282,7 @@ async function updateTournamentHandler(req: NextRequest) {
 export async function GET(req: NextRequest) {
   return readTournamentsHandler(req);
 }
+<<<<<<< HEAD
 
 export async function POST(req: NextRequest) {
   return createTournamentHandler(req);
@@ -270,3 +295,5 @@ export async function DELETE(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   return updateTournamentHandler(req);
 }
+=======
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660

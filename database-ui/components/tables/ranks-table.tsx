@@ -32,252 +32,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useCallback, useEffect, useState } from "react";
 
-{
-  /* Add the sample data */
-}
-const data: Rank[] = [
-  {
-    id: "1",
-    rankName: "Bronze",
-    division: 5,
-    mmr: 1000,
-  },
-  {
-    id: "2",
-    rankName: "Bronze",
-    division: 4,
-    mmr: 1100,
-  },
-  {
-    id: "3",
-    rankName: "Bronze",
-    division: 3,
-    mmr: 1200,
-  },
-  {
-    id: "4",
-    rankName: "Bronze",
-    division: 2,
-    mmr: 1300,
-  },
-  {
-    id: "5",
-    rankName: "Bronze",
-    division: 1,
-    mmr: 1400,
-  },
-  {
-    id: "6",
-    rankName: "Silver",
-    division: 5,
-    mmr: 1500,
-  },
-  {
-    id: "7",
-    rankName: "Silver",
-    division: 4,
-    mmr: 1600,
-  },
-  {
-    id: "8",
-    rankName: "Silver",
-    division: 3,
-    mmr: 1700,
-  },
-  {
-    id: "9",
-    rankName: "Silver",
-    division: 2,
-    mmr: 1800,
-  },
-  {
-    id: "10",
-    rankName: "Silver",
-    division: 1,
-    mmr: 1900,
-  },
-  {
-    id: "11",
-    rankName: "Gold",
-    division: 5,
-    mmr: 2000,
-  },
-  {
-    id: "12",
-    rankName: "Gold",
-    division: 4,
-    mmr: 2100,
-  },
-  {
-    id: "13",
-    rankName: "Gold",
-    division: 3,
-    mmr: 2200,
-  },
-  {
-    id: "14",
-    rankName: "Gold",
-    division: 2,
-    mmr: 2300,
-  },
-  {
-    id: "15",
-    rankName: "Gold",
-    division: 1,
-    mmr: 2400,
-  },
-  {
-    id: "16",
-    rankName: "Platnium",
-    division: 5,
-    mmr: 2500,
-  },
-  {
-    id: "17",
-    rankName: "Platnium",
-    division: 4,
-    mmr: 2600,
-  },
-  {
-    id: "18",
-    rankName: "Platnium",
-    division: 3,
-    mmr: 2700,
-  },
-  {
-    id: "19",
-    rankName: "Platnium",
-    division: 2,
-    mmr: 2800,
-  },
-  {
-    id: "20",
-    rankName: "Platnium",
-    division: 1,
-    mmr: 2900,
-  },
-  {
-    id: "21",
-    rankName: "Diamond",
-    division: 5,
-    mmr: 3000,
-  },
-  {
-    id: "22",
-    rankName: "Diamond",
-    division: 4,
-    mmr: 3100,
-  },
-  {
-    id: "23",
-    rankName: "Diamond",
-    division: 3,
-    mmr: 3200,
-  },
-  {
-    id: "24",
-    rankName: "Diamond",
-    division: 2,
-    mmr: 3300,
-  },
-  {
-    id: "25",
-    rankName: "Diamond",
-    division: 1,
-    mmr: 3400,
-  },
-  {
-    id: "26",
-    rankName: "Master",
-    division: 5,
-    mmr: 3500,
-  },
-  {
-    id: "27",
-    rankName: "Master",
-    division: 4,
-    mmr: 3600,
-  },
-  {
-    id: "28",
-    rankName: "Master",
-    division: 3,
-    mmr: 3700,
-  },
-  {
-    id: "29",
-    rankName: "Master",
-    division: 2,
-    mmr: 3800,
-  },
-  {
-    id: "30",
-    rankName: "Master",
-    division: 1,
-    mmr: 3900,
-  },
-  {
-    id: "31",
-    rankName: "Grandmaster",
-    division: 5,
-    mmr: 4000,
-  },
-  {
-    id: "32",
-    rankName: "Grandmaster",
-    division: 4,
-    mmr: 4100,
-  },
-  {
-    id: "33",
-    rankName: "Grandmaster",
-    division: 3,
-    mmr: 4200,
-  },
-  {
-    id: "34",
-    rankName: "Grandmaster",
-    division: 2,
-    mmr: 4300,
-  },
-  {
-    id: "35",
-    rankName: "Grandmaster",
-    division: 1,
-    mmr: 4400,
-  },
-  {
-    id: "36",
-    rankName: "Champion",
-    division: 5,
-    mmr: 4500,
-  },
-  {
-    id: "37",
-    rankName: "Champion",
-    division: 4,
-    mmr: 4600,
-  },
-  {
-    id: "38",
-    rankName: "Champion",
-    division: 3,
-    mmr: 4700,
-  },
-  {
-    id: "39",
-    rankName: "Champion",
-    division: 2,
-    mmr: 4800,
-  },
-  {
-    id: "40",
-    rankName: "Champion",
-    division: 1,
-    mmr: 4900,
-  },
-];
+/* API Route to populate the players table */
+const RANKS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/ranks/`;
+
+/* Dialog with Button to add a new player */
+import DialogWithForm from "@/components/dialogs/add-rank-dialog";
 
 export type Rank = {
   id: string;
@@ -287,14 +48,10 @@ export type Rank = {
 };
 
 {
-  /* We need to sort the data with the mmr */
-}
-
-{
   /* Fill the table with data */
 }
 export const columns: ColumnDef<Rank>[] = [
-  // Add the ID number to the table.
+  // Add the ID number to the table. Not Sortable.
   {
     accessorKey: "id",
     header: ({ column }) => {
@@ -309,6 +66,8 @@ export const columns: ColumnDef<Rank>[] = [
     },
     cell: ({ row }) => <div className="ml-4">{row.getValue("id")}</div>,
   },
+
+  // Add the rank name to the table. Not Sortable.
   {
     accessorKey: "rankName",
     header: ({ column }) => {
@@ -324,6 +83,7 @@ export const columns: ColumnDef<Rank>[] = [
     cell: ({ row }) => <div className="ml-4">{row.getValue("rankName")}</div>,
   },
 
+  // Add the rank division to the table. Not Sortable.
   {
     accessorKey: "division",
     header: ({ column }) => {
@@ -339,6 +99,7 @@ export const columns: ColumnDef<Rank>[] = [
     cell: ({ row }) => <div className="ml-4">{row.getValue("division")}</div>,
   },
 
+  // Add the MMR to the table. Not Sortable.
   {
     accessorKey: "mmr",
     header: ({ column }) => {
@@ -354,8 +115,9 @@ export const columns: ColumnDef<Rank>[] = [
     cell: ({ row }) => <div className="ml-4">{row.getValue("mmr")}</div>,
   },
 
+  /* Create the action menu (...) */
   {
-    /* All the Actions */ id: "actions",
+    id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
       const rank = row.original;
@@ -373,11 +135,11 @@ export const columns: ColumnDef<Rank>[] = [
             <DropdownMenuItem
               onClick={() =>
                 navigator.clipboard.writeText(
-                  `${rank.rankName} ${rank.division}`
+                  `Rank: ${rank.rankName}\nDivision: ${rank.division}\nMMR: ${rank.mmr}`
                 )
               }
             >
-              Copy Rank Name and Division
+              Copy Rank Details
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -390,13 +152,29 @@ export const columns: ColumnDef<Rank>[] = [
   /* Generate the table */
 }
 export default function DataTableRanks() {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+  const [data, setData] = useState<Rank[]>([]);
+  const [rowSelection, setRowSelection] = useState({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    {}
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+
+  /* Load and Update the table information */
+  const fetchRanks = useCallback(async () => {
+    const response = await fetch(`${RANKS_API_URL}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const result = await response.json();
+    setData(result.ranksRows);
+  }, []);
+
+  useEffect(() => {
+    fetchRanks().catch((e) => {
+      console.error("An error occurred while fetching the ranks data.", e);
+    });
+  }, [fetchRanks]);
 
   const table = useReactTable({
     data,
@@ -418,6 +196,12 @@ export default function DataTableRanks() {
 
   return (
     <div className="w-full p-5">
+
+      <div className="flex flex-4 items-center space-x-2">
+        {/* Pass fetchPlayers so Dialog can update table */}
+        <DialogWithForm onClose={fetchRanks}/>
+      </div>
+
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter ranks..."

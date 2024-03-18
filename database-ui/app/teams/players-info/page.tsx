@@ -1,9 +1,10 @@
 /* eslint-disable no-unused-vars, no-redeclare */
 "use client";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 
+import { useSearchParams } from "next/navigation";
+import React, { useState, Suspense, useEffect, useCallback } from "react";
 import Nav from "@/components/header-bar";
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 import React from "react";
 
@@ -13,11 +14,17 @@ import CardWithFormEditTeam from "@/components/cards-and-sheets/edit-team-card";
 import DataTablePlayers from "@/components/tables/players-table";
 =======
 import Foot from "@/components/site-footer";
+=======
+
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
 import DataTablePlayers from "@/components/tables/team-players-table";
 
 /* API Route to populate the Players table */
 const TEAMS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/teams/`;
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
 
 export default function Page() {
   return (
@@ -29,9 +36,8 @@ export default function Page() {
 
 function PageContent() {
   const searchParams = useSearchParams();
-  let name = searchParams.get("name") ?? "Team Name";
-  let id = searchParams.get("id") ?? "1";
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
   // Get this data from the database
   const averageRank = "Grandmaster  4";
@@ -41,6 +47,9 @@ function PageContent() {
   id = id ?? "1";
 =======
   const id = searchParams.get("id") ?? "1";
+=======
+  const id = searchParams.get('id') ?? '1';
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
   const [name, setName] = useState(searchParams.get("name") ?? "Player Name");
   const [players, setplayers] = useState("Loading...");
   const [formationDate, setFormationDate] = useState("Loading...");
@@ -67,7 +76,10 @@ function PageContent() {
       console.error("An error occurred while fetching the players data.", e);
     });
   }, [fetchTeamPlayerInfo, id]);
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
 
   return (
     <main className="p-24">
@@ -100,15 +112,15 @@ function PageContent() {
               <strong>Average Rank: </strong> {averageRank}
             </p>
             <p className="text-muted-foreground">
-              <strong>Formation Date</strong> {formationDate}
+              <strong>Formation Date: </strong> {formationDate}
             </p>
             <p className="text-muted-foreground">
               <strong>Players: </strong> {players}
             </p>
           </div>
 
-          {/* Top Banner */}
           <div className="space-y-4">
+<<<<<<< HEAD
 <<<<<<< Updated upstream
             <div className="flex items-center justify-between">
               <div className="flex flex-1 items-center space-x-2">
@@ -140,6 +152,13 @@ function PageContent() {
                   fetchTeamPlayerInfo={fetchTeamPlayerInfo}
                 />
 >>>>>>> Stashed changes
+=======
+            <div className="rounded-md border">
+              <div className="relative w-full overflow-auto">
+
+                <DataTablePlayers id={id} fetchTeamPlayerInfo={fetchTeamPlayerInfo}/>
+
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
               </div>
             </div>
 

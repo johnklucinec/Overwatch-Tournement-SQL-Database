@@ -1,7 +1,29 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useRouter } from 'next/navigation';
+import React, { useCallback, useEffect, useState } from "react";
+
+import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
+const DeleteAlertNoSSR = dynamic(() => import("@/components/delete-alert"), {
+  ssr: false,
+});
+
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,23 +35,8 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+} from "@tanstack/react-table";
 
-import DeleteAlert from '@/components/delete-alert';
-
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -37,57 +44,27 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 
-{/* Add the sample data */}
-const data: Tournament[] = [
-  {
-    id: "1",
-    teams: 16,
-    status: "enrollment open",
-    name: "Pachimari Tournament",
-    startDate: "2024-03-02",
-    endDate: "2024-06-31", 
-  },
-  {
-    id: "2",
-    teams: 14,
-    status: "enrollment open",
-    name: "Pachimummy Tournament",
-    startDate: "2024-03-01",
-    endDate: "2024-03-31", 
-  },
-  {
-    id: "3",
-    teams: 0,
-    status: "registration closed",
-    name: "Catchamari  Tournament",
-    startDate: "2024-03-01",
-    endDate: "2024-03-31", 
-  },
-  {
-    id: "4",
-    teams: 64,
-    status: "enrollment open",
-    name: "Ultimari Tournament",
-    startDate: "2024-03-01",
-    endDate: "2024-03-31", 
-  },
-]
+/* Dialog with Button to add a new tournament */
+import DialogWithForm from "@/components/dialogs/add-tournament-dialog";
+
+/* API Route to populate the players table */
+const TOURNAMENTS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/tournaments/`;
 
 export type Tournament = {
   id: string;
   teams: number;
-  status: "enrollment open" | "registration closed";
+  status: string;
   name: string;
   startDate: string; // Start date of the tournament
-  endDate: string;   // End date of the tournament
+  endDate: string; // End date of the tournament
 };
 
-
-{/* Fill the table with data */}
+{
+  /* Fill the table with data */
+}
 export const columns: ColumnDef<Tournament>[] = [
-
   {
     id: "select",
     header: ({ table }) => (
@@ -111,6 +88,7 @@ export const columns: ColumnDef<Tournament>[] = [
     enableHiding: false,
   },
 
+  // Add the ID number to the table. Sortable.
   {
     accessorKey: "id",
     header: ({ column }) => {
@@ -122,19 +100,12 @@ export const columns: ColumnDef<Tournament>[] = [
           ID
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => <div className="ml-4">{row.getValue("id")}</div>,
   },
 
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
-    ),
-  },
-
+  // Add the tournament name to the table. Sortable.
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -146,11 +117,33 @@ export const columns: ColumnDef<Tournament>[] = [
           Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
-    cell: ({ row }) => <div className="ml-4">{row.getValue("name")}</div>,
+    cell: ({ row }) => {
+      const { name } = row.original;
+      return <div className="ml-4">{name}</div>;
+    },
   },
 
+  // Add the tournament status to the table. Sortable.
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Status
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const { status } = row.original;
+      return <div className="ml-4">{status}</div>;
+    },
+  },
+
+  // Add the players startDate to the table. Sortable.
   {
     accessorKey: "startDate",
     header: ({ column }) => {
@@ -162,12 +155,16 @@ export const columns: ColumnDef<Tournament>[] = [
           Start Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
-    cell: ({ row }) => <div className="ml-4">{row.getValue("startDate")}</div>,
+    cell: ({ row }) => {
+      const { startDate } = row.original;
+      return <div className="ml-4">{startDate}</div>;
+    },
   },
 
-  { 
+  // Add the players endDate at date to the table. Sortable.
+  {
     accessorKey: "endDate",
     header: ({ column }) => {
       return (
@@ -178,36 +175,42 @@ export const columns: ColumnDef<Tournament>[] = [
           End Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
-    cell: ({ row }) => <div className="ml-4">{row.getValue("endDate")}</div>,
+    cell: ({ row }) => {
+      const { endDate } = row.original;
+      return <div className="ml-4">{endDate}</div>;
+    },
+  },
+
+  // Add the players endDate at date to the table. Sortable.
+  {
+    accessorKey: "teams",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Teams
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const { teams } = row.original;
+      return <div className="ml-4">{teams}</div>;
+    },
   },
 
   {
-    accessorKey: "teams",
-    header: () => <div className="text-right">Teams</div>,
-    cell: ({ row }) => {
-      const teams = parseFloat(row.getValue("teams"))
-
-      return <div className="text-right font-medium">{teams}</div>
-    },
-  },
-
-  { /* All the Actions */
+    /* All the Actions */
 
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const tournament = row.original
-      const router = useRouter()
-
-      function yourCancelHandler(): void {
-        throw new Error("Function not implemented.");
-      }
-
-      function yourContinueHandler(): void {
-        throw new Error("Function not implemented.");
-      }
+      const tournament = row.original;
+      const router = useRouter();
 
       return (
         <DropdownMenu>
@@ -220,46 +223,111 @@ export const columns: ColumnDef<Tournament>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(tournament.name)}
+              onClick={() =>
+                navigator.clipboard.writeText(
+                  `ID: ${tournament.id}\nName: ${tournament.name}\nStart Date: ${tournament.startDate}\nEnd Date: ${tournament.endDate}\nTeams: ${tournament.teams}`
+                )
+              }
             >
-              Copy Tournament Name
+              Copy Tournament Details
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                router.push(`/tournaments/tournament-info?id=${tournament.id}&name=${encodeURIComponent(tournament.name)}`);
+                router.push(
+                  `/tournaments/tournament-info?id=${
+                    tournament.id
+                  }&name=${encodeURIComponent(tournament.name)}`
+                );
               }}
             >
               View Tournament Details
             </DropdownMenuItem>
-            <DropdownMenuItem>Edit tournament</DropdownMenuItem>
-            <DeleteAlert onCancel={yourCancelHandler} onContinue={yourContinueHandler}>
-              <DropdownMenuItem>Delete tournament</DropdownMenuItem>
-            </DeleteAlert>
           </DropdownMenuContent>
         </DropdownMenu>
       );
     },
   },
-]
+];
 
-{/* Generate the table */}
+{
+  /* Generate the table */
+}
 export default function DataTableTournament() {
-  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [rowSelection, setRowSelection] = React.useState({});
+  const [data, setData] = useState<Tournament[]>([]);
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
-  )
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+  );
 
-  const handleDelete = () => {
-    const selectedRows = table.getFilteredSelectedRowModel().rows;
-    selectedRows.forEach(row => {
-      // Perform deletion operation here
-      console.log(`Deleting row with id: ${row.id}`);
+  /* Load and Update the table information */
+  const fetchTournaments = useCallback(async () => {
+    const response = await fetch(`${TOURNAMENTS_API_URL}`);
+    if (!response.ok) {
+      setData([]);
+      return;
+      // Database API already LOGS this.
+      //throw new Error(`HTTP error! status: ${response.status}. This error usually happens when a query returns nothing.`);
+    }
+    const result = await response.json();
+    setData(result.tournamentsRows);
+  }, []);
+
+  useEffect(() => {
+    fetchTournaments().catch((e) => {
+      console.error("An error occurred while fetching the players data.", e);
     });
+  }, [fetchTournaments]);
+
+  /* Process Players Deletion */
+  const handleContinue = async () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    let deletedRoles = [];
+
+    for (const row of selectedRows) {
+      let teamID = row.original.id;
+
+      const response = await fetch(TOURNAMENTS_API_URL, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ teamID: teamID.toString() }),
+      });
+
+      if (!response.ok) {
+        toast({
+          title: "Error",
+          description: "There was a problem deleting the tournaments.",
+        });
+        return;
+      }
+
+      deletedRoles.push("{ " + row.original.name + " } ");
+    }
+
+    toast({
+      title: "Tournament(s) Removed: ",
+      description: deletedRoles,
+    });
+
+    // Refresh the table
+    fetchTournaments().catch((e) => {
+      console.error(
+        "An error occurred while refreshing the tournaments data.",
+        e
+      );
+    });
+
+    // Make sure nothing is selected after deletion
+    table.toggleAllRowsSelected(false);
   };
+
+  /* Do nothing */
+  const handleCancel = () => {};
 
   const table = useReactTable({
     data,
@@ -278,10 +346,15 @@ export default function DataTableTournament() {
       columnVisibility,
       rowSelection,
     },
-  })
+  });
 
   return (
     <div className="w-full p-5">
+      <div className="flex flex-4 items-center space-x-2">
+        {/* Pass fetchTournaments so Dialog can update table */}
+        <DialogWithForm onClose={fetchTournaments} />
+      </div>
+
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter tournaments..."
@@ -313,7 +386,7 @@ export default function DataTableTournament() {
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
-                )
+                );
               })}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -333,7 +406,7 @@ export default function DataTableTournament() {
                             header.getContext()
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -391,15 +464,19 @@ export default function DataTableTournament() {
             Next
           </Button>
 
-          <Button
-            size="sm"
-            onClick={handleDelete}
-            disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+          <DeleteAlertNoSSR
+            onCancel={handleCancel}
+            onContinue={handleContinue}
           >
-            Delete
-          </Button>
+            <Button
+              size="sm"
+              disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+            >
+              Delete
+            </Button>
+          </DeleteAlertNoSSR>
         </div>
       </div>
     </div>
-  )
+  );
 }

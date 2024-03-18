@@ -181,12 +181,16 @@ async function processResponse(
  * Function to edit the tournament info
  */
 async function editTournament(
+<<<<<<< HEAD
   id: string,
+=======
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
   name: string,
   status: string,
   startDate: string,
   endDate: string
 ) {
+<<<<<<< HEAD
   const body: { id: string, name?: string, status?: string, startDate?: string, endDate?: string } = { id };
 
   if (name !== "") {
@@ -205,18 +209,28 @@ async function editTournament(
     body.endDate = endDate;
   }
 
+=======
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
   const response = await fetch(TOURNAMENTS_API_URL, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
+<<<<<<< HEAD
     body: JSON.stringify(body),
+=======
+    body: JSON.stringify({ name, status, startDate, endDate }),
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
   });
 
   return response;
 }
 
+<<<<<<< HEAD
 export default function CreateTeamsInputForm({ id }: { id: string }) {
+=======
+export default function CreateTeamsInputForm() {
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -244,7 +258,10 @@ export default function CreateTeamsInputForm({ id }: { id: string }) {
       formatDate(data);
 
       const response = await editTournament(
+<<<<<<< HEAD
         id,
+=======
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
         data.name ?? "",
         data.status ?? "",
         data.startDate ?? "",
@@ -269,7 +286,11 @@ export default function CreateTeamsInputForm({ id }: { id: string }) {
 
       return result;
     },
+<<<<<<< HEAD
     [form, id]
+=======
+    [form]
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
   );
 
   return (

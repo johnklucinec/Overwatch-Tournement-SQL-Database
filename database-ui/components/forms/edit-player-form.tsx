@@ -19,6 +19,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 
+/* API Route to populate the Players table */
+const PLAYERS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/players/`;
+
 /**
  * Schema to check for user error
  */
@@ -26,23 +29,99 @@ const FormSchema = z.object({
   id: z.string(),
   username: z.string().max(20).optional(),
   email: z.string().optional(),
+})
+.refine(data => data.username || data.email, {
+  message: "Either username or email must be entered",
+  path: ['username'] // specify the field to attach the error to
+})
+.refine(data => data.username || data.email, {
+  message: "Either username or email must be entered",
+  path: ['email'] // specify the field to attach the error to
+}).refine(data => {
+  if ((data.email ?? "") !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email ?? "")) {
+    return false; // return false if email is not valid
+  }
+  return true; // return true otherwise
+}, {
+  message: "Invalid email format",
+  path: ['email']
 });
 
 /**
- * Toast that shows what the user submitted.
+ * Toast that shows what the user submitted and the response.
  */
-function showSubmissionToast(data: z.infer<typeof FormSchema>) {
+function showSubmissionToast(
+  data: z.infer<typeof FormSchema>,
+  response: { message: string; status: number }
+) {
   toast({
     title: "You submitted the following values:",
     description: (
-      <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-        <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-      </pre>
+      <div>
+        <pre className="mt-2 mb-2 w-[340px] rounded-md bg-slate-950 p-4">
+          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+        </pre>
+        <p className="mt-2">
+          <strong>Response Message:</strong> {response.message}
+        </p>
+        <p className="mt-2">
+          <strong>Status:</strong> {response.status}
+        </p>
+      </div>
     ),
   });
 }
 
-export default function EditPlayerInputForm() {
+/**
+ * Processes the HTTP response from a server request.
+ * If the response is OK, it parses the response body as JSON and returns it.
+ * If the response is not OK, it tries to extract an error message from the response body and logs it.
+ * Regardless of the response status, it shows a toast notification with the status and either the success or error message.
+ */
+async function processResponse(
+  response: Response,
+  data: {
+    id: string;
+    username?: string | undefined;
+    email?: string | undefined;
+  }
+) {
+  
+  let message = "Unknown error";
+  let result;
+  
+  try {
+   result = await response.json();
+   message = result.message || "Unknown error";
+   if (!response.ok) {
+      console.error("Error parsing response body:", message);
+      showSubmissionToast(data, { message, status: response.status });
+      return;
+   }
+  } catch (e) {
+   console.error("Error parsing response body:", e);
+   showSubmissionToast(data, { message: "Error parsing response body", status: response.status });
+   return;
+  }
+  
+  // Display the data the user submitted in a toast popup.
+  /*
+   * @param data - The data submitted by the user.
+   * @param message - Error message from fetch APIs or above
+   * @param status - Contains status code from fetch APIs
+   */
+  showSubmissionToast(data, { message, status: response.status });
+
+  return result;
+  
+}
+
+interface EditPlayerInputFormProps {
+  id: string;
+}
+
+export default function EditPlayerInputForm({id}: EditPlayerInputFormProps) {
+ 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -53,12 +132,10 @@ export default function EditPlayerInputForm() {
   });
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get("id");
     if (id) {
       form.setValue("id", id);
     }
-  }, [form]);
+  }, [form, id]);
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     if (!data.username && !data.email) {
@@ -69,8 +146,6 @@ export default function EditPlayerInputForm() {
       return;
     }
 
-    showSubmissionToast(data);
-
     // Create a new object to send as the body of the request
     const requestBody = {
       id: data.id,
@@ -78,25 +153,36 @@ export default function EditPlayerInputForm() {
       ...(data.email && { email: data.email }),
     };
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}api/players/`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
+    const response = await fetch(
+      PLAYERS_API_URL,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      }
+    );
+
+    // Reset le form
+    form.reset({
+        id: id,
+        username: "",
+        email: "",
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result = await response.json();
-    return result;
+        
+    return processResponse(response, data);
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          form.handleSubmit((formData) => onSubmit(formData))();
+        }}
+        className="space-y-2"
+      >
         <FormField
           control={form.control}
           name="username"

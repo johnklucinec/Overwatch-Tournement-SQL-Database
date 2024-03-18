@@ -1,6 +1,26 @@
 "use client";
 
-import * as React from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -12,44 +32,13 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, MoreHorizontal } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
-{
-  /* Add the sample data */
-}
-const data: Role[] = [
-  {
-    id: "1",
-    roleName: "TANK",
-  },
-  {
-    id: "2",
-    roleName: "DPS",
-  },
-  {
-    id: "3",
-    roleName: "SUPPORT",
-  },
-];
+/* API Route to populate the players table */
+const ROLES_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/roles/`;
+
+/* Dialog with Button to add a new player */
+import DialogWithForm from "@/components/dialogs/add-role-dialog";
 
 export type Role = {
   id: string;
@@ -57,14 +46,10 @@ export type Role = {
 };
 
 {
-  /* We need to sort the data with the mmr */
-}
-
-{
   /* Fill the table with data */
 }
 export const columns: ColumnDef<Role>[] = [
-  // Add the ID number to the table.
+  // Add the ID number to the table. Not Sortable.
   {
     accessorKey: "id",
     header: ({ column }) => {
@@ -80,6 +65,7 @@ export const columns: ColumnDef<Role>[] = [
     cell: ({ row }) => <div className="ml-4">{row.getValue("id")}</div>,
   },
 
+  // Add the Role Name to the table. Not Sortable.
   {
     accessorKey: "roleName",
     header: ({ column }) => {
@@ -95,8 +81,9 @@ export const columns: ColumnDef<Role>[] = [
     cell: ({ row }) => <div className="ml-4">{row.getValue("roleName")}</div>,
   },
 
+  /* Create the action menu (...) */
   {
-    /* All the Actions */ id: "actions",
+    id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
       const role = row.original;
@@ -112,9 +99,11 @@ export const columns: ColumnDef<Role>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(`${role.roleName}`)}
+              onClick={() =>
+                navigator.clipboard.writeText(`Role: ${role.roleName}`)
+              }
             >
-              Copy Role Name
+              Copy Role Details
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -127,23 +116,29 @@ export const columns: ColumnDef<Role>[] = [
   /* Generate the table */
 }
 export default function DataTableRoles() {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+  const [data, setData] = useState<Role[]>([]);
+  const [rowSelection, setRowSelection] = useState({});
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    {}
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
 
-  {
-    /*  const handleDelete = () => {
-    const selectedRows = table.getFilteredSelectedRowModel().rows;
-    selectedRows.forEach((row) => {
-      // Perform deletion operation here
-      console.log(`Deleting row with id: ${row.id}`);
+  /* Load and Update the table information */
+  const fetchRoles = useCallback(async () => {
+    const response = await fetch(`${ROLES_API_URL}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const result = await response.json();
+    setData(result.rolesRows);
+  }, []);
+
+  useEffect(() => {
+    fetchRoles().catch((e) => {
+      console.error("An error occurred while fetching the roles data.", e);
     });
-  };*/
-  }
+  }, [fetchRoles]);
 
   const table = useReactTable({
     data,
@@ -165,6 +160,12 @@ export default function DataTableRoles() {
 
   return (
     <div className="w-full p-5">
+
+      <div className="flex flex-4 items-center space-x-2">
+        {/* Pass fetchPlayers so Dialog can update table */}
+        <DialogWithForm onClose={fetchRoles}/>
+      </div>
+
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter roles..."
@@ -271,15 +272,6 @@ export default function DataTableRoles() {
           >
             Next
           </Button>
-          {/*
-          <Button
-            size="sm"
-            onClick={handleDelete}
-            disabled={table.getFilteredSelectedRowModel().rows.length === 0}
-          >
-            Delete
-          </Button>
-            */}
         </div>
       </div>
     </div>

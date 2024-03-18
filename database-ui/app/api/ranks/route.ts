@@ -26,6 +26,10 @@ function createResponse(message: string, status: number): Response {
 /** Usage Example: Send a GET request to 'http://localhost:3000/api/ranks/' to retrieve all the ranks.
  */
 async function readRanksHandler() {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
   });
@@ -52,9 +56,17 @@ async function readRanksHandler() {
     return new Response(JSON.stringify({ ranksRows: result.rows }), {
       status: 200,
     });
+<<<<<<< HEAD
   } catch (e) {
     console.error((e as Error).message);
     return createResponse((e as Error).message, 500);
+=======
+
+  } catch (e) {
+    console.error((e as Error).message);
+    return createResponse((e as Error).message, 500);
+
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
   } finally {
     await pool.end();
   }
@@ -64,6 +76,7 @@ async function readRanksHandler() {
  * Schema to check for valid entries into the database for the Ranks table
  */
 const createRankSchema = zod.object({
+<<<<<<< HEAD
   rankName: zod.enum([
     "Bronze",
     "Silver",
@@ -75,6 +88,10 @@ const createRankSchema = zod.object({
     "Champion",
   ]),
   division: zod.enum(["1", "2", "3", "4", "5"]),
+=======
+  rankName: zod.enum(['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'Grandmaster', 'Champion']),
+  division: zod.enum(['1', '2', '3', '4', '5']),
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
   mmr: zod.number().int().min(0),
 });
 
@@ -105,18 +122,34 @@ async function createRankHandler(req: NextRequest) {
     }
 
     return createResponse("Rank added successfully", 200);
+<<<<<<< HEAD
   } catch (e) {
     console.error((e as Error).message);
     return createResponse((e as Error).message, 500);
+=======
+
+  } catch (e) {
+    console.error((e as Error).message);
+    return createResponse((e as Error).message, 500);
+
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
   } finally {
     await pool.end();
   }
 }
 
 export async function GET() {
+<<<<<<< HEAD
   return readRanksHandler();
+=======
+   return readRanksHandler();
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
 }
 
 export async function POST(req: NextRequest) {
   return createRankHandler(req);
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660

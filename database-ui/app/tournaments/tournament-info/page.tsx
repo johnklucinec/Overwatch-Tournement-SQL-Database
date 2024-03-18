@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 "use client"
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
@@ -7,9 +8,19 @@ import React from 'react';
 =======
 import Foot from "@/components/site-footer";
 >>>>>>> Stashed changes
+=======
+/* eslint-disable no-unused-vars, no-redeclare */
+"use client";
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
 
-import ImportSheet from "@/components/cards-and-sheets/edit-tournament-sheet";
-import DataTableTeams from "@/components/tables/teams-table";
+import { useSearchParams } from "next/navigation";
+import React, { useState, Suspense, useEffect, useCallback } from "react";
+import Nav from "@/components/header-bar";
+
+import DataTableTournamentTeams from "@/components/tables/tournament-teams-table";
+
+/* API Route to populate the Players table */
+const TOURNAMENTS_API_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/tournaments/`;
 
 export default function Page() {
   return (
@@ -21,17 +32,25 @@ export default function Page() {
 
 function Content() {
   const searchParams = useSearchParams();
+<<<<<<< HEAD
 <<<<<<< Updated upstream
   let name = searchParams.get('name') ?? 'Pachimari Tournament';
+=======
+
+  const [id] = useState(searchParams.get("id") ?? "1");
+  const [name, setName] = useState(searchParams.get("name") ?? "Tournament Name");
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
 
   // Get this data from the database
-  const startDate = "2024-03-02";
-  const endDate = "2024-06-31";
-  const status = "Enrollment Open";
+  const [startDate, setStartDate] = useState("loading...");
+  const [endDate, setEndDate] = useState("loading...");
+  const [status, setstatus] = useState("loading...");
 
-  // Update this with tournament name if name is changed
-  name = name ?? 'Tournament';
+  // Fetch the team's information
+  const fetchTournamentTeamsInfo = useCallback(async () => {
+    const response = await fetch(`${TOURNAMENTS_API_URL}?id=${id}`);
 
+<<<<<<< HEAD
 =======
 
   const [id] = useState(searchParams.get("id") ?? "1");
@@ -49,6 +68,8 @@ function Content() {
   const fetchTournamentInfo = useCallback(async () => {
     const response = await fetch(`${TOURNAMENTS_API_URL}?id=${id}`);
 
+=======
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -60,6 +81,7 @@ function Content() {
     setName(tournament.name);
     setStartDate(tournament.startDate);
     setEndDate(tournament.endDate);
+<<<<<<< HEAD
     setStatus(tournament.status);
     setTeams(tournament.teams);
   }, [id]);
@@ -74,6 +96,17 @@ function Content() {
     });
   }, [fetchTournamentInfo, id]);
 >>>>>>> Stashed changes
+=======
+    setstatus(tournament.status);
+  }, [id]); 
+
+    /* Load and update the player information */
+    useEffect(() => {
+      fetchTournamentTeamsInfo().catch((e) => {
+        console.error("An error occurred while fetching the players data.", e);
+      });
+    }, [fetchTournamentTeamsInfo, id]);
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
 
   return (
     <main className="p-24">
@@ -135,19 +168,12 @@ function Content() {
 
         {/* Top Banner */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-
-            <div className="flex flex-1 items-center space-x-2">
-            {/* Add Information Button */}
-            <ImportSheet name={name} />
-            </div>
-
-          </div>
 
           {/* Table Section */}
           <div className="rounded-md border">
             <div className="relative w-full overflow-auto">
             {/* Add Data Table*/}
+<<<<<<< HEAD
             <DataTableTeams />
 =======
           {/* Top Banner */}
@@ -162,6 +188,9 @@ function Content() {
                 />
               </div>
 >>>>>>> Stashed changes
+=======
+            <DataTableTournamentTeams id={id}fetchTournamentTeamsInfo={fetchTournamentTeamsInfo}/>
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
             </div>
 
             <div className="flex items-center justify-between px-2"></div>

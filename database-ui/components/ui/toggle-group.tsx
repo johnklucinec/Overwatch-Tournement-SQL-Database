@@ -1,9 +1,12 @@
+<<<<<<< HEAD
 /*
 Citation for the following code:
 Date: 3/18/2024
 Installed from shadcn GitHub:
 Source URL: https://github.com/shadcn-ui/ui
 */
+=======
+>>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
 "use client"
 
 import * as React from "react"

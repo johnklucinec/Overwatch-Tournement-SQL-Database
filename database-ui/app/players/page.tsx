@@ -3,7 +3,6 @@ import Foot from "@/components/site-footer";
 import React from "react";
 
 import DataTableTeams from "@/components/tables/players-table";
-import DialogWithForm from "@/components/cards-and-sheets/add-player-dialog";
 
 export default function Page() {
   return (
@@ -37,13 +36,6 @@ export default function Page() {
 
           {/* Top Banner */}
           <div className="space-y-4">
-            <div className="flex items-center">
-              <div className="flex flex-4 items-center space-x-2">
-                {/* Add Information Button */}
-                <DialogWithForm />
-              </div>
-            </div>
-
             {/* Table Section */}
             <div className="rounded-md border bg-card text-card-foreground shadow">
               <div className="relative w-full overflow-hidden">

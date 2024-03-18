@@ -29,7 +29,7 @@ type DeleteAlertProps = {
 const DeleteAlert: React.FC<DeleteAlertProps> = ({ children, onCancel, onContinue }) => {
   return (
     <AlertDialog>
-      <AlertDialogTrigger>{children}</AlertDialogTrigger>
+      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
