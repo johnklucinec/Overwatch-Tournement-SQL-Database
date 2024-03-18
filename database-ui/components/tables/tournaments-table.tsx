@@ -230,7 +230,7 @@ export const columns: ColumnDef<Tournament>[] = [
                 router.push(`/tournaments/tournament-info?id=${tournament.id}&name=${encodeURIComponent(tournament.name)}`);
               }}
             >
-              View tournament details
+              View Tournament Details
             </DropdownMenuItem>
             <DropdownMenuItem>Edit tournament</DropdownMenuItem>
             <DeleteAlert onCancel={yourCancelHandler} onContinue={yourContinueHandler}>

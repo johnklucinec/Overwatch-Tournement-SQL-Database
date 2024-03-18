@@ -1,4 +1,5 @@
 import Nav from "@/components/header-bar";
+import Foot from "@/components/site-footer";
 import React from "react";
 
 import DataTableTeams from "@/components/tables/players-table";
@@ -13,15 +14,24 @@ export default function Page() {
         <div className="hidden h-full flex-1 flex-col space-y-8 p-8 md:flex">
           <div className="flex flex-col items-left justify-beginning space-y-2">
             <h2 className="text-2xl font-bold tracking-tight">Players</h2>
-            <p className="text-muted-foreground pl-1">Player Table</p>
+            <p className="text-muted-foreground text-1xl">
+              <span className="font-bold ">
+                Players Table + PlayerRoles Table
+              </span>{" "}
+              - View and add all your players on this page.
+            </p>
             <div className="rounded-md border"></div>
             <p className="text-muted-foreground">
-              Here you can view and edit all the Players
+              Players must have 1 to 3 roles assigned (NOT NULL).
             </p>
             <p className="text-muted-foreground">
-              For detailed information about a specific players's roles
-              (PlayerRoles), click on the action menu (the ...) of the desired
-              tournament and select "View Player Details".
+              Removing a player's team assigned roles will remove them from the
+              team (NOT NULL).
+            </p>
+            <div className="rounded-md border"></div>
+            <p className="text-muted-foreground">
+              To view and edit player details, click the action menu (...) next
+              to their name and select 'View Player Details'.
             </p>
           </div>
 
@@ -35,7 +45,7 @@ export default function Page() {
             </div>
 
             {/* Table Section */}
-            <div className="rounded-md border">
+            <div className="rounded-md border bg-card text-card-foreground shadow">
               <div className="relative w-full overflow-hidden">
                 {/* Add Data Table*/}
                 <DataTableTeams />
@@ -46,6 +56,7 @@ export default function Page() {
           </div>
         </div>
       </div>
+      <Foot />
     </main>
   );
 }

@@ -220,7 +220,7 @@ export const columns: ColumnDef<Team>[] = [
                 );
               }}
             >
-              View team details
+              View Team Details
             </DropdownMenuItem>
             <DropdownMenuItem>Edit team</DropdownMenuItem>
             <DropdownMenuItem>Delete team</DropdownMenuItem>

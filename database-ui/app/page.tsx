@@ -1,6 +1,16 @@
+<<<<<<< Updated upstream
 import React from 'react';
 import Nav from "@/components/header-bar"
 
+=======
+import React from "react";
+import Nav from "@/components/header-bar";
+import Foot from "@/components/site-footer";
+import DarkModeCard from "@/components/homepage/darkmodecard";
+import GitHubCard from "@/components/homepage/githubcard";
+import VideoCard from "@/components/homepage/videoexamplecard";
+import DatabaseInfo from "@/components/homepage/database-info-card";
+>>>>>>> Stashed changes
 
 export default function Home() {
   return (
@@ -20,6 +30,7 @@ export default function Home() {
           </section>
         </div>
       </div>
+<<<<<<< Updated upstream
 
         <div className="hidden h-full flex-1 flex-col space-y-8 pl-8 pr-8 md:flex min-w-[600px] max-w-[50%] mx-auto">  
           <section className="py-5 flex flex-col items-center text-center gap-8">
@@ -30,6 +41,9 @@ export default function Home() {
           </section>
         </div>
 
+=======
+      <Foot />
+>>>>>>> Stashed changes
     </main>
   );
 }
