@@ -1,24 +1,10 @@
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-import React from 'react';
-import Nav from "@/components/header-bar"
-
-=======
 import React from "react";
 import Nav from "@/components/header-bar";
 import Foot from "@/components/site-footer";
-=======
-import React from "react";
-import Nav from "@/components/header-bar";
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
 import DarkModeCard from "@/components/homepage/darkmodecard";
 import GitHubCard from "@/components/homepage/githubcard";
 import VideoCard from "@/components/homepage/videoexamplecard";
 import DatabaseInfo from "@/components/homepage/database-info-card";
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
 
 export default function Home() {
   return (
@@ -68,23 +54,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-
-        <div className="hidden h-full flex-1 flex-col space-y-8 pl-8 pr-8 md:flex min-w-[600px] max-w-[50%] mx-auto">  
-          <section className="py-5 flex flex-col items-center text-center gap-8">
-            <h2 className="text-2xl font-semibold text-primary">Notice</h2>
-            <p className="text-base leading-relaxed">
-              The website contains sample data. Most of the buttons function, but they do no do anything yet. 
-            </p>
-          </section>
-        </div>
-
-=======
       <Foot />
->>>>>>> Stashed changes
-=======
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
     </main>
   );
 }

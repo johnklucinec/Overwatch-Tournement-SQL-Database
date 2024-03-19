@@ -229,11 +229,7 @@ export const columns: ColumnDef<Team>[] = [
                 );
               }}
             >
-<<<<<<< HEAD
               View Team Details
-=======
-              View team details
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -265,14 +261,11 @@ export default function DataTableTeams({
 
   /* Load and Update the table information */
   const fetchTeams = useCallback(async () => {
-<<<<<<< HEAD
     // Refresh the data on the page
     await fetchTournamentTeamsInfo().catch((e) => {
       console.error("An error occurred while refreshing the players data.", e);
     });
 
-=======
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
     const response = await fetch(`${TEAMS_API_URL}?id=${id}`);
     if (!response.ok) {
       setData([]);
@@ -282,11 +275,7 @@ export default function DataTableTeams({
     }
     const result = await response.json();
     setData(result.tournamentTeamsRows);
-<<<<<<< HEAD
   }, [fetchTournamentTeamsInfo, id]);
-=======
-  }, [id]);
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
 
   useEffect(() => {
     fetchTeams().catch((e) => {
@@ -365,22 +354,15 @@ export default function DataTableTeams({
     },
   });
 
-<<<<<<< HEAD
   useEffect(() => {
     table.toggleAllRowsSelected(false);
   }, [data, table]);
 
-=======
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
   return (
     <div className="w-full p-5">
       <div className="flex flex-4 items-center space-x-2">
         {/* Pass fetchTeams so Dialog can update table */}
-<<<<<<< HEAD
         <DialogWithForm onClose={fetchTournamentTeamsInfo} id={id} />
-=======
-        <DialogWithForm onClose={fetchTeams} />
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
         <div>
           <p>|</p>
         </div>

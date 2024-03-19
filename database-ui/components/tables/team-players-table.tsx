@@ -258,11 +258,7 @@ export const columns: ColumnDef<Players>[] = [
                 );
               }}
             >
-<<<<<<< HEAD
               View Player Details
-=======
-              View player details
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -26,11 +26,7 @@ function createResponse(message: string, status: number): Response {
 /**
  * Schema to check for valid entries into the database
  */
-<<<<<<< HEAD
 const createTeamSchema = zod.object({
-=======
-const createTeamschema = zod.object({
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
   name: zod.string().max(25).min(1),
   date: zod
     .string()
@@ -46,11 +42,7 @@ const createTeamschema = zod.object({
  */
 async function createTeamHandler(req: NextRequest) {
   const body = await extractbody(req);
-<<<<<<< HEAD
   const { name, date } = createTeamSchema.parse(body);
-=======
-  const { name, date } = createTeamschema.parse(body);
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
 
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,

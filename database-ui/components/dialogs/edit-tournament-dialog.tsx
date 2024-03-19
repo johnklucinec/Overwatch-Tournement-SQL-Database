@@ -17,16 +17,10 @@ import AddTournamentForm from "@/components/forms/edit-tournament-form";
 // Makes typescript not complain for some reason.
 interface AddTournamentDialogProps {
   onClose: () => Promise<void>;
-<<<<<<< HEAD
   id: string;
 }
 
 const AddTournamentDialog: React.FC<AddTournamentDialogProps> = ({ onClose, id }) => {
-=======
-}
-
-const AddTournamentDialog: React.FC<AddTournamentDialogProps> = ({ onClose }) => {
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
   // Refresh the table when the dialog is opened or closed.
   // Ideally this should only run when closed, but thats not possible.
   const handleClose = () => {
@@ -50,11 +44,7 @@ const AddTournamentDialog: React.FC<AddTournamentDialogProps> = ({ onClose }) =>
           <DialogTitle>Edit Tournament</DialogTitle>
           <DialogDescription>Edit Tournament Info Here</DialogDescription>
         </DialogHeader>
-<<<<<<< HEAD
         <AddTournamentForm id={id}/>
-=======
-        <AddTournamentForm />
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
       </DialogContent>
     </Dialog>
   );

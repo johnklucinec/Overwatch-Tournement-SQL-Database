@@ -130,39 +130,15 @@ export const columns: ColumnDef<Player>[] = [
   // Sorts behind the scenes with the players MMR
   {
     accessorKey: "highestrank",
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Highest Rank
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-=======
-=======
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
     header: ({ column }) => (
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-<<<<<<< HEAD
         Highest Rank
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
->>>>>>> Stashed changes
-=======
-        MMR
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
->>>>>>> 13da8d50fc441fa30f405a4b5cdd66f50c114660
     cell: ({ row }) => (
       <div className="ml-4">{row.getValue("highestrank")}</div>
     ),
