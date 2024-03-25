@@ -13,9 +13,12 @@
   </p>
 </p>
 
-<div align="center">
-![Contributors](https://img.shields.io/github/contributors/johnklucinec/Overwatch-Tournement-SQL-Database?color=dark-green) ![Forks](https://img.shields.io/github/forks/johnklucinec/Overwatch-Tournement-SQL-Database?style=social) ![Stargazers](https://img.shields.io/github/stars/johnklucinec/Overwatch-Tournement-SQL-Database?style=social) ![License](https://img.shields.io/github/license/johnklucinec/Overwatch-Tournement-SQL-Database) 
-</div>
+
+![Contributors](https://img.shields.io/github/contributors/johnklucinec/Overwatch-Tournement-SQL-Database?color=dark-green)
+![Forks](https://img.shields.io/github/forks/johnklucinec/Overwatch-Tournement-SQL-Database?style=social)
+![Stargazers](https://img.shields.io/github/stars/johnklucinec/Overwatch-Tournement-SQL-Database?style=social)
+
+
 
 ## Table Of Contents
 
